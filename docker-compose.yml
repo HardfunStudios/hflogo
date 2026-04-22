@@ -33,7 +33,7 @@ services:
       - .:/rails
       - bundle_cache:/usr/local/bundle
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       DATABASE_URL: postgres://hflogo:hflogo@db:5432/hflogo_development
       REDIS_URL: redis://redis:6379/0
