@@ -1,0 +1,35 @@
+en:
+  app:
+    name: "Logo"
+
+  home:
+    title: "Visual Programming for Kids"
+    subtitle: "Create, explore and share turtle programming projects."
+    new_project: "Create Project"
+    get_started: "Get Started"
+    explore: "Explore Projects"
+
+  nav:
+    explore: "Explore"
+    new_project: "New Project"
+    feed: "Feed"
+    profile: "My Profile"
+    settings: "Settings"
+    sign_in: "Sign In"
+    sign_up: "Sign Up"
+    sign_out: "Sign Out"
+
+  errors:
+    not_authorized: "You are not authorized to perform this action."
+
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            username:
+              invalid_username: "must be 3–30 characters (lowercase letters, numbers and _)"
+              taken: "is already taken"
+            date_of_birth:
+              too_young: "you must be at least 13 years old to create an account"
+              blank: "is required"

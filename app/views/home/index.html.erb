@@ -1,0 +1,14 @@
+<div class="max-w-4xl mx-auto px-4 py-16 text-center">
+  <h1 class="text-5xl font-bold text-hf-blue mb-4"><%= t("home.title") %></h1>
+  <p class="text-xl text-gray-600 mb-8"><%= t("home.subtitle") %></p>
+
+  <% if user_signed_in? %>
+    <%= link_to t("home.new_project"), new_project_path,
+        class: "btn-primary text-lg px-8 py-3" %>
+  <% else %>
+    <%= link_to t("home.get_started"), new_user_registration_path,
+        class: "btn-primary text-lg px-8 py-3 mr-4" %>
+    <%= link_to t("home.explore"), explore_path,
+        class: "btn-secondary text-lg px-8 py-3" %>
+  <% end %>
+</div>

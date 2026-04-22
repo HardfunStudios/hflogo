@@ -1,0 +1,35 @@
+es:
+  app:
+    name: "Logo"
+
+  home:
+    title: "Programación Visual para Niños"
+    subtitle: "Crea, explora y comparte proyectos de programación con tortuga."
+    new_project: "Crear Proyecto"
+    get_started: "Comenzar"
+    explore: "Explorar Proyectos"
+
+  nav:
+    explore: "Explorar"
+    new_project: "Nuevo Proyecto"
+    feed: "Feed"
+    profile: "Mi Perfil"
+    settings: "Configuración"
+    sign_in: "Iniciar Sesión"
+    sign_up: "Crear Cuenta"
+    sign_out: "Cerrar Sesión"
+
+  errors:
+    not_authorized: "No tienes permiso para realizar esta acción."
+
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            username:
+              invalid_username: "debe tener entre 3 y 30 caracteres (letras minúsculas, números y _)"
+              taken: "ya está en uso"
+            date_of_birth:
+              too_young: "debes tener al menos 13 años para crear una cuenta"
+              blank: "es obligatorio"

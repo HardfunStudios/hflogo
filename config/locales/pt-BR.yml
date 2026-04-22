@@ -1,0 +1,48 @@
+pt-BR:
+  app:
+    name: "Logo"
+
+  home:
+    title: "Programação Visual para Crianças"
+    subtitle: "Crie, explore e compartilhe projetos de programação com tartaruga."
+    new_project: "Criar Projeto"
+    get_started: "Começar Agora"
+    explore: "Explorar Projetos"
+
+  nav:
+    explore: "Explorar"
+    new_project: "Novo Projeto"
+    feed: "Feed"
+    profile: "Meu Perfil"
+    settings: "Configurações"
+    sign_in: "Entrar"
+    sign_up: "Criar Conta"
+    sign_out: "Sair"
+
+  errors:
+    not_authorized: "Você não tem permissão para fazer isso."
+
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            username:
+              invalid_username: "deve ter entre 3 e 30 caracteres (letras minúsculas, números e _)"
+              taken: "já está em uso"
+            date_of_birth:
+              too_young: "você precisa ter pelo menos 13 anos para criar uma conta"
+              blank: "é obrigatório"
+
+  devise:
+    registrations:
+      new:
+        sign_up: "Criar conta"
+      signed_up: "Bem-vindo(a)! Confirme seu e-mail para publicar projetos."
+    sessions:
+      new:
+        sign_in: "Entrar"
+      signed_in: "Bem-vindo(a) de volta!"
+    omniauth_callbacks:
+      success: "Autenticado com %{kind} com sucesso."
+      failure: "Não foi possível autenticar com %{kind}: %{reason}"

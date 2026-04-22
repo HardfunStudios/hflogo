@@ -1,0 +1,7 @@
+<% flash.each do |type, message| %>
+  <% css_class = type.to_s == "alert" ? "bg-red-50 border-red-200 text-red-800" : "bg-green-50 border-green-200 text-green-800" %>
+  <div class="border px-4 py-3 text-sm <%= css_class %>" role="alert"
+       data-controller="flash" data-action="animationend->flash#remove">
+    <%= message %>
+  </div>
+<% end %>

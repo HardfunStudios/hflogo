@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-hf-blue: #0081A6;
+    --color-hf-blue-dark: #00607e;
+    --color-hf-orange: #F07D00;
+    --color-hf-green: #2ECC71;
+    --color-hf-purple: #8B5CF6;
+  }
+
+  body {
+    font-family: 'Montserrat', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-hf-blue text-white font-semibold
+           hover:bg-hf-blue-dark transition-colors duration-150 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border-2 border-hf-blue text-hf-blue
+           font-semibold hover:bg-hf-blue hover:text-white transition-colors duration-150 cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center rounded-lg bg-red-600 text-white font-semibold
+           hover:bg-red-700 transition-colors duration-150 cursor-pointer;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  .form-input {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-hf-blue focus:border-transparent;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
