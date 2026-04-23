@@ -1,10 +1,10 @@
 #!/bin/bash
-# Compila o bundle Vite do editor Blockly e copia assets estáticos para public/
+# Compila o bundle Vite do editor e copia assets estáticos para public/
 
 set -e
 
-EDITOR_DIR="$(cd "$(dirname "$0")/../../lp-visible-flow-prototype" && pwd)"
 HFLOGO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+EDITOR_DIR="$HFLOGO_DIR/editor"
 DEST_ASSETS="$HFLOGO_DIR/public/editor-assets"
 
 echo "▸ Building editor bundle from $EDITOR_DIR..."
@@ -14,19 +14,16 @@ npm run build
 echo "▸ Copying static editor assets..."
 mkdir -p "$DEST_ASSETS/js/JS-Interpreter"
 
-# Runtime deps não bundlados pelo Vite (globals externos)
-cp js/jquery-2.1.4.min.js               "$DEST_ASSETS/js/"
-cp js/materialize.min.js                "$DEST_ASSETS/js/"
-cp js/microworld.js                     "$DEST_ASSETS/js/"
-cp js/microworld_procedural_bindings.js "$DEST_ASSETS/js/"
-cp js/JS-Interpreter/acorn_interpreter.js "$DEST_ASSETS/js/JS-Interpreter/"
+cp "$EDITOR_DIR/js/jquery-2.1.4.min.js"               "$DEST_ASSETS/js/"
+cp "$EDITOR_DIR/js/materialize.min.js"                "$DEST_ASSETS/js/"
+cp "$EDITOR_DIR/js/microworld.js"                     "$DEST_ASSETS/js/"
+cp "$EDITOR_DIR/js/microworld_procedural_bindings.js" "$DEST_ASSETS/js/"
+cp "$EDITOR_DIR/js/JS-Interpreter/acorn_interpreter.js" "$DEST_ASSETS/js/JS-Interpreter/"
 
-# t0.png — sprite da tartaruga (procurado em /media/t0.png pelo microworld.js)
 mkdir -p "$HFLOGO_DIR/public/media"
-cp media/t0.png "$HFLOGO_DIR/public/media/"
+cp "$EDITOR_DIR/media/t0.png" "$HFLOGO_DIR/public/media/"
 
-# Blockly media — Blockly busca em /blockly/media/ (raiz do servidor)
 mkdir -p "$HFLOGO_DIR/public/blockly/media"
-cp -r node_modules/blockly/media/. "$HFLOGO_DIR/public/blockly/media/"
+cp -r "$EDITOR_DIR/node_modules/blockly/media/." "$HFLOGO_DIR/public/blockly/media/"
 
 echo "✓ Editor build complete."
