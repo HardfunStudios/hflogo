@@ -1,0 +1,28 @@
+#!/bin/bash
+# Compila o bundle Vite do editor Blockly e copia assets estáticos para public/
+
+set -e
+
+EDITOR_DIR="$(cd "$(dirname "$0")/../../lp-visible-flow-prototype" && pwd)"
+HFLOGO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+DEST_ASSETS="$HFLOGO_DIR/public/editor-assets"
+
+echo "▸ Building editor bundle from $EDITOR_DIR..."
+cd "$EDITOR_DIR"
+npm run build
+
+echo "▸ Copying static editor assets to $DEST_ASSETS..."
+mkdir -p "$DEST_ASSETS/js/JS-Interpreter"
+mkdir -p "$DEST_ASSETS/blockly/media"
+
+# Runtime deps não bundlados pelo Vite (globals externos)
+cp js/jquery-2.1.4.min.js          "$DEST_ASSETS/js/"
+cp js/materialize.min.js           "$DEST_ASSETS/js/"
+cp js/microworld.js                "$DEST_ASSETS/js/"
+cp js/microworld_procedural_bindings.js "$DEST_ASSETS/js/"
+cp js/JS-Interpreter/acorn_interpreter.js "$DEST_ASSETS/js/JS-Interpreter/"
+
+# Blockly media (ícones, sons, cursor)
+cp -r node_modules/blockly/media/. "$DEST_ASSETS/blockly/media/"
+
+echo "✓ Editor build complete."

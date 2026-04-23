@@ -1,0 +1,30 @@
+<% content_for :title, "Código — #{@project.title} — Logo" %>
+
+<% content_for :head do %>
+  <script src="/editor-assets/js/jquery-2.1.4.min.js"></script>
+  <script src="/editor-assets/js/materialize.min.js"></script>
+  <script src="/editor-assets/js/JS-Interpreter/acorn_interpreter.js"></script>
+  <script src="/editor-assets/js/microworld.js"></script>
+  <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
+<% end %>
+
+<div class="max-w-7xl mx-auto px-4 py-4">
+  <div class="flex items-center gap-3 mb-4">
+    <%= link_to "← #{@project.title}", @project, class: "text-hf-blue hover:underline text-sm" %>
+    <span class="text-gray-400 text-sm">· Visualizando código (somente leitura)</span>
+  </div>
+
+  <div class="card p-0 overflow-hidden">
+    <div id="blocklyDiv" class="h-screen blockly-readonly"></div>
+  </div>
+</div>
+
+<script src="<%= asset_path('logo-editor.js') %>"></script>
+<script>
+  window.addEventListener('load', function() {
+    if (window.LogoEditor && window.workspace) {
+      const data = <%= raw @project.data.to_json %>;
+      window.LogoEditor.loadProjectState(data);
+    }
+  });
+</script>

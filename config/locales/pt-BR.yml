@@ -34,6 +34,31 @@ pt-BR:
               too_young: "você precisa ter pelo menos 13 anos para criar uma conta"
               blank: "é obrigatório"
 
+  projects:
+    default_title: "Sem título"
+    saved: "Projeto salvo."
+    deleted: "Projeto excluído."
+    remixed: "Remix criado! Agora é seu, edite à vontade."
+    not_found: "Projeto não encontrado."
+    publish: "Publicar"
+    republish: "Publicado ✓"
+    auto_saved: "salvo"
+    see_code: "Ver código"
+    edit: "Editar"
+    remix: "Remixar"
+    visibility:
+      draft: "Privado"
+      unlisted: "Não listado"
+      published: "Público"
+
+  versions:
+    restored: "Versão restaurada com sucesso."
+
+  date:
+    formats:
+      short: "%d/%m/%Y"
+      long: "%d de %B de %Y às %H:%M"
+
   devise:
     registrations:
       new:

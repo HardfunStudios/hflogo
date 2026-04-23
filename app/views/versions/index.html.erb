@@ -1,0 +1,31 @@
+<% content_for :title, "Histórico — #{@project.title}" %>
+
+<div class="max-w-2xl mx-auto px-4 py-6">
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to "← #{@project.title}", edit_project_path(@project), class: "text-hf-blue hover:underline" %>
+    <h1 class="text-xl font-bold">Histórico de versões</h1>
+  </div>
+
+  <div class="space-y-3">
+    <% @versions.each do |version| %>
+      <div class="card flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-sm">
+            <% if version.auto_save? %>
+              <span class="text-gray-400">Auto-save</span>
+            <% else %>
+              Versão <%= version.version_number %>
+              <% if version.change_note.present? %>
+                — <span class="text-gray-600 font-normal"><%= version.change_note %></span>
+              <% end %>
+            <% end %>
+          </p>
+          <p class="text-xs text-gray-400"><%= l(version.created_at, format: :long) %></p>
+        </div>
+        <%= button_to "Restaurar", restore_project_version_path(@project, version), method: :post,
+            class: "btn-secondary text-xs px-3 py-1",
+            data: { confirm: "Restaurar esta versão? O estado atual será salvo automaticamente." } %>
+      </div>
+    <% end %>
+  </div>
+</div>

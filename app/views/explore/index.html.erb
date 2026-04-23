@@ -1,0 +1,13 @@
+<% content_for :title, "Explorar — Logo" %>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Explorar projetos</h1>
+
+  <% if @projects.any? %>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <%= render partial: "projects/card", collection: @projects %>
+    </div>
+  <% else %>
+    <p class="text-gray-500">Nenhum projeto publicado ainda. <%= link_to "Crie o primeiro!", new_project_path, class: "text-hf-blue hover:underline" %></p>
+  <% end %>
+</div>

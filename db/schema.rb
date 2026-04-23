@@ -10,9 +10,45 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_22_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_22_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "project_versions", force: :cascade do |t|
+    t.boolean "auto_save", default: false, null: false
+    t.text "change_note"
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}, null: false
+    t.bigint "project_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "version_number", null: false
+    t.index ["project_id", "auto_save"], name: "index_project_versions_on_project_id_and_auto_save"
+    t.index ["project_id", "version_number"], name: "index_project_versions_on_project_id_and_version_number", unique: true
+    t.index ["project_id"], name: "index_project_versions_on_project_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.integer "comments_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}, null: false
+    t.text "description"
+    t.bigint "forked_from_version_id"
+    t.integer "loves_count", default: 0, null: false
+    t.bigint "parent_project_id"
+    t.datetime "published_at"
+    t.integer "remixes_count", default: 0, null: false
+    t.string "thumbnail_url"
+    t.string "title", default: "Sem título", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "views_count", default: 0, null: false
+    t.integer "visibility", default: 0, null: false
+    t.index ["data"], name: "index_projects_on_data", using: :gin
+    t.index ["parent_project_id"], name: "index_projects_on_parent_project_id"
+    t.index ["published_at"], name: "index_projects_on_published_at"
+    t.index ["user_id"], name: "index_projects_on_user_id"
+    t.index ["visibility"], name: "index_projects_on_visibility"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "avatar_url"
@@ -49,4 +85,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_000001) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
   end
+
+  add_foreign_key "project_versions", "projects"
+  add_foreign_key "projects", "projects", column: "parent_project_id"
+  add_foreign_key "projects", "users"
 end

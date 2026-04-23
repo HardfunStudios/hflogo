@@ -1,0 +1,91 @@
+<% content_for :title, "#{@project.title} — Logo" %>
+
+<% content_for :head do %>
+  <%# Deps do editor Blockly — carregadas antes do bundle %>
+  <script src="/editor-assets/js/jquery-2.1.4.min.js"></script>
+  <script src="/editor-assets/js/materialize.min.js"></script>
+  <script src="/editor-assets/js/JS-Interpreter/acorn_interpreter.js"></script>
+  <script src="/editor-assets/js/microworld.js"></script>
+  <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
+<% end %>
+
+<div class="h-screen flex flex-col"
+     data-controller="editor"
+     data-editor-project-id-value="<%= @project.id %>"
+     data-editor-project-data-value="<%= @project.data.to_json %>"
+     data-editor-autosave-url-value="<%= api_v1_project_path(@project) %>"
+     data-editor-versions-url-value="<%= api_v1_project_versions_path(@project) %>"
+     data-editor-thumbnail-url-value="<%= thumbnail_api_v1_project_path(@project) %>"
+     data-editor-csrf-token-value="<%= form_authenticity_token %>">
+
+  <%# ── Header ─────────────────────────────────────────────────────────────── %>
+  <div class="bg-white border-b px-4 py-2 flex items-center gap-4 flex-shrink-0">
+    <%= link_to "←", root_path, class: "text-gray-500 hover:text-hf-blue" %>
+
+    <input type="text"
+           value="<%= @project.title %>"
+           class="text-lg font-semibold border-0 outline-none focus:ring-2 focus:ring-hf-blue rounded px-2 flex-1 min-w-0"
+           data-editor-target="titleInput"
+           data-action="blur->editor#updateTitle change->editor#updateTitle">
+
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <button class="btn-secondary text-sm px-3 py-1"
+              data-action="editor#saveVersion"
+              data-editor-target="saveVersionBtn">
+        Salvar versão
+      </button>
+
+      <select class="form-input text-sm py-1 w-36"
+              data-action="change->editor#changeVisibility">
+        <option value="draft"     <%= "selected" if @project.draft? %>><%= t("projects.visibility.draft") %></option>
+        <option value="unlisted"  <%= "selected" if @project.unlisted? %>><%= t("projects.visibility.unlisted") %></option>
+        <option value="published" <%= "selected" if @project.published? %>><%= t("projects.visibility.published") %></option>
+      </select>
+
+      <button class="btn-primary text-sm px-4 py-1"
+              data-action="editor#publish"
+              data-editor-target="publishBtn">
+        <%= @project.published_at ? t("projects.republish") : t("projects.publish") %>
+      </button>
+
+      <span class="text-xs text-gray-400" data-editor-target="saveStatus">
+        <%= t("projects.auto_saved") %>
+      </span>
+    </div>
+  </div>
+
+  <%# ── Editor area ─────────────────────────────────────────────────────────── %>
+  <div class="flex flex-1 overflow-hidden">
+
+    <%# Blockly workspace %>
+    <div id="blocklyDiv" class="flex-1 min-w-0 bg-white"></div>
+
+    <%# Canvas da tartaruga %>
+    <div class="w-96 flex-shrink-0 bg-gray-100 flex flex-col border-l">
+      <div id="stageFrame" class="flex-1"></div>
+
+      <div class="p-3 border-t bg-white flex items-center gap-2">
+        <button id="runButton" class="btn-primary text-sm px-4 py-1">▶ Executar</button>
+        <button id="stepButton" class="btn-secondary text-sm px-3 py-1">→ Passo</button>
+        <label class="flex items-center gap-1 text-xs text-gray-600">
+          <input type="checkbox" id="isTimeVisible" class="rounded">
+          Mostra passos
+        </label>
+      </div>
+
+      <div class="px-3 pb-3">
+        <input type="range" id="programTimeSlider" class="w-full" min="1" max="1" value="1">
+        <span id="stepsText" class="text-xs text-gray-500"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Bundle do editor (carregado após as deps) %>
+<script src="<%= asset_path('logo-editor.js') %>"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // O LogoEditor é inicializado pelo Stimulus controller (editor_controller.js)
+    // após o bundle carregar. O bundle registra window.LogoEditor no load do DOMContentLoaded.
+  });
+</script>
