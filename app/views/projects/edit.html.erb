@@ -9,7 +9,7 @@
   <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
 <% end %>
 
-<div class="h-screen flex flex-col"
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;"
      data-controller="editor"
      data-editor-project-id-value="<%= @project.id %>"
      data-editor-project-data-value="<%= @project.data.to_json %>"
@@ -55,16 +55,13 @@
   </div>
 
   <%# ── Editor area ─────────────────────────────────────────────────────────── %>
-  <div class="flex flex-1 overflow-hidden">
+  <div id="editorSplit" style="display:flex;flex:1;overflow:hidden;user-select:none;min-height:0;">
 
-    <%# Blockly workspace %>
-    <div id="blocklyDiv" class="flex-1 min-w-0 bg-white"></div>
+    <%# Canvas da tartaruga (painel esquerdo) %>
+    <div id="stagePanel" style="width:480px;flex-shrink:0;background:#f3f4f6;display:flex;flex-direction:column;border-right:1px solid #e5e7eb;overflow:hidden;">
+      <div id="stageFrame"></div>
 
-    <%# Canvas da tartaruga %>
-    <div class="w-96 flex-shrink-0 bg-gray-100 flex flex-col border-l">
-      <div id="stageFrame" class="flex-1"></div>
-
-      <div class="p-3 border-t bg-white flex items-center gap-2">
+      <div class="p-3 border-t bg-white flex items-center gap-2 flex-shrink-0">
         <button id="runButton" class="btn-primary text-sm px-4 py-1">▶ Executar</button>
         <button id="stepButton" class="btn-secondary text-sm px-3 py-1">→ Passo</button>
         <label class="flex items-center gap-1 text-xs text-gray-600">
@@ -73,19 +70,90 @@
         </label>
       </div>
 
-      <div class="px-3 pb-3">
+      <div class="px-3 pb-3 flex-shrink-0">
         <input type="range" id="programTimeSlider" class="w-full" min="1" max="1" value="1">
         <span id="stepsText" class="text-xs text-gray-500"></span>
       </div>
     </div>
+
+    <%# Divider arrastável %>
+    <div id="splitDivider" style="width:6px;flex-shrink:0;cursor:col-resize;background:#e5e7eb;z-index:10;user-select:none;"></div>
+
+    <%# Blockly workspace (painel direito) %>
+    <div id="blocklyDiv" style="flex:1;min-width:0;background:white;position:relative;overflow:hidden;"></div>
+
   </div>
 </div>
 
 <%# Bundle do editor (carregado após as deps) %>
 <script src="<%= asset_path('logo-editor.js') %>"></script>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // O LogoEditor é inicializado pelo Stimulus controller (editor_controller.js)
-    // após o bundle carregar. O bundle registra window.LogoEditor no load do DOMContentLoaded.
+(function () {
+  const divider    = document.getElementById('splitDivider');
+  const stage      = document.getElementById('stagePanel');
+  const blocklyDiv = document.getElementById('blocklyDiv');
+  const split      = document.getElementById('editorSplit');
+
+  // Força o SVG do Blockly a ficar contido no div
+  const blocklyStyle = document.createElement('style');
+  blocklyStyle.textContent = `
+    #blocklyDiv { overflow: hidden !important; }
+    #blocklyDiv > svg { display:block; }
+    .blocklyFlyout ~ .blocklyScrollbarVertical,
+    .blocklyFlyoutScrollbar,
+    g.blocklyScrollbar[display="none"],
+    .blocklyFlyout + .blocklyScrollbar { display: none !important; }
+  `;
+  document.head.appendChild(blocklyStyle);
+
+  // ResizeObserver: notifica Blockly sempre que o div mudar de tamanho
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (window.workspace && window.Blockly) window.workspace.resize();
+    }).observe(blocklyDiv);
+  }
+
+  let dragging = false, startX = 0, startW = 0;
+
+  function applyResize(newW) {
+    stage.style.width = newW + 'px';
+    requestAnimationFrame(function () {
+      if (window.currentworld && typeof currentworld.resize === 'function') {
+        currentworld.resize(newW, newW);
+      }
+      if (window.workspace && window.Blockly) {
+        window.workspace.resize();
+      }
+    });
+  }
+
+  divider.addEventListener('mouseenter', function () { divider.style.background = '#0081A6'; });
+  divider.addEventListener('mouseleave', function () { if (!dragging) divider.style.background = '#e5e7eb'; });
+
+  divider.addEventListener('mousedown', function (e) {
+    dragging = true;
+    startX = e.clientX;
+    startW = stage.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    divider.style.background = '#0081A6';
+    e.preventDefault();
   });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const minW = 200;
+    const maxW = split.offsetWidth - 300;
+    const newW = Math.min(maxW, Math.max(minW, startW + (e.clientX - startX)));
+    applyResize(newW);
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    divider.style.background = '#e5e7eb';
+    applyResize(stage.offsetWidth);
+  });
+})();
 </script>

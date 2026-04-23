@@ -4,6 +4,7 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def create?  = user.present?
+  def edit?    = owned_by_user?
   def update?  = owned_by_user?
   def destroy? = owned_by_user? || user&.admin?
   def remix?   = user.present? && (record.published? || record.unlisted?)

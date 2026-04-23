@@ -9,7 +9,7 @@ class Project < ApplicationRecord
 
   validates :title, presence: true, length: { maximum: 100 }
   validates :description, length: { maximum: 500 }, allow_blank: true
-  validates :data, presence: true
+  validates :data, exclusion: { in: [ nil ], message: :blank }
 
   scope :published,     -> { where(visibility: :published).where.not(published_at: nil) }
   scope :by_popularity, -> { order(Arel.sql("loves_count + remixes_count * 2 DESC")) }

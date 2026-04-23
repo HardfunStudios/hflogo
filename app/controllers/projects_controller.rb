@@ -13,6 +13,7 @@ class ProjectsController < ApplicationController
 
   def edit
     authorize @project
+    render layout: "editor"
   end
 
   def show

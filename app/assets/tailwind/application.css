@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme {
+  --color-hf-blue: #0081A6;
+  --color-hf-blue-dark: #00607e;
+  --color-hf-orange: #F07D00;
+  --color-hf-green: #2ECC71;
+  --color-hf-purple: #8B5CF6;
+  --font-sans: 'Montserrat', system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    background-color: var(--color-hf-blue);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms;
+
+    &:hover { background-color: var(--color-hf-blue-dark); }
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: 2px solid var(--color-hf-blue);
+    color: var(--color-hf-blue);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+
+    &:hover { background-color: var(--color-hf-blue); color: white; }
+  }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    background-color: #dc2626;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms;
+
+    &:hover { background-color: #b91c1c; }
+  }
+
+  .card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border: 1px solid #f3f4f6;
+    padding: 1.5rem;
+  }
+
+  .form-input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--color-hf-blue);
+      border-color: transparent;
+    }
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
+}

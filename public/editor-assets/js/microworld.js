@@ -61,7 +61,7 @@ function Microworld(canvasParentSelector,width, height) {
   var alphaBorder = 0.2; //initial alpha for last frames
 
 	//var turtleImageFile = "media/costumes/cat1-a.gif";
-  var turtleImageFile = "media/t0.png";
+  var turtleImageFile = "/media/t0.png";
 	var turtles = []; // array containing all turtles
 	var currentTurtleIndex = 0; //point to the current turtle in the array
 	var currentTurtle = null;  //pointer to the current turtle
@@ -733,7 +733,11 @@ function Microworld(canvasParentSelector,width, height) {
   this.resize = function(w, h) {
     width = w;
     height = h;
-    init();
+    renderCanvas.width = w;
+    renderCanvas.height = h;
+    if (turtleCanvas) { turtleCanvas.width = w; turtleCanvas.height = h; }
+    if (penCanvas)    { penCanvas.width = w;    penCanvas.height = h; }
+    self.render();
   };
 
   this.penCanvasSetup = function(canvas) {
