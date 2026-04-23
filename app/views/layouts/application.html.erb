@@ -14,16 +14,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+  <body class="bg-white text-black min-h-screen flex flex-col">
     <%= render "layouts/navbar" %>
 
     <main class="flex-1">
       <%= render "layouts/flash" %>
       <%= yield %>
     </main>
-
-    <footer class="bg-hf-blue text-white text-sm py-4 text-center mt-8">
-      &copy; <%= Date.current.year %> HardFun &mdash; Logo
-    </footer>
   </body>
 </html>

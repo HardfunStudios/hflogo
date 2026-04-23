@@ -1,44 +1,68 @@
-<nav class="bg-white shadow-sm border-b border-gray-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16 items-center">
-      <div class="flex items-center gap-6">
-        <%= link_to t("app.name"), root_path, class: "text-xl font-bold text-hf-blue" %>
-        <%= link_to t("nav.explore"), explore_path, class: "text-gray-600 hover:text-hf-blue transition-colors" %>
-      </div>
+<header class="fixed top-0 left-0 w-full bg-white z-50" style="height:72px;box-shadow:0 4px 4px 0 rgba(0,0,0,0.25);">
+  <div class="flex items-center h-full px-10 gap-12">
 
-      <div class="flex items-center gap-4">
-        <% if user_signed_in? %>
-          <%= link_to t("nav.new_project"), new_project_path,
-              class: "btn-primary text-sm px-4 py-2" %>
-          <%= link_to t("nav.feed"), feed_path,
-              class: "text-gray-600 hover:text-hf-blue transition-colors" %>
-          <div class="relative group">
-            <button class="flex items-center gap-2 text-gray-700 hover:text-hf-blue">
-              <% if current_user.avatar_url.present? %>
-                <img src="<%= current_user.avatar_url %>" class="w-8 h-8 rounded-full" alt="">
-              <% else %>
-                <div class="w-8 h-8 rounded-full bg-hf-blue text-white flex items-center justify-center text-sm font-bold">
-                  <%= current_user.display.first.upcase %>
-                </div>
-              <% end %>
-              <span class="text-sm"><%= current_user.display %></span>
-            </button>
-            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10 border">
-              <%= link_to t("nav.profile"), user_profile_path(current_user.username),
-                  class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
-              <%= link_to t("nav.settings"), edit_user_registration_path,
-                  class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
-              <%= button_to t("nav.sign_out"), destroy_user_session_path, method: :delete,
-                  class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
-            </div>
-          </div>
-        <% else %>
-          <%= link_to t("nav.sign_in"), new_user_session_path,
-              class: "text-gray-600 hover:text-hf-blue transition-colors" %>
-          <%= link_to t("nav.sign_up"), new_user_registration_path,
-              class: "btn-primary text-sm px-4 py-2" %>
-        <% end %>
+    <%# Logo %>
+    <%= link_to root_path, class: "flex items-center gap-2 flex-shrink-0" do %>
+      <div class="relative flex-shrink-0" style="width:36px;height:31px;">
+        <img src="/images/logo-part-4.svg" alt="" class="absolute" style="left:.7px;top:0;width:34.8px;height:14.9px;">
+        <img src="/images/table-header-bg.svg" alt="" class="absolute" style="left:0;top:8px;width:17.7px;height:22.3px;">
+        <img src="/images/table-header-mask.svg" alt="" class="absolute" style="left:18.4px;top:8px;width:17.7px;height:22.3px;">
       </div>
+      <img src="/images/logo-cube.svg" alt="HardFun Logo" style="width:90px;height:16px;">
+    <% end %>
+
+    <%# Nav %>
+    <nav class="flex items-center" style="gap:40px;">
+      <%= link_to t("nav.explore"), explore_path,
+          class: "text-black hover:opacity-70 transition-opacity",
+          style: "font-size:18px;font-weight:400;" %>
+      <% if user_signed_in? %>
+        <%= link_to t("nav.feed"), feed_path,
+            class: "text-black hover:opacity-70 transition-opacity",
+            style: "font-size:18px;font-weight:400;" %>
+      <% end %>
+    </nav>
+
+    <%# Direita %>
+    <div class="flex items-center gap-4 ml-auto">
+      <% if user_signed_in? %>
+        <%= link_to t("nav.new_project"), new_project_path,
+            class: "btn-primary", style: "font-size:14px;padding:7px 16px;" %>
+        <div class="relative group">
+          <button class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+            <% if current_user.avatar_url.present? %>
+              <img src="<%= current_user.avatar_url %>" class="rounded-full" style="width:40px;height:40px;object-fit:cover;" alt="">
+            <% else %>
+              <div class="rounded-full flex items-center justify-center text-white font-bold text-sm"
+                   style="width:40px;height:40px;background:#0081A6;">
+                <%= current_user.display.first.upcase %>
+              </div>
+            <% end %>
+            <span style="font-size:16px;font-weight:400;color:black;"><%= current_user.display %></span>
+          </button>
+          <div class="absolute right-0 bg-white rounded-xl py-2 hidden group-hover:block"
+               style="top:calc(100% + 8px);min-width:180px;box-shadow:1px 1px 6px 0 rgba(0,0,0,0.25);border:1px solid #e5e5e5;">
+            <%= link_to t("nav.profile"), user_profile_path(current_user.username),
+                class: "block px-4 py-2 text-black hover:bg-gray-50 transition-colors",
+                style: "font-size:15px;" %>
+            <%= link_to t("nav.settings"), edit_user_registration_path,
+                class: "block px-4 py-2 text-black hover:bg-gray-50 transition-colors",
+                style: "font-size:15px;" %>
+            <div class="border-t border-gray-100 my-1"></div>
+            <%= button_to t("nav.sign_out"), destroy_user_session_path, method: :delete,
+                class: "block w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors",
+                style: "font-size:15px;color:#D51414;background:transparent;border:none;cursor:pointer;" %>
+          </div>
+        </div>
+      <% else %>
+        <%= link_to t("nav.sign_in"), new_user_session_path,
+            class: "text-black hover:opacity-70 transition-opacity",
+            style: "font-size:16px;font-weight:400;" %>
+        <%= link_to t("nav.sign_up"), new_user_registration_path,
+            class: "btn-primary", style: "font-size:14px;padding:7px 16px;" %>
+      <% end %>
     </div>
+
   </div>
-</nav>
+</header>
+<div style="height:72px;flex-shrink:0;"></div>
