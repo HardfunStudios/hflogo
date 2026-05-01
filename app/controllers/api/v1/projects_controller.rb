@@ -15,7 +15,11 @@ class Api::V1::ProjectsController < ApplicationController
 
   def update
     authorize @project
-    if @project.update(project_params)
+    attrs = project_params
+    if attrs[:visibility] == "published" && @project.published_at.nil?
+      attrs = attrs.merge(published_at: Time.current)
+    end
+    if @project.update(attrs)
       render json: { ok: true, updated_at: @project.updated_at }
     else
       render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity
@@ -27,7 +31,7 @@ class Api::V1::ProjectsController < ApplicationController
     svg_data = params[:svg]
     return render json: { error: "SVG ausente" }, status: :bad_request if svg_data.blank?
 
-    GenerateThumbnailJob.perform_later(@project.id, svg_data)
+    GenerateThumbnailJob.perform_now(@project.id, svg_data)
     render json: { ok: true }
   end
 

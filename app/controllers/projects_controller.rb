@@ -1,6 +1,11 @@
 class ProjectsController < ApplicationController
   before_action :authenticate_user!, except: [ :show, :code ]
+  before_action :authenticate_user!, only: [ :index ]
   before_action :set_project, only: [ :show, :code, :edit, :update, :destroy, :remix, :versions ]
+
+  def index
+    @projects = current_user.projects.order(updated_at: :desc)
+  end
 
   def new
     @project = current_user.projects.create!(
@@ -23,6 +28,7 @@ class ProjectsController < ApplicationController
 
   def code
     authorize @project, :show?
+    redirect_to @project
   end
 
   def update

@@ -665,6 +665,10 @@ function executeCode() {
   slider.step = 1;
   slider.value = lastValidFrame + 1;
   slider.disabled = false;
+  // Envia thumbnail após execução
+  setTimeout(() => {
+    if (window._onThumbnailCallback) window._onThumbnailCallback();
+  }, 100);
   } catch(e) { console.error('executeCode error:', e); alert('Erro ao executar: ' + e.message); }
 }
 
@@ -753,36 +757,103 @@ function load() {
   $('#load_modal').openModal();
 }
 
-window.addEventListener('load', () => {
-  document.getElementById('runButton').addEventListener('click', executeCode);
-  document.getElementById('stepButton').addEventListener('click', stepCode);
+function _initLogoEditor() {
+  document.getElementById('runButton')?.addEventListener('click', executeCode);
+  document.getElementById('stepButton')?.addEventListener('click', stepCode);
 
   const slider = document.getElementById('programTimeSlider');
-  slider.disabled = true;
-  slider.addEventListener('input', slideTime);
+  if (slider) {
+    slider.disabled = true;
+    slider.addEventListener('input', slideTime);
+  }
 
-  document.getElementById('isTimeVisible').addEventListener('click', () => {
+  document.getElementById('isTimeVisible')?.addEventListener('click', () => {
     window.currentworld.setTimeVisibleMode(isTimeVisible());
   });
 
-  document.getElementById('save_button').addEventListener('click', save);
-  document.getElementById('load_button').addEventListener('click', load);
+  document.getElementById('save_button')?.addEventListener('click', save);
+  document.getElementById('load_button')?.addEventListener('click', load);
 
   // Inject workspace
+  const readOnly = !!window._logoEditorReadOnly;
   window.workspace = Blockly.inject('blocklyDiv', {
-    toolbox,
+    toolbox: readOnly ? undefined : toolbox,
+    readOnly,
     media: '/blockly/media/',
+    scrollbars: true,
+    zoom: readOnly
+      ? { controls: false, wheel: true, startScale: 0.65 }
+      : { controls: false, wheel: false, startScale: 1.0 },
   });
 
-  window.workspace.addChangeListener(lpParseCode);
+  if (!readOnly) window.workspace.addChangeListener(lpParseCode);
   setTimeout(() => window.workspace.resize(), 0);
   window.addEventListener('resize', () => window.workspace.resize());
 
-  // Init microworld canvas
+  // Init microworld canvas — tamanho = menor dimensão disponível no painel
   const canvasParent = $(window.currentworldFrameSelector);
+  const stagePanel   = document.getElementById('stagePanel');
+  const toolbarH     = 56 + 38; // stageToolbar + sliderArea (aproximado)
+  const availH       = stagePanel ? stagePanel.offsetHeight - toolbarH : canvasParent.width();
+  const stageSize    = Math.min(canvasParent.width(), Math.max(availH, 200));
   window.currentworld = new Microworld(
     window.currentworldFrameSelector,
-    canvasParent.width(),
-    window.currentworldHeigth
+    stageSize,
+    stageSize
   );
-});
+
+  // API para o Rails (editor_controller.js)
+  window.LogoEditor = {
+    getProjectState() {
+      return Blockly.serialization.workspaces.save(window.workspace);
+    },
+    loadProjectState(state) {
+      try {
+        window.workspace.clear();
+        Blockly.serialization.workspaces.load(state, window.workspace);
+      } catch (e) {
+        console.warn('LogoEditor.loadProjectState:', e);
+      }
+    },
+    onChanged(callback) {
+      window._onChangedCallback = callback;
+    },
+    onExecuted(callback) {
+      window._onThumbnailCallback = callback;
+    },
+    getThumbnailSVG() {
+      const canvas = document.getElementById('microworldCavnas');
+      return canvas ? canvas.toDataURL('image/png') : null;
+    }
+  };
+
+  // Dispara onChanged a cada alteração no workspace
+  window.workspace.addChangeListener((e) => {
+    if (window._onChangedCallback &&
+        e.type !== Blockly.Events.UI &&
+        e.type !== Blockly.Events.VIEWPORT_CHANGE) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  });
+
+  // Notifica quem já registrou callback antes da inicialização
+  if (window._logoEditorReadyCallback) {
+    window._logoEditorReadyCallback();
+    window._logoEditorReadyCallback = null;
+  }
+  window._logoEditorInitialized = true;
+}
+
+// Inicializa assim que o DOM estiver pronto, compatível com Turbo Drive
+function _tryInit() {
+  if (!document.getElementById('blocklyDiv')) return;
+  if (window._logoEditorInitialized) return; // já inicializado
+  _initLogoEditor();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _tryInit);
+} else {
+  setTimeout(_tryInit, 0);
+}
+

@@ -17,7 +17,8 @@
           class: "text-black hover:opacity-70 transition-opacity",
           style: "font-size:18px;font-weight:400;" %>
       <% if user_signed_in? %>
-        <%= link_to t("nav.feed"), feed_path,
+        <%= link_to "Meus Projetos", projects_path, class: "text-black hover:opacity-70 transition-opacity", style: "font-size:18px;font-weight:400;" %>
+      <%= link_to t("nav.feed"), feed_path,
             class: "text-black hover:opacity-70 transition-opacity",
             style: "font-size:18px;font-weight:400;" %>
       <% end %>

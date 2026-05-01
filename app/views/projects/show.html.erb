@@ -1,32 +1,44 @@
 <% content_for :title, "#{@project.title} — Logo" %>
 
 <% content_for :head do %>
+  <meta name="turbo-visit-control" content="reload">
   <script src="/editor-assets/js/jquery-2.1.4.min.js"></script>
   <script src="/editor-assets/js/materialize.min.js"></script>
   <script src="/editor-assets/js/JS-Interpreter/acorn_interpreter.js"></script>
   <script src="/editor-assets/js/microworld.js"></script>
   <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
+  <style>
+    #show-player { display:flex; gap:16px; overflow:hidden; }
+    #blocklyDiv  { flex:1; height:480px; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:white; }
+    #stageFrame  { flex:1; height:480px; border:1px solid #e0e0e0; border-radius:8px; background:white;
+                   display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  </style>
 <% end %>
 
 <div class="max-w-7xl mx-auto px-4 py-6">
   <div class="flex gap-6">
 
     <%# Player do projeto %>
-    <div class="flex-1">
-      <div class="card p-0 overflow-hidden">
-        <div id="blocklyDiv" class="h-96 blockly-readonly"></div>
-        <div class="border-t bg-gray-50 flex flex-col">
-          <div id="stageFrame" class="h-64 bg-white"></div>
-          <div class="p-3 flex items-center gap-2 border-t">
-            <button id="runButton" class="btn-primary text-sm px-4 py-1">▶ Executar</button>
-            <button id="stepButton" class="btn-secondary text-sm px-3 py-1">→ Passo</button>
-          </div>
-          <div class="px-3 pb-3">
-            <input type="range" id="programTimeSlider" class="w-full" min="1" max="1" value="1">
-            <span id="stepsText" class="text-xs text-gray-500"></span>
-          </div>
-        </div>
+    <div class="flex-1 flex flex-col gap-3">
+
+      <%# Blocos + Canvas lado a lado %>
+      <div id="show-player">
+        <div id="blocklyDiv"></div>
+        <div id="stageFrame"></div>
       </div>
+
+      <%# Controles %>
+      <div class="flex items-center gap-3">
+        <button id="runButton" class="btn-primary" style="font-size:14px;padding:6px 18px;">▶ Executar</button>
+        <button id="stepButton" class="btn-secondary" style="font-size:14px;padding:6px 14px;">→ Passo</button>
+        <label style="font-size:13px;color:#929292;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="isTimeVisible"> Mostra passos
+        </label>
+      </div>
+      <div>
+        <input type="range" id="programTimeSlider" class="w-full" min="1" max="1" value="1">
+      </div>
+
     </div>
 
     <%# Sidebar do projeto %>
@@ -55,12 +67,10 @@
               class: "btn-secondary text-sm px-4 py-2 w-full" %>
         <% end %>
 
-        <%= link_to t("projects.see_code"), code_project_path(@project),
-            class: "btn-secondary text-sm px-4 py-2 w-full text-center" %>
-
         <% if user_signed_in? && current_user == @project.user %>
           <%= link_to t("projects.edit"), edit_project_path(@project),
-              class: "btn-primary text-sm px-4 py-2 w-full text-center" %>
+              class: "btn-primary text-sm px-4 py-2 w-full text-center",
+              data: { turbo: false } %>
         <% end %>
       </div>
 
@@ -72,15 +82,20 @@
         </div>
       <% end %>
     </div>
+
   </div>
 </div>
 
+<script>window._logoEditorReadOnly = true;</script>
 <script src="<%= asset_path('logo-editor.js') %>"></script>
 <script>
-  window.addEventListener('load', function() {
-    if (window.LogoEditor && window.workspace) {
-      const data = <%= raw @project.data.to_json %>;
-      window.LogoEditor.loadProjectState(data);
+  (function() {
+    const data = <%= raw @project.data.to_json %>;
+    function loadProject() { window.LogoEditor.loadProjectState(data); }
+    if (window._logoEditorInitialized) {
+      loadProject();
+    } else {
+      window._logoEditorReadyCallback = loadProject;
     }
-  });
+  })();
 </script>

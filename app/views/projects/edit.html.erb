@@ -1,15 +1,100 @@
 <% content_for :title, "#{@project.title} — Logo" %>
 
 <% content_for :head do %>
-  <%# Deps do editor Blockly — carregadas antes do bundle %>
   <script src="/editor-assets/js/jquery-2.1.4.min.js"></script>
   <script src="/editor-assets/js/materialize.min.js"></script>
   <script src="/editor-assets/js/JS-Interpreter/acorn_interpreter.js"></script>
   <script src="/editor-assets/js/microworld.js"></script>
   <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
+  <style>
+    #editor-root { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; background:#f5f5f5; }
+
+    #editor-header {
+      display:flex; align-items:center; gap:12px; flex-shrink:0;
+      height:52px; padding:0 16px; background:white;
+      box-shadow:0 2px 4px 0 rgba(0,0,0,0.12); z-index:10;
+    }
+    #editor-header input[type="text"] {
+      flex:1; min-width:0; border:none; outline:none;
+      font-size:15px; font-weight:600; font-family:'Montserrat',sans-serif;
+      color:black; background:transparent; padding:4px 8px; border-radius:4px;
+    }
+    #editor-header input[type="text"]:hover { background:#f5f5f5; }
+    #editor-header input[type="text"]:focus { background:#f0f7fb; }
+
+    #editor-main { display:flex; flex:1; overflow:hidden; min-height:0; }
+
+    /* Esquerda: Blockly */
+    #blocklyDiv {
+      flex:1; min-width:0; position:relative; overflow:hidden; background:white;
+      border-right:1px solid #e0e0e0;
+    }
+    #blocklyDiv > svg { display:block; }
+    .blocklyFlyout ~ .blocklyScrollbarVertical,
+    .blocklyFlyoutScrollbar,
+    g.blocklyScrollbar[display="none"],
+    .blocklyFlyout + .blocklyScrollbar { display:none !important; }
+
+    /* Direita: stage */
+    #stagePanel {
+      flex:1; min-width:0; display:flex; flex-direction:column;
+      background:#f5f5f5; overflow:hidden;
+    }
+
+    #stageFrame {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      background:#f5f5f5; overflow:hidden; padding:16px;
+    }
+    #stageFrame canvas {
+      display:block;
+      border:2px solid #e0e0e0;
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.10);
+      background:white;
+    }
+
+    #stageToolbar {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 14px; background:white;
+      border-top:1px solid #e8e8e8; flex-shrink:0;
+    }
+
+    #runButton {
+      display:flex; align-items:center; justify-content:center;
+      width:38px; height:38px; border-radius:50%;
+      background:#3dba4e; border:3px solid #2fa040;
+      cursor:pointer; font-size:15px; color:white; flex-shrink:0;
+      transition:background 120ms;
+    }
+    #runButton:hover { background:#35a844; }
+
+    #stepButton {
+      height:32px; padding:0 12px; border-radius:6px;
+      background:white; border:1.5px solid #929292;
+      color:#444; font-size:12px; font-family:'Montserrat',sans-serif;
+      cursor:pointer; transition:background 120ms;
+    }
+    #stepButton:hover { background:#f5f5f5; }
+
+    #stageToolbar label {
+      display:flex; align-items:center; gap:5px;
+      font-size:12px; color:#929292; cursor:pointer;
+      font-family:'Montserrat',sans-serif;
+    }
+
+    #sliderArea { padding:6px 14px 10px; background:white; flex-shrink:0; border-top:1px solid #f0f0f0; }
+    #programTimeSlider { width:100%; accent-color:#0081A6; cursor:pointer; }
+    #stepsText { font-size:11px; color:#929292; font-family:'Montserrat',sans-serif; }
+
+    select.vis-select {
+      height:30px; border:1.5px solid #d0d0d0; border-radius:6px;
+      font-size:12px; padding:0 8px; background:white;
+      font-family:'Montserrat',sans-serif; cursor:pointer; color:black;
+    }
+  </style>
 <% end %>
 
-<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;"
+<div id="editor-root"
      data-controller="editor"
      data-editor-project-id-value="<%= @project.id %>"
      data-editor-project-data-value="<%= @project.data.to_json %>"
@@ -18,12 +103,9 @@
      data-editor-thumbnail-url-value="<%= thumbnail_api_v1_project_path(@project) %>"
      data-editor-csrf-token-value="<%= form_authenticity_token %>">
 
-  <%# ── Header ─────────────────────────────────────────────────────────────── %>
-  <div class="flex items-center flex-shrink-0 bg-white px-6 gap-4"
-       style="height:56px;box-shadow:0 2px 4px 0 rgba(0,0,0,0.15);">
-
-    <%# Logo compacto %>
-    <%= link_to root_path, class: "flex items-center gap-2 flex-shrink-0 mr-2" do %>
+  <%# ── Header ── %>
+  <div id="editor-header">
+    <%= link_to root_path do %>
       <div class="relative flex-shrink-0" style="width:26px;height:22px;">
         <img src="/images/logo-part-4.svg" alt="" class="absolute" style="left:.5px;top:0;width:25px;height:10.7px;">
         <img src="/images/table-header-bg.svg" alt="" class="absolute" style="left:0;top:5.7px;width:12.7px;height:16px;">
@@ -31,143 +113,69 @@
       </div>
     <% end %>
 
-    <%# Título do projeto %>
     <input type="text"
            value="<%= @project.title %>"
-           class="flex-1 min-w-0 border-0 outline-none font-semibold px-2 rounded"
-           style="font-size:16px;color:black;"
            data-editor-target="titleInput"
            data-action="blur->editor#updateTitle change->editor#updateTitle">
 
-    <%# Controles %>
-    <div class="flex items-center gap-3 flex-shrink-0">
-      <button class="btn-secondary" style="font-size:13px;padding:5px 14px;"
-              data-action="editor#saveVersion"
-              data-editor-target="saveVersionBtn">
-        Salvar versão
-      </button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
+      <span style="font-size:11px;color:#929292;" data-editor-target="saveStatus"><%= t("projects.auto_saved") %></span>
 
-      <select style="height:32px;border:1.5px solid #929292;border-radius:6px;font-size:13px;padding:0 10px;background:white;font-family:'Montserrat',sans-serif;cursor:pointer;"
-              data-action="change->editor#changeVisibility">
+      <select class="vis-select" data-action="change->editor#changeVisibility">
         <option value="draft"     <%= "selected" if @project.draft? %>><%= t("projects.visibility.draft") %></option>
         <option value="unlisted"  <%= "selected" if @project.unlisted? %>><%= t("projects.visibility.unlisted") %></option>
         <option value="published" <%= "selected" if @project.published? %>><%= t("projects.visibility.published") %></option>
       </select>
 
-      <button class="btn-primary" style="font-size:13px;padding:5px 16px;"
-              data-action="editor#publish"
-              data-editor-target="publishBtn">
-        <%= @project.published_at ? t("projects.republish") : t("projects.publish") %>
+      <button class="btn-secondary" style="font-size:12px;padding:4px 12px;"
+              data-action="editor#saveVersion" data-editor-target="saveVersionBtn">
+        Salvar versão
       </button>
 
-      <span style="font-size:12px;color:#929292;" data-editor-target="saveStatus">
-        <%= t("projects.auto_saved") %>
-      </span>
+      <button class="btn-primary" style="font-size:12px;padding:4px 14px;"
+              data-action="editor#publish" data-editor-target="publishBtn">
+        <%= @project.published_at ? t("projects.republish") : t("projects.publish") %>
+      </button>
     </div>
   </div>
 
-  <%# ── Editor area ─────────────────────────────────────────────────────────── %>
-  <div id="editorSplit" style="display:flex;flex:1;overflow:hidden;user-select:none;min-height:0;">
+  <%# ── Main: Blockly (esquerda) | Stage (direita) ── %>
+  <div id="editor-main">
 
-    <%# Canvas da tartaruga (painel esquerdo) %>
-    <div id="stagePanel" style="width:480px;flex-shrink:0;background:#f3f4f6;display:flex;flex-direction:column;border-right:1px solid #e5e7eb;overflow:hidden;">
+    <div id="blocklyDiv"></div>
+
+    <div id="stagePanel">
       <div id="stageFrame"></div>
 
-      <div class="flex items-center gap-2 flex-shrink-0 bg-white px-3"
-           style="height:48px;border-top:1px solid #e5e5e5;">
-        <button id="runButton" class="btn-primary" style="font-size:13px;padding:5px 14px;">▶ Executar</button>
-        <button id="stepButton" class="btn-secondary" style="font-size:13px;padding:5px 12px;">→ Passo</button>
-        <label class="flex items-center gap-1 cursor-pointer" style="font-size:13px;color:#929292;">
+      <div id="stageToolbar">
+        <button id="runButton" title="Executar (F5)">▶</button>
+        <button id="stepButton">→ Passo</button>
+        <label>
           <input type="checkbox" id="isTimeVisible" style="accent-color:#0081A6;">
           Mostra passos
         </label>
       </div>
 
-      <div class="flex-shrink-0 px-3 pb-2" style="border-top:1px solid #f0f0f0;">
-        <input type="range" id="programTimeSlider" class="w-full" min="1" max="1" value="1"
-               style="accent-color:#0081A6;">
-        <span id="stepsText" style="font-size:12px;color:#929292;"></span>
+      <div id="sliderArea">
+        <input type="range" id="programTimeSlider" min="1" max="1" value="1">
+        <div id="stepsText"></div>
       </div>
     </div>
-
-    <%# Divider arrastável %>
-    <div id="splitDivider" style="width:6px;flex-shrink:0;cursor:col-resize;background:#e5e7eb;z-index:10;user-select:none;"></div>
-
-    <%# Blockly workspace (painel direito) %>
-    <div id="blocklyDiv" style="flex:1;min-width:0;background:white;position:relative;overflow:hidden;"></div>
 
   </div>
 </div>
 
-<%# Bundle do editor (carregado após as deps) %>
 <script src="<%= asset_path('logo-editor.js') %>"></script>
-
 <script>
 (function () {
-  const divider    = document.getElementById('splitDivider');
-  const stage      = document.getElementById('stagePanel');
   const blocklyDiv = document.getElementById('blocklyDiv');
-  const split      = document.getElementById('editorSplit');
-
-  // Força o SVG do Blockly a ficar contido no div
-  const blocklyStyle = document.createElement('style');
-  blocklyStyle.textContent = `
-    #blocklyDiv { overflow: hidden !important; }
-    #blocklyDiv > svg { display:block; }
-    .blocklyFlyout ~ .blocklyScrollbarVertical,
-    .blocklyFlyoutScrollbar,
-    g.blocklyScrollbar[display="none"],
-    .blocklyFlyout + .blocklyScrollbar { display: none !important; }
-  `;
-  document.head.appendChild(blocklyStyle);
-
-  // ResizeObserver: notifica Blockly sempre que o div mudar de tamanho
   if (window.ResizeObserver) {
     new ResizeObserver(function () {
-      if (window.workspace && window.Blockly) window.workspace.resize();
+      if (window.workspace) window.workspace.resize();
     }).observe(blocklyDiv);
   }
-
-  let dragging = false, startX = 0, startW = 0;
-
-  function applyResize(newW) {
-    stage.style.width = newW + 'px';
-    requestAnimationFrame(function () {
-      if (window.currentworld && typeof currentworld.resize === 'function') {
-        currentworld.resize(newW, newW);
-      }
-      if (window.workspace && window.Blockly) {
-        window.workspace.resize();
-      }
-    });
-  }
-
-  divider.addEventListener('mouseenter', function () { divider.style.background = '#0081A6'; });
-  divider.addEventListener('mouseleave', function () { if (!dragging) divider.style.background = '#e5e7eb'; });
-
-  divider.addEventListener('mousedown', function (e) {
-    dragging = true;
-    startX = e.clientX;
-    startW = stage.offsetWidth;
-    document.body.style.cursor = 'col-resize';
-    divider.style.background = '#0081A6';
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', function (e) {
-    if (!dragging) return;
-    const minW = 200;
-    const maxW = split.offsetWidth - 300;
-    const newW = Math.min(maxW, Math.max(minW, startW + (e.clientX - startX)));
-    applyResize(newW);
-  });
-
-  document.addEventListener('mouseup', function () {
-    if (!dragging) return;
-    dragging = false;
-    document.body.style.cursor = '';
-    divider.style.background = '#e5e7eb';
-    applyResize(stage.offsetWidth);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'F5') { e.preventDefault(); document.getElementById('runButton').click(); }
   });
 })();
 </script>

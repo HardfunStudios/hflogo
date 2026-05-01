@@ -3,11 +3,13 @@ class GenerateThumbnailJob < ApplicationJob
 
   # No MVP: apenas salva o SVG como data URI no thumbnail_url.
   # Fase 2+: converter SVG→PNG via ImageProcessing e armazenar no S3.
-  def perform(project_id, svg_data)
+  def perform(project_id, data_uri)
     project = Project.find_by(id: project_id)
     return unless project
 
-    data_uri = "data:image/svg+xml;charset=utf-8,#{CGI.escape(svg_data)}"
-    project.update_column(:thumbnail_url, data_uri)
+    # Aceita data URI de PNG (canvas.toDataURL) ou SVG escapado (legado)
+    uri = data_uri.start_with?("data:") ? data_uri
+                                         : "data:image/svg+xml;charset=utf-8,#{CGI.escape(data_uri)}"
+    project.update_column(:thumbnail_url, uri)
   end
 end

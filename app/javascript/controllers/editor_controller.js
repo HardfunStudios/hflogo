@@ -14,24 +14,16 @@ export default class extends Controller {
   }
 
   connect() {
-    // Aguarda o bundle do editor carregar antes de inicializar
-    this._waitForEditor(() => this._initEditor())
+    if (window._logoEditorInitialized) {
+      this._initEditor()
+    } else {
+      window._logoEditorReadyCallback = () => this._initEditor()
+    }
   }
 
   disconnect() {
     clearTimeout(this._saveTimer)
-  }
-
-  // ── Inicialização ──────────────────────────────────────────────────────────
-
-  _waitForEditor(callback, retries = 30) {
-    if (window.LogoEditor && window.workspace) {
-      callback()
-    } else if (retries > 0) {
-      setTimeout(() => this._waitForEditor(callback, retries - 1), 200)
-    } else {
-      console.error("LogoEditor não carregou no tempo esperado")
-    }
+    window._logoEditorReadyCallback = null
   }
 
   _initEditor() {
@@ -39,6 +31,8 @@ export default class extends Controller {
       this._pendingState = state
       this._scheduleAutosave()
     })
+
+    window.LogoEditor.onExecuted?.(() => this._sendThumbnail())
 
     // Carrega os dados do projeto no workspace
     if (this.projectDataValue && Object.keys(this.projectDataValue).length > 0) {
@@ -60,7 +54,6 @@ export default class extends Controller {
       await this._patchProject({ data: this._pendingState })
       this._setSaveStatus("salvo automaticamente")
       this._pendingState = null
-      this._sendThumbnail()
     } catch (e) {
       this._setSaveStatus("erro ao salvar — tente novamente")
       console.error("Autosave error:", e)

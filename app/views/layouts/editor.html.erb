@@ -8,9 +8,13 @@
     <%= yield :head %>
     <link rel="icon" href="/icon.png" type="image/png">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <meta name="turbo-visit-control" content="reload">
     <%= javascript_importmap_tags %>
   </head>
   <body style="height:100%;margin:0;overflow:hidden;display:flex;flex-direction:column;">
-    <%= yield %>
+    <%= render "layouts/navbar" %>
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <%= yield %>
+    </div>
   </body>
 </html>
