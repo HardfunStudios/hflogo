@@ -506,20 +506,19 @@ Blockly.JavaScript['turtle_towards'] = function(block) {
 
  Blockly.Blocks['pen_setpencolor'] = {
    init: function() {
-     this.appendValueInput("color")
-         .setCheck("Number")
-        .appendField(Turtle_Msg.PENCOLOR);
+     this.appendDummyInput()
+         .appendField(Turtle_Msg.PENCOLOR)
+         .appendField(new FieldColorNumber(0), 'COLOR');
      this.setColour(hue_category_pen);
      this.setPreviousStatement(true);
      this.setNextStatement(true);
-     this.setTooltip('');
-     this.setHelpUrl('http://www.example.com/');
+     this.setTooltip('Clique no swatch para escolher a cor, ou no número para digitar diretamente (0–255).');
    }
  };
 
  Blockly.JavaScript['pen_setpencolor'] = function(block) {
-  var value_color = Blockly.JavaScript.valueToCode(block, 'color', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'setcolorCT('+value_color+');';
+  var value_color = block.getFieldValue('COLOR');
+  var code = 'setcolorCT(' + value_color + ');';
   return code;
 };
 

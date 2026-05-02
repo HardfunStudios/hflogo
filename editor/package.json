@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@blockly/field-angle": "^6.0.9",
+    "@blockly/field-colour": "^6.0.12",
     "blockly": "^11.0.0"
   },
   "devDependencies": {

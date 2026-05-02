@@ -46,6 +46,266 @@ Blockly.Msg['PROCEDURES_DEFNORETURN_PROCEDURE'] = 'algo novo';
 Blockly.Msg['PROCEDURES_DEFRETURN_TITLE'] = 'aprenda';
 Blockly.Msg['PROCEDURES_DEFRETURN_PROCEDURE'] = 'algo novo';
 
+// ─── Color table (mirrors microworld.js FULL_256_COLORTABLE) ─────────────────
+
+const COLOR_TABLE = {
+  0:'#000000',1:'#800000',2:'#008000',3:'#808000',4:'#000080',5:'#800080',
+  6:'#008080',7:'#c0c0c0',8:'#808080',9:'#ff0000',10:'#00ff00',11:'#ffff00',
+  12:'#0000ff',13:'#ff00ff',14:'#00ffff',15:'#ffffff',16:'#000000',17:'#00005f',
+  18:'#000087',19:'#0000af',20:'#0000d7',21:'#0000ff',22:'#005f00',23:'#005f5f',
+  24:'#005f87',25:'#005faf',26:'#005fd7',27:'#005fff',28:'#008700',29:'#00875f',
+  30:'#008787',31:'#0087af',32:'#0087d7',33:'#0087ff',34:'#00af00',35:'#00af5f',
+  36:'#00af87',37:'#00afaf',38:'#00afd7',39:'#00afff',40:'#00d700',41:'#00d75f',
+  42:'#00d787',43:'#00d7af',44:'#00d7d7',45:'#00d7ff',46:'#00ff00',47:'#00ff5f',
+  48:'#00ff87',49:'#00ffaf',50:'#00ffd7',51:'#00ffff',52:'#5f0000',53:'#5f005f',
+  54:'#5f0087',55:'#5f00af',56:'#5f00d7',57:'#5f00ff',58:'#5f5f00',59:'#5f5f5f',
+  60:'#5f5f87',61:'#5f5faf',62:'#5f5fd7',63:'#5f5fff',64:'#5f8700',65:'#5f875f',
+  66:'#5f8787',67:'#5f87af',68:'#5f87d7',69:'#5f87ff',70:'#5faf00',71:'#5faf5f',
+  72:'#5faf87',73:'#5fafaf',74:'#5fafd7',75:'#5fafff',76:'#5fd700',77:'#5fd75f',
+  78:'#5fd787',79:'#5fd7af',80:'#5fd7d7',81:'#5fd7ff',82:'#5fff00',83:'#5fff5f',
+  84:'#5fff87',85:'#5fffaf',86:'#5fffd7',87:'#5fffff',88:'#870000',89:'#87005f',
+  90:'#870087',91:'#8700af',92:'#8700d7',93:'#8700ff',94:'#875f00',95:'#875f5f',
+  96:'#875f87',97:'#875faf',98:'#875fd7',99:'#875fff',100:'#878700',101:'#87875f',
+  102:'#878787',103:'#8787af',104:'#8787d7',105:'#8787ff',106:'#87af00',107:'#87af5f',
+  108:'#87af87',109:'#87afaf',110:'#87afd7',111:'#87afff',112:'#87d700',113:'#87d75f',
+  114:'#87d787',115:'#87d7af',116:'#87d7d7',117:'#87d7ff',118:'#87ff00',119:'#87ff5f',
+  120:'#87ff87',121:'#87ffaf',122:'#87ffd7',123:'#87ffff',124:'#af0000',125:'#af005f',
+  126:'#af0087',127:'#af00af',128:'#af00d7',129:'#af00ff',130:'#af5f00',131:'#af5f5f',
+  132:'#af5f87',133:'#af5faf',134:'#af5fd7',135:'#af5fff',136:'#af8700',137:'#af875f',
+  138:'#af8787',139:'#af87af',140:'#af87d7',141:'#af87ff',142:'#afaf00',143:'#afaf5f',
+  144:'#afaf87',145:'#afafaf',146:'#afafd7',147:'#afafff',148:'#afd700',149:'#afd75f',
+  150:'#afd787',151:'#afd7af',152:'#afd7d7',153:'#afd7ff',154:'#afff00',155:'#afff5f',
+  156:'#afff87',157:'#afffaf',158:'#afffd7',159:'#afffff',160:'#d70000',161:'#d7005f',
+  162:'#d70087',163:'#d700af',164:'#d700d7',165:'#d700ff',166:'#d75f00',167:'#d75f5f',
+  168:'#d75f87',169:'#d75faf',170:'#d75fd7',171:'#d75fff',172:'#d78700',173:'#d7875f',
+  174:'#d78787',175:'#d787af',176:'#d787d7',177:'#d787ff',178:'#d7af00',179:'#d7af5f',
+  180:'#d7af87',181:'#d7afaf',182:'#d7afd7',183:'#d7afff',184:'#d7d700',185:'#d7d75f',
+  186:'#d7d787',187:'#d7d7af',188:'#d7d7d7',189:'#d7d7ff',190:'#d7ff00',191:'#d7ff5f',
+  192:'#d7ff87',193:'#d7ffaf',194:'#d7ffd7',195:'#d7ffff',196:'#ff0000',197:'#ff005f',
+  198:'#ff0087',199:'#ff00af',200:'#ff00d7',201:'#ff00ff',202:'#ff5f00',203:'#ff5f5f',
+  204:'#ff5f87',205:'#ff5faf',206:'#ff5fd7',207:'#ff5fff',208:'#ff8700',209:'#ff875f',
+  210:'#ff8787',211:'#ff87af',212:'#ff87d7',213:'#ff87ff',214:'#ffaf00',215:'#ffaf5f',
+  216:'#ffaf87',217:'#ffafaf',218:'#ffafd7',219:'#ffafff',220:'#ffd700',221:'#ffd75f',
+  222:'#ffd787',223:'#ffd7af',224:'#ffd7d7',225:'#ffd7ff',226:'#ffff00',227:'#ffff5f',
+  228:'#ffff87',229:'#ffffaf',230:'#ffffd7',231:'#ffffff',232:'#080808',233:'#121212',
+  234:'#1c1c1c',235:'#262626',236:'#303030',237:'#3a3a3a',238:'#444444',239:'#4e4e4e',
+  240:'#585858',241:'#626262',242:'#6c6c6c',243:'#767676',244:'#808080',245:'#8a8a8a',
+  246:'#949494',247:'#9e9e9e',248:'#a8a8a8',249:'#b2b2b2',250:'#bcbcbc',251:'#c6c6c6',
+  252:'#d0d0d0',253:'#dadada',254:'#e4e4e4',255:'#eeeeee',
+};
+
+// Find the closest index in COLOR_TABLE for a given hex color
+function hexToColorIndex(hex) {
+  const r1 = parseInt(hex.slice(1,3),16);
+  const g1 = parseInt(hex.slice(3,5),16);
+  const b1 = parseInt(hex.slice(5,7),16);
+  let best = 0, bestDist = Infinity;
+  for (const [idx, h] of Object.entries(COLOR_TABLE)) {
+    const r2 = parseInt(h.slice(1,3),16);
+    const g2 = parseInt(h.slice(3,5),16);
+    const b2 = parseInt(h.slice(5,7),16);
+    const d = (r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2;
+    if (d < bestDist) { bestDist = d; best = Number(idx); }
+  }
+  return best;
+}
+
+// ─── FieldColorSwatch: clickable color rect, stores hex, opens native picker ──
+
+class FieldColorSwatch extends Blockly.Field {
+  static fromJson(o) { return new FieldColorSwatch(o['value'] ?? '#000000'); }
+
+  constructor(value) {
+    super(value ?? '#000000');
+    this.SERIALIZABLE = true;
+    this.size_ = new Blockly.utils.Size(26, 0);
+  }
+
+  initView() {
+    this.rectEl_ = Blockly.utils.dom.createSvgElement('rect',
+      { x: 3, y: 2, width: 20, height: 16, rx: 2, ry: 2,
+        style: 'cursor:pointer;stroke:rgba(0,0,0,0.4);stroke-width:1;' },
+      this.fieldGroup_);
+    this._updateView();
+  }
+
+  doClassValidation_(v) { return (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) ? v : null; }
+  render_() { this._updateView(); }
+
+  _updateView() {
+    if (this.rectEl_) this.rectEl_.style.fill = this.getValue();
+  }
+
+  showEditor_() {
+    const div = Blockly.DropDownDiv.getContentDiv();
+    div.innerHTML = '';
+
+    const W = 220, H = 150, SH = 16, PAD = 10;
+    const container = document.createElement('div');
+    Object.assign(container.style, { padding: PAD+'px', userSelect: 'none', width: W+'px' });
+
+    // ── Spectrum canvas (saturation x, brightness y) ─────────────────────────
+    const spectrum = document.createElement('canvas');
+    spectrum.width = W; spectrum.height = H;
+    Object.assign(spectrum.style, { display:'block', borderRadius:'4px', cursor:'crosshair' });
+
+    // ── Hue slider ────────────────────────────────────────────────────────────
+    const hueCanvas = document.createElement('canvas');
+    hueCanvas.width = W; hueCanvas.height = SH;
+    Object.assign(hueCanvas.style, { display:'block', borderRadius:'3px', cursor:'crosshair', marginTop:'8px' });
+
+    // ── Preview row ───────────────────────────────────────────────────────────
+    const previewRow = document.createElement('div');
+    Object.assign(previewRow.style, { display:'flex', alignItems:'center', gap:'8px', marginTop:'8px' });
+
+    const preview = document.createElement('div');
+    Object.assign(preview.style, { width:'32px', height:'32px', borderRadius:'4px', border:'1px solid rgba(0,0,0,0.3)', flexShrink:'0' });
+
+    const idxLabel = document.createElement('div');
+    Object.assign(idxLabel.style, { fontSize:'13px', fontFamily:'monospace', fontWeight:'bold', color:'#fff' });
+
+    const hexInput = document.createElement('input');
+    hexInput.type = 'text';
+    hexInput.maxLength = 7;
+    Object.assign(hexInput.style, {
+      fontSize:'12px', fontFamily:'monospace', color:'#fff',
+      background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)',
+      borderRadius:'3px', padding:'2px 5px', width:'72px', outline:'none',
+    });
+
+    const labelCol = document.createElement('div');
+    Object.assign(labelCol.style, { display:'flex', flexDirection:'column', gap:'4px' });
+    labelCol.append(idxLabel, hexInput);
+    previewRow.append(preview, labelCol);
+    container.append(spectrum, hueCanvas, previewRow);
+    div.appendChild(container);
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    // Parse current hex → HSV
+    const hexToHsv = (hex) => {
+      const r = parseInt(hex.slice(1,3),16)/255;
+      const g = parseInt(hex.slice(3,5),16)/255;
+      const b = parseInt(hex.slice(5,7),16)/255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
+      let h = 0;
+      if (d) {
+        if (max===r) h = ((g-b)/d+6)%6;
+        else if (max===g) h = (b-r)/d+2;
+        else h = (r-g)/d+4;
+        h /= 6;
+      }
+      return { h, s: max ? d/max : 0, v: max };
+    };
+
+    const hsvToHex = (h,s,v) => {
+      const f = (n) => { const k=(n+h*6)%6; return v-v*s*Math.max(0,Math.min(k,4-k,1)); };
+      const to = x => Math.round(x*255).toString(16).padStart(2,'0');
+      return '#'+to(f(5))+to(f(3))+to(f(1));
+    };
+
+    let { h, s, v } = hexToHsv(this.getValue());
+    let draggingSpectrum = false, draggingHue = false;
+
+    // ── Draw functions ────────────────────────────────────────────────────────
+    const drawSpectrum = () => {
+      const ctx = spectrum.getContext('2d');
+      // White → hue gradient (left to right = saturation)
+      const hg = ctx.createLinearGradient(0,0,W,0);
+      hg.addColorStop(0, '#fff');
+      hg.addColorStop(1, hsvToHex(h,1,1));
+      ctx.fillStyle = hg; ctx.fillRect(0,0,W,H);
+      // Transparent → black (top to bottom = brightness)
+      const vg = ctx.createLinearGradient(0,0,0,H);
+      vg.addColorStop(0, 'transparent');
+      vg.addColorStop(1, '#000');
+      ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
+      // Cursor
+      const cx = s*W, cy = (1-v)*H;
+      ctx.beginPath(); ctx.arc(cx,cy,6,0,2*Math.PI);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,7,0,2*Math.PI);
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    };
+
+    const drawHue = () => {
+      const ctx = hueCanvas.getContext('2d');
+      const g = ctx.createLinearGradient(0,0,W,0);
+      for (let i=0;i<=12;i++) g.addColorStop(i/12, `hsl(${i/12*360},100%,50%)`);
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,SH);
+      // Cursor
+      const cx = h*W;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(cx-2, 0, 4, SH);
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth=1;
+      ctx.strokeRect(cx-2, 0, 4, SH);
+    };
+
+    const updatePreview = () => {
+      const hex = hsvToHex(h,s,v);
+      const idx = hexToColorIndex(hex);
+      preview.style.background = hex;
+      idxLabel.textContent = 'índice: ' + idx;
+      if (document.activeElement !== hexInput) hexInput.value = hex;
+    };
+
+    hexInput.addEventListener('input', () => {
+      const val = hexInput.value.trim();
+      if (!/^#[0-9a-f]{6}$/i.test(val)) return;
+      const hsv = hexToHsv(val);
+      h = hsv.h; s = hsv.s; v = hsv.v;
+      update();
+      this.setValue(val);
+    });
+    hexInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') hexInput.blur();
+      e.stopPropagation(); // prevent Blockly from stealing keys
+    });
+    hexInput.addEventListener('mousedown', (e) => e.stopPropagation());
+
+    const update = () => { drawSpectrum(); drawHue(); updatePreview(); };
+    update();
+
+    // ── Spectrum interaction ──────────────────────────────────────────────────
+    const onSpectrumMove = (e) => {
+      const r = spectrum.getBoundingClientRect();
+      s = Math.max(0, Math.min(1, (e.clientX - r.left) / W));
+      v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / H));
+      update();
+      this.setValue(hsvToHex(h,s,v));
+    };
+    spectrum.addEventListener('mousedown', (e) => { draggingSpectrum=true; onSpectrumMove(e); });
+
+    // ── Hue interaction ───────────────────────────────────────────────────────
+    const onHueMove = (e) => {
+      const r = hueCanvas.getBoundingClientRect();
+      h = Math.max(0, Math.min(1, (e.clientX - r.left) / W));
+      update();
+      this.setValue(hsvToHex(h,s,v));
+    };
+    hueCanvas.addEventListener('mousedown', (e) => { draggingHue=true; onHueMove(e); });
+
+    // Global mousemove/mouseup
+    const onMove = (e) => {
+      if (draggingSpectrum) onSpectrumMove(e);
+      if (draggingHue) onHueMove(e);
+    };
+    const onUp = () => { draggingSpectrum=false; draggingHue=false; };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+
+    Blockly.DropDownDiv.setColour(
+      this.sourceBlock_.style.colourPrimary,
+      this.sourceBlock_.style.colourTertiary,
+    );
+    Blockly.DropDownDiv.showPositionedByField(this, () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    });
+  }
+}
+
+Blockly.fieldRegistry.register('field_color_swatch', FieldColorSwatch);
+
 // ─── Block definitions ────────────────────────────────────────────────────────
 
 const hue_category_pen = 230;
@@ -334,8 +594,38 @@ Blockly.Blocks['pen_setpencolor'] = {
   },
 };
 javascriptGenerator.forBlock['pen_setpencolor'] = (block, gen) => {
-  const color = gen.valueToCode(block, 'color', Order.ATOMIC);
+  const color = gen.valueToCode(block, 'color', Order.ATOMIC) || '0';
   return `setcolorCT(${color});\n`;
+};
+
+Blockly.Blocks['pen_colornumber'] = {
+  init() {
+    this.appendDummyInput()
+        .appendField(new FieldColorSwatch(COLOR_TABLE[0]), 'SWATCH')
+        .appendField(new Blockly.FieldNumber(0, 0, 255, 1), 'NUM');
+    this.setColour(hue_category_pen);
+    this.setOutput(true, 'Number');
+    this.setTooltip('Clique no swatch para escolher a cor, ou no número para digitar (0–255).');
+  },
+  onchange(e) {
+    if (e.type !== Blockly.Events.BLOCK_CHANGE || e.blockId !== this.id) return;
+    Blockly.Events.disable();
+    try {
+      if (e.name === 'SWATCH') {
+        const idx = hexToColorIndex(e.newValue);
+        this.getField('NUM').setValue(idx);
+      } else if (e.name === 'NUM') {
+        const hex = COLOR_TABLE[Math.max(0, Math.min(255, parseInt(e.newValue) || 0))];
+        this.getField('SWATCH').setValue(hex);
+      }
+    } finally {
+      Blockly.Events.enable();
+    }
+  },
+};
+javascriptGenerator.forBlock['pen_colornumber'] = (block) => {
+  const num = parseInt(block.getFieldValue('NUM')) || 0;
+  return [String(num), Order.ATOMIC];
 };
 
 Blockly.Blocks['pen_setpensize'] = {
@@ -462,7 +752,8 @@ const toolbox = {
       kind: 'category',
       name: 'Caneta',
       contents: [
-        { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
+        { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'pen_colornumber', fields: { NUM: 9, SWATCH: COLOR_TABLE[9] } } } } },
+        { kind: 'block', type: 'pen_colornumber' },
         { kind: 'block', type: 'pen_setpensize', inputs: { size: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
         { kind: 'block', type: 'pen_ispendown?' },
         { kind: 'block', type: 'pen_setpenup' },
@@ -756,6 +1047,7 @@ function load() {
 
   $('#load_modal').openModal();
 }
+
 
 function _initLogoEditor() {
   document.getElementById('runButton')?.addEventListener('click', executeCode);
