@@ -319,6 +319,17 @@ Blockly.Blocks['controls_start'] = {
 };
 javascriptGenerator.forBlock['controls_start'] = () => '';
 
+Blockly.Blocks['controls_stop'] = {
+  init() {
+    this.appendDummyInput().appendField('pare');
+    this.setPreviousStatement(true);
+    this.setNextStatement(false);
+    this.setColour(120);
+    this.setTooltip('Para a execução do escopo atual. Dentro de uma função, sai da função. No programa principal, encerra a execução.');
+  },
+};
+javascriptGenerator.forBlock['controls_stop'] = () => 'return;\n';
+
 Blockly.Blocks['turtle_forward'] = {
   init() {
     this.appendValueInput('steps').setCheck('Number').appendField(Turtle_Msg.FORWARD);
@@ -723,6 +734,7 @@ const toolbox = {
         { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
         { kind: 'block', type: 'controls_if' },
         { kind: 'block', type: 'controls_if', extraState: { hasElse: true } },
+        { kind: 'block', type: 'controls_stop' },
       ],
     },
     {
