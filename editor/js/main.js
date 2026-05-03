@@ -809,21 +809,22 @@ function lpInitApi(interpreter, scope) {
   addFn('alert', (text) => interpreter.createPrimitive(alert(text ? text.toString() : '')));
   addFn('prompt', (text) => interpreter.createPrimitive(prompt(text ? text.toString() : '')));
   addFn('highlightBlock', (id) => interpreter.createPrimitive(highlightBlock(id ? id.toString() : '')));
-  addFn('moveCT', (s) => interpreter.createPrimitive(moveCT(s)));
-  addFn('turnCT', (d) => interpreter.createPrimitive(turnCT(d)));
-  addFn('setpenmodeCT', (v) => interpreter.createPrimitive(setpenmodeCT(v ? v.toString() : '')));
-  addFn('setturtlemodeCT', (v) => interpreter.createPrimitive(setturtlemodeCT(v ? v.toString() : '')));
-  addFn('setcolorCT', (v) => interpreter.createPrimitive(setcolorCT(v)));
-  addFn('setwidthCT', (v) => interpreter.createPrimitive(setwidthCT(v)));
-  addFn('setfontsizeCT', (v) => interpreter.createPrimitive(setfontsizeCT(v)));
-  addFn('setheadingCT', (v) => interpreter.createPrimitive(setheadingCT(v)));
-  addFn('setstateCT', (v) => interpreter.createPrimitive(setstateCT(v)));
-  addFn('setpositionCT', (x, y) => interpreter.createPrimitive(setpositionCT(x, y)));
-  addFn('towardsCT', (x, y) => interpreter.createPrimitive(towardsCT(x, y)));
-  addFn('drawtextCT', (x, y) => interpreter.createPrimitive(drawtextCT(x, y)));
-  addFn('arcCT', (angle, radius) => interpreter.createPrimitive(arcCT(angle, radius)));
-  addFn('penupCT', () => interpreter.createPrimitive(penupCT()));
-  addFn('pendownCT', () => interpreter.createPrimitive(pendownCT()));
+  const drawFn = (name, fn) => addFn(name, (...args) => { const r = fn(...args); window._commandExecuted = true; return r; });
+  drawFn('moveCT', (s) => interpreter.createPrimitive(moveCT(s)));
+  drawFn('turnCT', (d) => interpreter.createPrimitive(turnCT(d)));
+  drawFn('setpenmodeCT', (v) => interpreter.createPrimitive(setpenmodeCT(v ? v.toString() : '')));
+  drawFn('setturtlemodeCT', (v) => interpreter.createPrimitive(setturtlemodeCT(v ? v.toString() : '')));
+  drawFn('setcolorCT', (v) => interpreter.createPrimitive(setcolorCT(v)));
+  drawFn('setwidthCT', (v) => interpreter.createPrimitive(setwidthCT(v)));
+  drawFn('setfontsizeCT', (v) => interpreter.createPrimitive(setfontsizeCT(v)));
+  drawFn('setheadingCT', (v) => interpreter.createPrimitive(setheadingCT(v)));
+  drawFn('setstateCT', (v) => interpreter.createPrimitive(setstateCT(v)));
+  drawFn('setpositionCT', (x, y) => interpreter.createPrimitive(setpositionCT(x, y)));
+  drawFn('towardsCT', (x, y) => interpreter.createPrimitive(towardsCT(x, y)));
+  drawFn('drawtextCT', (x, y) => interpreter.createPrimitive(drawtextCT(x, y)));
+  drawFn('arcCT', (angle, radius) => interpreter.createPrimitive(arcCT(angle, radius)));
+  drawFn('penupCT', () => interpreter.createPrimitive(penupCT()));
+  drawFn('pendownCT', () => interpreter.createPrimitive(pendownCT()));
   addFn('getpenmodeCT', () => interpreter.createPrimitive(getpenmodeCT()));
   addFn('getturtlemodeCT', () => interpreter.createPrimitive(getturtlemodeCT()));
   addFn('ispendownCT', () => interpreter.createPrimitive(ispendownCT()));
@@ -853,10 +854,34 @@ function lpParseCode() {
   window.workspace.highlightBlock(null);
 }
 
+function getExecutionDelay() {
+  const slider = document.getElementById('speedSlider');
+  if (!slider) return 0;
+  const pos = parseInt(slider.value); // 1=slowest … 5=fastest
+  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0 };
+  return map[pos] ?? 0;
+}
+
 function lpRunCode() {
   time_block_mapping = [];
   lpParseCode();
   window.myInterpreter.run();
+}
+
+async function lpRunCodeAnimated() {
+  time_block_mapping = [];
+  lpParseCode();
+  window._commandExecuted = false;
+  window._executionStopped = false;
+  let hasMore = true;
+  while (hasMore && !window._executionStopped) {
+    hasMore = window.myInterpreter.step();
+    if (window._commandExecuted) {
+      window._commandExecuted = false;
+      const delay = getExecutionDelay();
+      if (delay > 0) await new Promise(r => setTimeout(r, delay));
+    }
+  }
 }
 
 window.lpHighlighBlockTime = lpHighlighBlockTime;
@@ -947,32 +972,50 @@ function setCurrentStepLabel(steps) {
   if (el) el.textContent = 'passo ' + steps.toString();
 }
 
-function executeCode() {
-  try {
-  window.currentworld.renderAtEachCommand = true;
-  window.currentworld.reset();
-  window.currentworld.setTimeVisibleMode(isTimeVisible());
-
-  lpRunCode();
+function _finishExecution(btn) {
   const runFrames = window.currentworld.getTotalTime();
-  // The last entry in canvasStoryStack is always an empty canvas created
-  // by the final render() call. The last frame with content is at index
-  // runFrames-2, so we use that for both display and the slider max.
   const lastValidFrame = Math.max(0, runFrames - 2);
   window.currentworld.setPlayTime(lastValidFrame);
   setStepsLabel(lastValidFrame + 1);
 
   const slider = document.getElementById('programTimeSlider');
-  slider.max = lastValidFrame + 1;
-  slider.min = 1;
-  slider.step = 1;
-  slider.value = lastValidFrame + 1;
-  slider.disabled = false;
-  // Envia thumbnail após execução
+  if (slider) {
+    slider.max = lastValidFrame + 1;
+    slider.min = 1;
+    slider.step = 1;
+    slider.value = lastValidFrame + 1;
+    slider.disabled = false;
+  }
   setTimeout(() => {
     if (window._onThumbnailCallback) window._onThumbnailCallback();
   }, 100);
-  } catch(e) { console.error('executeCode error:', e); alert('Erro ao executar: ' + e.message); }
+  btn?.classList.remove('running');
+  btn && (btn.disabled = false);
+}
+
+function executeCode() {
+  const btn = document.getElementById('runButton');
+  btn?.classList.add('running');
+  btn && (btn.disabled = true);
+
+  requestAnimationFrame(() => requestAnimationFrame(async () => {
+    try {
+      window.currentworld.renderAtEachCommand = true;
+      window.currentworld.reset();
+      window.currentworld.setTimeVisibleMode(isTimeVisible());
+      await lpRunCodeAnimated();
+      _finishExecution(btn);
+    } catch(e) {
+      console.error('executeCode error:', e);
+      alert('Erro ao executar: ' + e.message);
+      btn?.classList.remove('running');
+      btn && (btn.disabled = false);
+    }
+  }));
+}
+
+function stopExecution() {
+  window._executionStopped = true;
 }
 
 function slideTime() {
@@ -1063,6 +1106,7 @@ function load() {
 
 function _initLogoEditor() {
   document.getElementById('runButton')?.addEventListener('click', executeCode);
+  document.getElementById('stopButton')?.addEventListener('click', stopExecution);
   document.getElementById('stepButton')?.addEventListener('click', stepCode);
 
   const slider = document.getElementById('programTimeSlider');

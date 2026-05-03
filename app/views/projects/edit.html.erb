@@ -59,22 +59,32 @@
       border-top:1px solid #e8e8e8; flex-shrink:0;
     }
 
-    #runButton {
+    #runButton, #stopButton, #stepButton {
       display:flex; align-items:center; justify-content:center;
       width:38px; height:38px; border-radius:50%;
-      background:#3dba4e; border:3px solid #2fa040;
       cursor:pointer; font-size:15px; color:white; flex-shrink:0;
       transition:background 120ms;
     }
-    #runButton:hover { background:#35a844; }
+    #runButton { background:#3dba4e; border:3px solid #2fa040; }
+    #runButton:hover:not(:disabled) { background:#35a844; }
+    #stopButton { background:#D51414; border:3px solid #b01010; }
+    #stopButton:hover { background:#b01010; }
+    #speedSlider { width:72px; accent-color:#0081A6; cursor:pointer; vertical-align:middle; margin:0 2px; }
+    .speed-wrap { display:flex; align-items:center; gap:3px; }
+    #stepButton { background:#0081A6; border:3px solid #006e8e; }
+    #stepButton:hover:not(:disabled) { background:#006e8e; }
 
-    #stepButton {
-      height:32px; padding:0 12px; border-radius:6px;
-      background:white; border:1.5px solid #929292;
-      color:#444; font-size:12px; font-family:'Montserrat',sans-serif;
-      cursor:pointer; transition:background 120ms;
+    /* Spinner during execution */
+    #runButton.running { background:#e8a000; border-color:#c88800; cursor:not-allowed; }
+    #runButton.running::after {
+      content:''; display:block;
+      width:16px; height:16px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.3);
+      border-top-color:white;
+      animation:spin 0.7s linear infinite;
     }
-    #stepButton:hover { background:#f5f5f5; }
+    #runButton.running span { display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     #stageToolbar label {
       display:flex; align-items:center; gap:5px;
@@ -148,9 +158,15 @@
       <div id="stageFrame"></div>
 
       <div id="stageToolbar">
-        <button id="runButton" title="Executar (F5)">▶</button>
-        <button id="stepButton">→ Passo</button>
-        <label>
+        <button id="runButton" title="Executar (F5)"><span>▶</span></button>
+        <button id="stopButton" title="Parar execução">■</button>
+        <button id="stepButton" title="Passo">→</button>
+        <span class="speed-wrap">
+          <span style="font-size:13px;">🐢</span>
+          <input type="range" id="speedSlider" min="1" max="5" step="1" value="5" title="Velocidade de execução">
+          <span style="font-size:13px;">🐇</span>
+        </span>
+        <label style="margin-left:8px;">
           <input type="checkbox" id="isTimeVisible" style="accent-color:#0081A6;">
           Mostra passos
         </label>
@@ -177,5 +193,12 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'F5') { e.preventDefault(); document.getElementById('runButton').click(); }
   });
+  // Prevent Materialize from hijacking the speed slider (it crashes on range inputs it didn't initialize)
+  var speedSlider = document.getElementById('speedSlider');
+  if (speedSlider) {
+    ['mousedown','mouseup','input','change'].forEach(function(ev) {
+      speedSlider.addEventListener(ev, function(e) { e.stopPropagation(); }, true);
+    });
+  }
 })();
 </script>
