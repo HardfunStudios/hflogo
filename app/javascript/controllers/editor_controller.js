@@ -6,7 +6,7 @@ export default class extends Controller {
   static targets = ["titleInput", "saveStatus", "saveVersionBtn", "publishBtn"]
   static values  = {
     projectId:    Number,
-    projectData:  Object,
+    projectData:  String,
     autosaveUrl:  String,
     versionsUrl:  String,
     thumbnailUrl: String,
@@ -35,7 +35,7 @@ export default class extends Controller {
     window.LogoEditor.onExecuted?.(() => this._sendThumbnail())
 
     // Carrega os dados do projeto no workspace
-    if (this.projectDataValue && Object.keys(this.projectDataValue).length > 0) {
+    if (this.projectDataValue && this.projectDataValue.length > 2) {
       window.LogoEditor.loadProjectState(this.projectDataValue)
     }
   }

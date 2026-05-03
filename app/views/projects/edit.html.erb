@@ -1,4 +1,5 @@
 <% content_for :title, "#{@project.title} — Logo" %>
+<% content_for :main_style, "display:flex;flex-direction:column;min-height:0;overflow:hidden;" %>
 
 <% content_for :head do %>
   <script src="/editor-assets/js/jquery-2.1.4.min.js"></script>
@@ -107,7 +108,7 @@
 <div id="editor-root"
      data-controller="editor"
      data-editor-project-id-value="<%= @project.id %>"
-     data-editor-project-data-value="<%= @project.data.to_json %>"
+     data-editor-project-data-value="<%= html_escape(@project.data.is_a?(String) ? @project.data : @project.data.to_json) %>"
      data-editor-autosave-url-value="<%= api_v1_project_path(@project) %>"
      data-editor-versions-url-value="<%= api_v1_project_versions_path(@project) %>"
      data-editor-thumbnail-url-value="<%= thumbnail_api_v1_project_path(@project) %>"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_22_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_195808) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,7 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_000003) do
     t.boolean "auto_save", default: false, null: false
     t.text "change_note"
     t.datetime "created_at", null: false
-    t.jsonb "data", default: {}, null: false
+    t.text "data", default: "{}", null: false
     t.bigint "project_id", null: false
     t.datetime "updated_at", null: false
     t.integer "version_number", null: false
@@ -30,7 +30,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_000003) do
   create_table "projects", force: :cascade do |t|
     t.integer "comments_count", default: 0, null: false
     t.datetime "created_at", null: false
-    t.jsonb "data", default: {}, null: false
+    t.text "data", default: "{}", null: false
     t.text "description"
     t.bigint "forked_from_version_id"
     t.integer "loves_count", default: 0, null: false
@@ -43,7 +43,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_000003) do
     t.bigint "user_id", null: false
     t.integer "views_count", default: 0, null: false
     t.integer "visibility", default: 0, null: false
-    t.index ["data"], name: "index_projects_on_data", using: :gin
     t.index ["parent_project_id"], name: "index_projects_on_parent_project_id"
     t.index ["published_at"], name: "index_projects_on_published_at"
     t.index ["user_id"], name: "index_projects_on_user_id"

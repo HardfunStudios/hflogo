@@ -17,7 +17,7 @@
   <body class="bg-white text-black min-h-screen flex flex-col">
     <%= render "layouts/navbar" %>
 
-    <main class="flex-1">
+    <main class="flex-1 <%= content_for(:main_class) %>" style="<%= content_for(:main_style) %>">
       <%= render "layouts/flash" %>
       <%= yield %>
     </main>

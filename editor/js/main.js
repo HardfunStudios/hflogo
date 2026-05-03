@@ -7,7 +7,7 @@ Blockly.setLocale(ptBR);
 
 // Custom turtle messages (pt-br)
 const Turtle_Msg = {
-  GREEN_FLAG: '\u2691 Bandeira Verde',
+  GREEN_FLAG: 'In\u00edcio',
   STEPS: 'passos',
   FORWARD: 'para frente',
   BACKWARD: 'para trás',
@@ -847,10 +847,8 @@ function lpParseCode() {
   javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   javascriptGenerator.addReservedWords('highlightBlock');
   const code = javascriptGenerator.workspaceToCode(window.workspace);
-
   window.myInterpreter = new Interpreter(code, lpInitApi);
-
-  document.getElementById('runButton').disabled = '';
+  document.getElementById('runButton')?.removeAttribute('disabled');
   window.workspace.highlightBlock(null);
 }
 
@@ -1157,10 +1155,17 @@ function _initLogoEditor() {
     },
     loadProjectState(state) {
       try {
+        const obj = typeof state === 'string' ? JSON.parse(state) : state;
         window.workspace.clear();
-        Blockly.serialization.workspaces.load(state, window.workspace);
+        Blockly.Events.disable();
+        try {
+          Blockly.serialization.workspaces.load(obj, window.workspace, { recordUndo: false });
+        } finally {
+          Blockly.Events.enable();
+        }
+        window.workspace.render();
       } catch (e) {
-        console.warn('LogoEditor.loadProjectState:', e);
+        console.error('LogoEditor.loadProjectState:', e, e.stack);
       }
     },
     onChanged(callback) {
@@ -1204,4 +1209,8 @@ if (document.readyState === 'loading') {
 } else {
   setTimeout(_tryInit, 0);
 }
+
+window.addEventListener('beforeunload', () => {
+  window._executionStopped = true;
+});
 
