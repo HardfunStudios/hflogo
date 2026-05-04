@@ -815,6 +815,7 @@ function getExecutionDelay() {
 let _worker = null;
 
 function _applyCommand(name, args) {
+  window.currentworld.pushCommand(name, args);
   switch (name) {
     case 'moveCT':          moveCT(args[0]); break;
     case 'turnCT':          turnCT(args[0]); break;
@@ -878,6 +879,8 @@ function _startWorker(code) {
       window.workspace.highlightBlock(null);
       _worker.terminate();
       _worker = null;
+      // Flush any commands after the last highlight into a final step
+      window.currentworld.flushFinalStep();
       const btn = document.getElementById('runButton');
       _finishExecution(btn);
     }
@@ -989,18 +992,16 @@ function setCurrentStepLabel(current) {
 }
 
 function _finishExecution(btn) {
-  const runFrames = window.currentworld.getTotalTime();
-  const lastValidFrame = Math.max(0, runFrames - 2);
-  window.currentworld.setPlayTime(lastValidFrame);
-  setStepsLabel(lastValidFrame + 1);
+  const totalSteps = window.currentworld.getTotalTime();
+  setStepsLabel(totalSteps);
 
   const slider = document.getElementById('programTimeSlider');
   if (slider) {
-    slider.max = lastValidFrame + 1;
+    slider.max = totalSteps;
     slider.min = 1;
     slider.step = 1;
-    slider.value = lastValidFrame + 1;
-    slider.disabled = false;
+    slider.value = totalSteps;
+    slider.disabled = totalSteps === 0;
   }
   setTimeout(() => {
     if (window._onThumbnailCallback) window._onThumbnailCallback();

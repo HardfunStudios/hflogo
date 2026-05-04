@@ -50,15 +50,26 @@ function Microworld(canvasParentSelector,width, height) {
 
   //enables the make time visible mode
   var makeTimeVisibleMode = true;
-  var canvasStoryStack = new Array();
+
+  // ── Replay-based time tracking (replaces canvas stack) ──────────────────────
+  // commandLog stores {name, args} for every turtle command executed.
+  // stepLog[i] = index into commandLog after step i completes.
+  // To go to step N: replay commandLog[0..stepLog[N]-1] from scratch.
+  var commandLog = [];
+  var stepLog = [];   // stepLog[i] = commandLog length after step i
+  var replayStep = -1; // which step is currently displayed (-1 = live)
+
+  // Checkpoints: every CHECKPOINT_INTERVAL steps we store an ImageData snapshot
+  // of the pen canvas, so replay only needs to re-draw from the last checkpoint.
+  var CHECKPOINT_INTERVAL = 300;
+  var checkpoints = []; // checkpoints[k] = { stepIndex, imageData }
+
+  // Legacy aliases kept so old code paths (reset, init) still compile
+  var canvasStoryStack = { length: 0 };
   var currentStotyStackPointer = 0;
-
-  var canvasPenStack = new Array();
+  var canvasPenStack = [];
   var currentPenStackPointer = 0;
-
-  //control canvas play in time visible mode
-  var currentFrameInTimeVisibleMode = 0;
-  var alphaBorder = 0.2; //initial alpha for last frames
+  var alphaBorder = 0.2;
 
 	//var turtleImageFile = "media/costumes/cat1-a.gif";
   var turtleImageFile = "/media/t0.png";
@@ -108,6 +119,7 @@ function Microworld(canvasParentSelector,width, height) {
 
   function moveto(x, y) {
     function _go(x1, y1, x2, y2) {
+      if (_skipDrawing) return;
       if (self.filling) {
         penCanvas_ctx.lineTo(x1, y1);
         penCanvas_ctx.lineTo(x2, y2);
@@ -129,7 +141,7 @@ function Microworld(canvasParentSelector,width, height) {
           _go(self.x, self.y, x, y);
           self.x = x;
           self.y = y;
-          if(self.renderAtEachCommand) self.drawTurtle();
+          if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
           return;
 
         default:
@@ -183,14 +195,14 @@ function Microworld(canvasParentSelector,width, height) {
             // FENCE - stop on collision
             self.x = ix;
             self.y = iy;
-            if(self.renderAtEachCommand) self.drawTurtle();
+            if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
             return;
           } else {
             // WRAP - keep going
             self.x = wx;
             self.y = wy;
             if (fx === 1 && fy === 1) {
-              if(self.renderAtEachCommand) self.drawTurtle();
+              if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
               return;
             }
           }
@@ -229,7 +241,7 @@ function Microworld(canvasParentSelector,width, height) {
   this.turn = function(angle) {
     this.r -= deg2rad(angle);
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.penup = function() { this.down = false; };
@@ -325,38 +337,41 @@ function Microworld(canvasParentSelector,width, height) {
   this.setheading = function(angle) {
     this.r = deg2rad(90 - angle);
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.reset = function() {
-    turtleCanvas = canvasStoryStack[canvasStoryStack.length-1];
-    turtleCanvas.id = "mwTurtleCanvas";
-    turtleCanvas_ctx = turtleCanvas.getContext("2d");
+    commandLog = [];
+    stepLog = [];
+    checkpoints = [];
+    replayStep = -1;
 
-    penCanvas = canvasPenStack[canvasPenStack.length-1];
-    penCanvas.id = "mwPenCanvas";
-    penCanvas_ctx = penCanvas.getContext("2d");
+    // Reset turtle state to defaults
+    self.x = width / 2;
+    self.y = height / 2;
+    self.r = Math.PI / 2;
+    self.down = true;
+    self.color = 0;
+    self.width = 1;
+    self.fontsize = 14;
+    self.penmode = 'paint';
+    self.turtlemode = 'wrap';
+    if (currentTurtle) currentTurtle.visible = true;
 
-    //remove all canvases from the document so we don't overflow the memory
-    canvasPenStack.forEach(function(canvas) {
-      if(canvas!=penCanvas) canvas.parentNode.removeChild(canvas);  //avoid removing the initial canvas
-    });
+    // Reinitialize pen canvas context cleanly
+    penCanvas_ctx = self.penCanvasSetup(penCanvas);
+    // Fill with background color
+    penCanvas_ctx.fillStyle = parseColor(self.bgcolor);
+    penCanvas_ctx.fillRect(0, 0, width, height);
+    // Restore pen color after fill
+    penCanvas_ctx.fillStyle = parseColor(self.color);
 
-    //remove all canvases from the document so we don't overflow the memory
-    canvasStoryStack.forEach(function(canvas) {
-      if(canvas!=turtleCanvas) canvas.parentNode.removeChild(canvas);  //avoid removing the initial canvas
-    });
+    // Clear turtle canvas
+    turtleCanvas_ctx.clearRect(0, 0, width, height);
 
-    canvasStoryStack = new Array();
-    canvasStoryStack.push(turtleCanvas);
-
-    canvasPenStack = new Array();
-    canvasPenStack.push(penCanvas);
-
-    currentStotyStackPointer = 0;
-    currentPenStackPointer = 0;
-
-  }
+    self.drawTurtle();
+    updateRenderCanvas();
+  };
 
   this.clearscreen = function() {
     this.home();
@@ -365,6 +380,7 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.clear = function() {
+    if (_skipDrawing) return;
     penCanvas_ctx.clearRect(0, 0, width, height);
     penCanvas_ctx.save();
     try {
@@ -374,7 +390,7 @@ function Microworld(canvasParentSelector,width, height) {
       penCanvas_ctx.restore();
     }
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.home = function() {
@@ -387,12 +403,12 @@ function Microworld(canvasParentSelector,width, height) {
   this.showturtle = function() {
     currentTurtle.visible = true;
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.hideturtle = function() {
     currentTurtle.visible = false;
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
 
   };
 
@@ -410,13 +426,14 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.drawtext = function(text) {
+    if (_skipDrawing) return;
     penCanvas_ctx.save();
     penCanvas_ctx.translate(this.x, this.y);
     penCanvas_ctx.rotate(-this.r);
     penCanvas_ctx.fillText(text, 0, 0);
     penCanvas_ctx.restore();
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.filling = 0;
@@ -443,7 +460,7 @@ function Microworld(canvasParentSelector,width, height) {
       this.turtlemode = this.saved_turtlemode;
     }
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.fill = function() {
@@ -454,6 +471,7 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.arc = function(angle, radius) {
+    if (_skipDrawing) return;
     var self = this;
     if (this.turtlemode == 'wrap') {
       [self.x, self.x + width, this.x - width].forEach(function(x) {
@@ -473,7 +491,7 @@ function Microworld(canvasParentSelector,width, height) {
         penCanvas_ctx.stroke();
     }
 
-    if(self.renderAtEachCommand) self.drawTurtle();
+    if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
   };
 
   this.getstate = function () {
@@ -537,150 +555,151 @@ function Microworld(canvasParentSelector,width, height) {
 
   }
 
+  // ── Render: called once per step during execution ────────────────────────────
+  // Records a step boundary and updates the display. No DOM canvas created.
 	this.render = function() {
+    stepLog.push(commandLog.length);
 
+    // Save checkpoint every CHECKPOINT_INTERVAL steps
+    if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
+      checkpoints.push({
+        stepIndex: stepLog.length - 1,
+        imageData: penCanvas_ctx.getImageData(0, 0, width, height)
+      });
+    }
+
+    turtleCanvas_ctx.clearRect(0, 0, width, height);
     self.drawTurtle();
     updateRenderCanvas();
-
-    newTurtleCanvas = document.createElement("CANVAS");
-    newTurtleCanvas.id = "mwTurtleCanvas_"+makeid();
-    newTurtleCanvas.width = width;
-    newTurtleCanvas.height = height;
-    newTurtleCanvas.style.display = "none";
-    document.body.appendChild(newTurtleCanvas);
-
-    canvasStoryStack.push(newTurtleCanvas);
-
-    //Create 2 adictional canvas
-    currentStotyStackPointer = canvasStoryStack.length;
-
-    turtleCanvas = newTurtleCanvas;
-    turtleCanvas_ctx = newTurtleCanvas.getContext('2d');
-
-
-
-    // // Erase turtle canvas content, but keeps its context
-    // turtleCanvas_ctx.clearRect(0, 0, width, height);
-    currentPenStackPointer = canvasPenStack.length;
-
-    var previousPenCanvas = canvasPenStack[currentPenStackPointer-1]; //get last canvas
-
-    newPenCanvas = document.createElement("CANVAS");
-    newPenCanvas.id = "mwPenCanvas_"+makeid();
-    newPenCanvas.width = width;
-    newPenCanvas.height = height;
-    newPenCanvas.style.display = "none";
-    document.body.appendChild(newPenCanvas);
-
-    ctx_pen = self.penCanvasSetup(newPenCanvas);
-    ctx_pen.drawImage(penCanvas,0,0);
-
-
-    canvasPenStack.push(newPenCanvas);
-
-    penCanvas = newPenCanvas;
-    penCanvas_ctx = ctx_pen;
-
-
   };
 
-
   this.getTotalTime = function() {
-    return canvasStoryStack.length;
-  }
+    return stepLog.length;
+  };
 
   this.getTime = function() {
-    return currentStotyStackPointer;
-  }
+    return stepLog.length;
+  };
 
   this.setTimeVisibleMode = function(visible) {
     makeTimeVisibleMode = visible;
     updateRenderCanvas();
+  };
+
+  // ── Replay engine ─────────────────────────────────────────────────────────────
+  // Redraws pen canvas by replaying commands up to (not including) endCmdIndex.
+  // Restores from the nearest checkpoint to avoid replaying from step 0 every time.
+  function replayPenCanvas(endCmdIndex) {
+    var startCmd = 0;
+    var checkpointRestored = false;
+
+    // Find the most recent checkpoint whose command count is > 0 and <= endCmdIndex
+    for (var k = checkpoints.length - 1; k >= 0; k--) {
+      var cp = checkpoints[k];
+      var cpCmds = stepLog[cp.stepIndex];
+      if (cpCmds > 0 && cpCmds <= endCmdIndex) {
+        penCanvas_ctx.putImageData(cp.imageData, 0, 0);
+        startCmd = cpCmds;
+        checkpointRestored = true;
+        break;
+      }
+    }
+
+    if (!checkpointRestored) {
+      penCanvas_ctx.clearRect(0, 0, width, height);
+      penCanvas_ctx.save();
+      penCanvas_ctx.fillStyle = parseColor(self.bgcolor);
+      penCanvas_ctx.fillRect(0, 0, width, height);
+      penCanvas_ctx.restore();
+    }
+
+    _replayState(endCmdIndex, startCmd);
+  }
+
+  var _replaying = false;
+  var _skipDrawing = false; // suppresses pen strokes without touching self.down
+
+  function _replayState(endCmdIndex, startCmd) {
+    // Reset turtle to initial state before replaying
+    self.x = width / 2;
+    self.y = height / 2;
+    self.r = Math.PI / 2;
+    self.down = true;
+    self.color = 0;
+    self.width = 1;
+    self.fontsize = 14;
+    self.penmode = 'paint';
+    self.turtlemode = 'wrap';
+    if (currentTurtle) currentTurtle.visible = true;
+    penCanvas_ctx.strokeStyle = parseColor(self.color);
+    penCanvas_ctx.fillStyle = parseColor(self.color);
+    penCanvas_ctx.lineWidth = self.width;
+    penCanvas_ctx.font = self.fontsize + 'px sans-serif';
+    penCanvas_ctx.globalCompositeOperation = 'source-over';
+
+    _replaying = true;
+    for (var i = 0; i < endCmdIndex; i++) {
+      // Before checkpoint: skip drawing but apply all state changes correctly
+      _skipDrawing = (i < startCmd);
+      _applyReplayCmd(commandLog[i]);
+    }
+    _skipDrawing = false;
+    _replaying = false;
+  }
+
+  function _applyReplayCmd(cmd) {
+    if (!cmd) return;
+    var name = cmd.name, a = cmd.args;
+    switch (name) {
+      case 'moveCT':          self.move(a[0]); break;
+      case 'turnCT':          self.turn(a[0]); break;
+      case 'setpositionCT':   self.setposition(a[0], a[1]); break;
+      case 'setheadingCT':    self.setheading(a[0]); break;
+      case 'setcolorCT':      self.setcolor(a[0]); break;
+      case 'setwidthCT':      self.setwidth(a[0]); break;
+      case 'setfontsizeCT':   self.setfontsize(a[0]); break;
+      case 'setpenmodeCT':    self.setpenmode(a[0]); break;
+      case 'setturtlemodeCT': self.setturtlemode(a[0]); break;
+      case 'penupCT':         self.penup(); break;
+      case 'pendownCT':       self.pendown(); break;
+      case 'showCT':          self.showturtle(); break;
+      case 'hideCT':          self.hideturtle(); break;
+      case 'homeCT':          self.home(); break;
+      case 'clearscreenCT':   self.clearscreen(); break;
+      case 'clearCT':         self.clear(); break;
+      case 'arcCT':           self.arc(a[0], a[1]); break;
+      case 'drawtextCT':      self.drawtext(a[0]); break;
+    }
   }
 
   function updateRenderCanvas() {
-    renderCanvas_ctx.clearRect(0,0,renderCanvas.width,renderCanvas.height);
-    renderCanvas_ctx.drawImage(penCanvas,0,0);
-
-    if(makeTimeVisibleMode) {
-      var renderStack = canvasStoryStack.slice();
-
-      //sort the arrays by its alpha. Lower alaphas goes before
-      renderStack.sort(function(canvasA,canvasB) {
-        var ctxA = canvasA.getContext("2d");
-        var ctxB = canvasB.getContext("2d");
-
-        return ctxA.globalAlpha - ctxB.globalAlpha;
-      });
-
-      renderStack.forEach(function(canvas) {
-        var ctx = canvas.getContext("2d");
-        renderCanvas_ctx.globalAlpha =  ctx.globalAlpha;
-        renderCanvas_ctx.drawImage(canvas,0,0);
-      })
-    } else {
-      if(logToConsole) console.log("Rendering turtle canvas");
-      if(logToConsole) console.log(turtleCanvas);
-      turtleCanvas_ctx.globalAlpha = 1;
-      renderCanvas_ctx.drawImage(turtleCanvas,0,0);
-    }
+    if (_replaying) return;
+    renderCanvas_ctx.clearRect(0, 0, renderCanvas.width, renderCanvas.height);
+    renderCanvas_ctx.globalAlpha = 1;
+    renderCanvas_ctx.drawImage(penCanvas, 0, 0);
+    renderCanvas_ctx.globalAlpha = 1;
+    renderCanvas_ctx.drawImage(turtleCanvas, 0, 0);
   }
-
 
   this.refresh = function() {
     updateRenderCanvas();
-  }
+  };
 
-  this.setPlayTime = function(time) {
-    var stackSize = canvasStoryStack.length;
-    if(logToConsole) console.log(time);
-    if((time<0) | (time>stackSize+1)) {
-      throw "Time values must be between 0 and "+stackSize.toString();
-      return 0;
-    }
+  // ── Scrub to a step ───────────────────────────────────────────────────────────
+  this.setPlayTime = function(stepIndex) {
+    stepIndex = Math.max(0, Math.min(stepIndex, stepLog.length - 1));
+    replayStep = stepIndex;
 
-    //time = time -1;
-    var limitAlpha = 0.2;
-    var stackSize = canvasStoryStack.length;
-    var crescentAlphaIncrement = (limitAlpha-alphaBorder)/time;
-    var descrecentAlphaIncrement = (limitAlpha-alphaBorder)/(stackSize-time);
+    var endCmd = stepLog[stepIndex] || 0;
 
-    var alpha = alphaBorder;  //we start with an alpha different from 0 stored in this variable
-    var canvas = canvasStoryStack[time];
-    var ctx = canvas.getContext("2d");
-    ctx.globalAlpha = 1;
+    // Clear turtle canvas
+    turtleCanvas_ctx.clearRect(0, 0, width, height);
 
-    turtleCanvas = canvas;
-    turtleCanvas_ctx = ctx;
+    replayPenCanvas(endCmd);
 
-    for(var i=0; i<time; i++) {
-      canvas = canvasStoryStack[i];
-      ctx = canvas.getContext("2d");
-
-      alpha += crescentAlphaIncrement;
-      ctx.globalAlpha = alpha;
-    }
-
-    alpha = limitAlpha;
-    for(var i=(time+1); i<stackSize; i++) {
-      canvas = canvasStoryStack[i];
-      ctx = canvas.getContext("2d");
-
-      ctx.globalAlpha = alpha;
-      alpha -= descrecentAlphaIncrement;
-    }
-
-
-    //set the current pen canvas
-    penCanvas = canvasPenStack[time];
-    penCanvas_ctx = penCanvas.getContext("2d");
-
-    if(logToConsole) console.log(canvasStoryStack); if(logToConsole) console.log(turtleCanvas);
-    if(logToConsole) console.log(canvasPenStack); if(logToConsole) console.log(penCanvas);
-
+    self.drawTurtle();
     updateRenderCanvas();
-
-  }
+  };
 
   this.x = width / 2;
   this.y = height / 2;
@@ -696,7 +715,6 @@ function Microworld(canvasParentSelector,width, height) {
   this.down = true;
 
   function init() {
-		//Create 2 adictional canvas
 		turtleCanvas = document.createElement("CANVAS");
 		turtleCanvas.id = "mwTurtleCanvas";
 		turtleCanvas.width = width;
@@ -704,8 +722,6 @@ function Microworld(canvasParentSelector,width, height) {
 		turtleCanvas.style.display = "none";
 		document.body.appendChild(turtleCanvas);
 		turtleCanvas_ctx = turtleCanvas.getContext('2d');
-
-    canvasStoryStack.push(turtleCanvas);
 
 		penCanvas = document.createElement("CANVAS");
 		penCanvas.id = "mwPenCanvas";
@@ -715,13 +731,8 @@ function Microworld(canvasParentSelector,width, height) {
 		document.body.appendChild(penCanvas);
 		penCanvas_ctx = self.penCanvasSetup(penCanvas);
 
-    canvasPenStack.push(penCanvas);
-
 		turtleCanvas_ctx.lineCap = 'round';
-		turtleCanvas_ctx.strokeStyle = 'green';
-		turtleCanvas_ctx.lineWidth = 2;
 
-		//creates first turtle 0
 		var turtle0 = new Turtle("0",turtleImageFile,self);
 		turtles.push(turtle0);
 
@@ -729,6 +740,19 @@ function Microworld(canvasParentSelector,width, height) {
 
     self.drawTurtle(turtleCanvas_ctx);
   }
+
+  // Expose commandLog so the execution layer can push commands
+  this.pushCommand = function(name, args) {
+    if (!_replaying) commandLog.push({ name: name, args: args });
+  };
+
+  // Capture any commands after the last highlight into a final step
+  this.flushFinalStep = function() {
+    var lastLogged = stepLog.length > 0 ? stepLog[stepLog.length - 1] : 0;
+    if (commandLog.length > lastLogged) {
+      stepLog.push(commandLog.length);
+    }
+  };
 
   this.resize = function(w, h) {
     width = w;
