@@ -44,6 +44,10 @@ class Api::V1::ProjectsController < ApplicationController
   end
 
   def project_params
-    params.require(:project).permit(:title, :description, :visibility, data: {})
+    permitted = params.require(:project).permit(:title, :description, :visibility)
+    if params[:project][:data].present?
+      permitted[:data] = params[:project][:data].to_json
+    end
+    permitted
   end
 end

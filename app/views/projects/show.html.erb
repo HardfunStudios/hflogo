@@ -31,6 +31,20 @@
     }
     #blocklyDiv > svg { display:block; }
 
+    #blockly-zoom {
+      position:absolute; bottom:12px; right:12px; z-index:10;
+      display:flex; flex-direction:column; gap:4px;
+    }
+    #blockly-zoom button {
+      width:30px; height:30px; border-radius:6px;
+      border:1.5px solid #d0d0d0; background:white;
+      font-size:16px; line-height:1; cursor:pointer; color:#444;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 1px 4px rgba(0,0,0,0.10);
+      transition:background 100ms;
+    }
+    #blockly-zoom button:hover { background:#f0f0f0; }
+
     #stagePanel {
       flex:1; min-width:0; display:flex; flex-direction:column;
       background:#f5f5f5; overflow:hidden;
@@ -88,6 +102,7 @@
 
     #sliderArea { padding:6px 14px 10px; background:white; flex-shrink:0; border-top:1px solid #f0f0f0; }
     #programTimeSlider { width:100%; accent-color:#0081A6; cursor:pointer; }
+    #sliderArea output, #sliderArea span { display:none !important; }
     #stepsText { font-size:11px; color:#929292; font-family:'Montserrat',sans-serif; }
 
     #show-sidebar {
@@ -144,7 +159,13 @@
   <div id="show-main">
 
     <div id="show-editor">
-      <div id="blocklyDiv"></div>
+      <div id="blocklyDiv">
+        <div id="blockly-zoom">
+          <button id="zoomInBtn"  title="Zoom in">+</button>
+          <button id="zoomOutBtn" title="Zoom out">−</button>
+          <button id="zoomFitBtn" title="Ajustar à tela" style="font-size:12px;">⊡</button>
+        </div>
+      </div>
 
       <div id="stagePanel">
         <div id="stageFrame"></div>
@@ -219,6 +240,16 @@
   } else {
     window._logoEditorReadyCallback = loadProject;
   }
+
+  document.getElementById('zoomInBtn').addEventListener('click', function() {
+    window.workspace.zoomCenter(1);
+  });
+  document.getElementById('zoomOutBtn').addEventListener('click', function() {
+    window.workspace.zoomCenter(-1);
+  });
+  document.getElementById('zoomFitBtn').addEventListener('click', function() {
+    window.workspace.zoomToFit();
+  });
 
   // Prevent Materialize from hijacking the speed slider
   var speedSlider = document.getElementById('speedSlider');

@@ -792,99 +792,109 @@ const toolbox = {
 
 let time_block_mapping = [];
 
-function highlightBlock(id) {
-  window.currentworld.render();
-  time_block_mapping.push(id);
-}
-
 function lpHighlighBlockTime(time) {
   const block_id = time_block_mapping[time];
   window.workspace.highlightBlock(block_id);
 }
 
-function lpInitApi(interpreter, scope) {
-  const addFn = (name, fn) =>
-    interpreter.setProperty(scope, name, interpreter.createNativeFunction(fn));
-
-  addFn('alert', (text) => interpreter.createPrimitive(alert(text ? text.toString() : '')));
-  addFn('prompt', (text) => interpreter.createPrimitive(prompt(text ? text.toString() : '')));
-  addFn('highlightBlock', (id) => interpreter.createPrimitive(highlightBlock(id ? id.toString() : '')));
-  const drawFn = (name, fn) => addFn(name, (...args) => { const r = fn(...args); window._commandExecuted = true; return r; });
-  drawFn('moveCT', (s) => interpreter.createPrimitive(moveCT(s)));
-  drawFn('turnCT', (d) => interpreter.createPrimitive(turnCT(d)));
-  drawFn('setpenmodeCT', (v) => interpreter.createPrimitive(setpenmodeCT(v ? v.toString() : '')));
-  drawFn('setturtlemodeCT', (v) => interpreter.createPrimitive(setturtlemodeCT(v ? v.toString() : '')));
-  drawFn('setcolorCT', (v) => interpreter.createPrimitive(setcolorCT(v)));
-  drawFn('setwidthCT', (v) => interpreter.createPrimitive(setwidthCT(v)));
-  drawFn('setfontsizeCT', (v) => interpreter.createPrimitive(setfontsizeCT(v)));
-  drawFn('setheadingCT', (v) => interpreter.createPrimitive(setheadingCT(v)));
-  drawFn('setstateCT', (v) => interpreter.createPrimitive(setstateCT(v)));
-  drawFn('setpositionCT', (x, y) => interpreter.createPrimitive(setpositionCT(x, y)));
-  drawFn('towardsCT', (x, y) => interpreter.createPrimitive(towardsCT(x, y)));
-  drawFn('drawtextCT', (x, y) => interpreter.createPrimitive(drawtextCT(x, y)));
-  drawFn('arcCT', (angle, radius) => interpreter.createPrimitive(arcCT(angle, radius)));
-  drawFn('penupCT', () => interpreter.createPrimitive(penupCT()));
-  drawFn('pendownCT', () => interpreter.createPrimitive(pendownCT()));
-  addFn('getpenmodeCT', () => interpreter.createPrimitive(getpenmodeCT()));
-  addFn('getturtlemodeCT', () => interpreter.createPrimitive(getturtlemodeCT()));
-  addFn('ispendownCT', () => interpreter.createPrimitive(ispendownCT()));
-  addFn('getcolorCT', () => interpreter.createPrimitive(getcolorCT()));
-  addFn('getwidthCT', () => interpreter.createPrimitive(getwidthCT()));
-  addFn('getfontsizeCT', () => interpreter.createPrimitive(getfontsizeCT()));
-  addFn('clearscreenCT', () => interpreter.createPrimitive(clearscreenCT()));
-  addFn('homeCT', () => interpreter.createPrimitive(homeCT()));
-  addFn('clearCT', () => interpreter.createPrimitive(clearCT()));
-  addFn('showCT', () => interpreter.createPrimitive(showCT()));
-  addFn('hideCT', () => interpreter.createPrimitive(hideCT()));
-  addFn('isturtlevisibleCT', () => interpreter.createPrimitive(isturtlevisibleCT()));
-  addFn('getheadingCT', () => interpreter.createPrimitive(getheadingCT()));
-  addFn('getxyCT', () => interpreter.createPrimitive(getxyCT()));
-  addFn('fillCT', () => interpreter.createPrimitive(fillCT()));
-  addFn('getstateCT', () => interpreter.createPrimitive(getstateCT()));
-}
-
-function lpParseCode() {
+function generateCode() {
   javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   javascriptGenerator.addReservedWords('highlightBlock');
-  const code = javascriptGenerator.workspaceToCode(window.workspace);
-  window.myInterpreter = new Interpreter(code, lpInitApi);
-  document.getElementById('runButton')?.removeAttribute('disabled');
-  window.workspace.highlightBlock(null);
+  return javascriptGenerator.workspaceToCode(window.workspace);
 }
 
 function getExecutionDelay() {
   const slider = document.getElementById('speedSlider');
   if (!slider) return 0;
-  const pos = parseInt(slider.value); // 1=slowest … 5=fastest
   const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0 };
-  return map[pos] ?? 0;
+  return map[parseInt(slider.value)] ?? 0;
 }
 
-function lpRunCode() {
-  time_block_mapping = [];
-  lpParseCode();
-  window.myInterpreter.run();
-}
+// ── Worker management ─────────────────────────────────────────────────────────
 
-async function lpRunCodeAnimated() {
-  time_block_mapping = [];
-  lpParseCode();
-  window._commandExecuted = false;
-  window._executionStopped = false;
-  let hasMore = true;
-  while (hasMore && !window._executionStopped) {
-    hasMore = window.myInterpreter.step();
-    if (window._commandExecuted) {
-      window._commandExecuted = false;
-      const delay = getExecutionDelay();
-      if (delay > 0) await new Promise(r => setTimeout(r, delay));
-    }
+let _worker = null;
+
+function _applyCommand(name, args) {
+  switch (name) {
+    case 'moveCT':          moveCT(args[0]); break;
+    case 'turnCT':          turnCT(args[0]); break;
+    case 'setpositionCT':   setpositionCT(args[0], args[1]); break;
+    case 'setheadingCT':    setheadingCT(args[0]); break;
+    case 'setcolorCT':      setcolorCT(args[0]); break;
+    case 'setwidthCT':      setwidthCT(args[0]); break;
+    case 'setfontsizeCT':   setfontsizeCT(args[0]); break;
+    case 'setpenmodeCT':    setpenmodeCT(args[0]); break;
+    case 'setturtlemodeCT': setturtlemodeCT(args[0]); break;
+    case 'setstateCT':      setstateCT(args[0]); break;
+    case 'penupCT':         penupCT(); break;
+    case 'pendownCT':       pendownCT(); break;
+    case 'showCT':          showCT(); break;
+    case 'hideCT':          hideCT(); break;
+    case 'homeCT':          homeCT(); break;
+    case 'clearscreenCT':   clearscreenCT(); break;
+    case 'clearCT':         clearCT(); break;
+    case 'fillCT':          fillCT(); break;
+    case 'towardsCT':       towardsCT(args[0], args[1]); break;
+    case 'drawtextCT':      drawtextCT(args[0], args[1]); break;
+    case 'arcCT':           arcCT(args[0], args[1]); break;
   }
 }
 
+function _startWorker(code) {
+  if (_worker) { _worker.terminate(); _worker = null; }
+
+  time_block_mapping = [];
+  window.workspace.highlightBlock(null);
+
+  _worker = new Worker('/editor-assets/js/logo-worker.js');
+
+  _worker.onmessage = function(e) {
+    const msg = e.data;
+
+    if (msg.type === 'cmd') {
+      _applyCommand(msg.name, msg.args);
+      return;
+    }
+
+    if (msg.type === 'highlight') {
+      window.currentworld.render();
+      time_block_mapping.push(msg.blockId);
+      window.workspace.highlightBlock(msg.blockId);
+      return;
+    }
+
+    if (msg.type === 'alert') {
+      alert(msg.text);
+      return;
+    }
+
+    if (msg.type === 'done') {
+      window.workspace.highlightBlock(null);
+      _worker.terminate();
+      _worker = null;
+      const btn = document.getElementById('runButton');
+      _finishExecution(btn);
+    }
+  };
+
+  _worker.onerror = function(e) {
+    console.error('Worker error:', e.message, e.filename, e.lineno);
+    const btn = document.getElementById('runButton');
+    btn?.classList.remove('running');
+    btn && (btn.disabled = false);
+    if (_worker) { _worker.terminate(); _worker = null; }
+  };
+
+  _worker.postMessage({ type: 'run', code, delay: getExecutionDelay() });
+}
+
+// Speed slider sends real-time delay updates to running worker
+function _onSpeedChange() {
+  if (_worker) _worker.postMessage({ type: 'setDelay', delay: getExecutionDelay() });
+}
+
 window.lpHighlighBlockTime = lpHighlighBlockTime;
-window.lpParseCode = lpParseCode;
-window.lpRunCode = lpRunCode;
+window.lpParseCode = generateCode;
 
 // ─── Microworld store ─────────────────────────────────────────────────────────
 
@@ -960,14 +970,17 @@ function isTimeVisible() {
   return el ? el.checked : false;
 }
 
+let _totalSteps = 0;
+
 function setStepsLabel(steps) {
+  _totalSteps = steps;
   const el = document.getElementById('stepsText');
-  if (el) el.textContent = steps.toString() + ' passo' + (steps > 1 ? 's' : '');
+  if (el) el.textContent = 'passo ' + steps + ' de ' + steps + ' passos';
 }
 
-function setCurrentStepLabel(steps) {
+function setCurrentStepLabel(current) {
   const el = document.getElementById('stepsText');
-  if (el) el.textContent = 'passo ' + steps.toString();
+  if (el) el.textContent = 'passo ' + current + ' de ' + _totalSteps + ' passos';
 }
 
 function _finishExecution(btn) {
@@ -992,20 +1005,21 @@ function _finishExecution(btn) {
 }
 
 function executeCode() {
+  console.log('[Logo] executeCode called');
   const btn = document.getElementById('runButton');
   btn?.classList.add('running');
   btn && (btn.disabled = true);
 
-  requestAnimationFrame(() => requestAnimationFrame(async () => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     try {
       window.currentworld.renderAtEachCommand = true;
       window.currentworld.reset();
       window.currentworld.setTimeVisibleMode(isTimeVisible());
-      await lpRunCodeAnimated();
-      _finishExecution(btn);
+      const code = generateCode();
+      console.log('[Logo] starting worker, code length:', code.length);
+      _startWorker(code);
     } catch(e) {
       console.error('executeCode error:', e);
-      alert('Erro ao executar: ' + e.message);
       btn?.classList.remove('running');
       btn && (btn.disabled = false);
     }
@@ -1013,7 +1027,10 @@ function executeCode() {
 }
 
 function stopExecution() {
-  window._executionStopped = true;
+  if (_worker) {
+    _worker.postMessage({ type: 'stop' });
+    // _finishExecution is called when worker responds with 'done'
+  }
 }
 
 function slideTime() {
@@ -1103,7 +1120,9 @@ function load() {
 
 
 function _initLogoEditor() {
-  document.getElementById('runButton')?.addEventListener('click', executeCode);
+  const runBtn = document.getElementById('runButton');
+  console.log('[Logo] _initLogoEditor runButton=', !!runBtn);
+  runBtn?.addEventListener('click', executeCode);
   document.getElementById('stopButton')?.addEventListener('click', stopExecution);
   document.getElementById('stepButton')?.addEventListener('click', stepCode);
 
@@ -1132,9 +1151,11 @@ function _initLogoEditor() {
       : { controls: false, wheel: false, startScale: 1.0 },
   });
 
-  if (!readOnly) window.workspace.addChangeListener(lpParseCode);
   setTimeout(() => window.workspace.resize(), 0);
   window.addEventListener('resize', () => window.workspace.resize());
+
+  // Speed slider → update running worker in real time
+  document.getElementById('speedSlider')?.addEventListener('input', _onSpeedChange);
 
   // Init microworld canvas — tamanho = menor dimensão disponível no painel
   const canvasParent = $(window.currentworldFrameSelector);
@@ -1199,8 +1220,11 @@ function _initLogoEditor() {
 
 // Inicializa assim que o DOM estiver pronto, compatível com Turbo Drive
 function _tryInit() {
-  if (!document.getElementById('blocklyDiv')) return;
-  if (window._logoEditorInitialized) return; // já inicializado
+  const blocklyDiv = document.getElementById('blocklyDiv');
+  console.log('[Logo] _tryInit blocklyDiv=', !!blocklyDiv, 'bound=', blocklyDiv?._logoEditorBound);
+  if (!blocklyDiv) return;
+  if (blocklyDiv._logoEditorBound) return;
+  blocklyDiv._logoEditorBound = true;
   _initLogoEditor();
 }
 
@@ -1209,8 +1233,9 @@ if (document.readyState === 'loading') {
 } else {
   setTimeout(_tryInit, 0);
 }
+document.addEventListener('turbo:load', _tryInit);
 
 window.addEventListener('beforeunload', () => {
-  window._executionStopped = true;
+  if (_worker) { _worker.terminate(); _worker = null; }
 });
 
