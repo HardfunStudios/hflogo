@@ -860,6 +860,12 @@ function _startWorker(code) {
       window.currentworld.render();
       time_block_mapping.push(msg.blockId);
       window.workspace.highlightBlock(msg.blockId);
+      const delay = getExecutionDelay();
+      if (delay > 0) {
+        setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+      } else {
+        _worker.postMessage({ type: 'ack' });
+      }
       return;
     }
 
@@ -885,12 +891,11 @@ function _startWorker(code) {
     if (_worker) { _worker.terminate(); _worker = null; }
   };
 
-  _worker.postMessage({ type: 'run', code, delay: getExecutionDelay() });
+  _worker.postMessage({ type: 'run', code });
 }
 
-// Speed slider sends real-time delay updates to running worker
 function _onSpeedChange() {
-  if (_worker) _worker.postMessage({ type: 'setDelay', delay: getExecutionDelay() });
+  // delay is read from slider at ack time — no message needed
 }
 
 window.lpHighlighBlockTime = lpHighlighBlockTime;

@@ -5,7 +5,6 @@ importScripts('/editor-assets/js/JS-Interpreter/acorn_interpreter.js');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// Extract native value from a JS-Interpreter pseudo-object
 function toNative(val) {
   if (val === null || val === undefined) return null;
   if (val.data !== undefined) return val.data;
@@ -31,19 +30,23 @@ function resetState() {
 }
 
 // ── Worker message handling ───────────────────────────────────────────────────
-let currentDelay = 0;
 let stopped = false;
+let resumeAfterAck = null;
 
 self.onmessage = function(e) {
   const { type } = e.data;
   if (type === 'run') {
     stopped = false;
-    currentDelay = e.data.delay || 0;
     runCode(e.data.code);
   } else if (type === 'stop') {
     stopped = true;
-  } else if (type === 'setDelay') {
-    currentDelay = e.data.delay;
+    resumeAfterAck = null;
+  } else if (type === 'ack') {
+    if (resumeAfterAck) {
+      const fn = resumeAfterAck;
+      resumeAfterAck = null;
+      fn();
+    }
   }
 };
 
@@ -63,7 +66,6 @@ function initApi(interpreter, scope) {
       }
       self.postMessage({ type: 'cmd', name, args });
       if (stateFn) stateFn.apply(null, args);
-      commandExecuted = true;
     });
   }
 
@@ -128,9 +130,12 @@ function initApi(interpreter, scope) {
 
   // ── UI functions ───────────────────────────────────────────────────────────
 
+  // highlightBlock fires before each statement — used as the pacing point.
+  // Worker pauses here and waits for 'ack' from main thread (which applies the delay).
   addFn('highlightBlock', function(id) {
     const blockId = id && id.data !== undefined ? String(id.data) : '';
     self.postMessage({ type: 'highlight', blockId });
+    commandExecuted = true;
   });
 
   addFn('alert', function(text) {
@@ -147,6 +152,7 @@ function runCode(code) {
   resetState();
   stopped = false;
   commandExecuted = false;
+  resumeAfterAck = null;
 
   const interp = new Interpreter(code, initApi);
 
@@ -164,10 +170,11 @@ function runCode(code) {
 
       if (commandExecuted) {
         commandExecuted = false;
-        if (currentDelay > 0) {
-          setTimeout(runBatch, currentDelay);
-          return;
-        }
+        // Pause and wait for main thread ack (main thread applies the delay)
+        resumeAfterAck = hasMore ? runBatch : function() {
+          self.postMessage({ type: 'done', stopped: false });
+        };
+        return;
       }
     }
 
