@@ -399,6 +399,18 @@ javascriptGenerator.forBlock['turtle_back'] = (block, gen) => {
   return `moveCT(-${steps});\n`;
 };
 
+// Angle value block: FieldAngle so the user can type or use the protractor
+Blockly.Blocks['turtle_angle'] = {
+  init() {
+    this.appendDummyInput()
+      .appendField(new FieldAngle('90'), 'angle');
+    this.setOutput(true, 'Number');
+    this.setColour(COLOR_TURTLE);
+  },
+};
+javascriptGenerator.forBlock['turtle_angle'] = (block) =>
+  [block.getFieldValue('angle'), Order.ATOMIC];
+
 Blockly.Blocks['turtle_right'] = {
   init() {
     this.appendValueInput('degrees')
@@ -474,17 +486,17 @@ javascriptGenerator.forBlock['turtle_setposy'] = (block, gen) => {
 
 Blockly.Blocks['turtle_setheading'] = {
   init() {
-    this.appendDummyInput()
-      .appendField(Turtle_Msg.SET_HEADING)
-      .appendField(new FieldAngle('90'), 'degrees');
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.SET_HEADING);
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
     this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_setheading'] = (block) =>
-  `setheadingCT(${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_setheading'] = (block, gen) =>
+  `setheadingCT(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'});\n`;
 
 Blockly.Blocks['turtle_home'] = {
   init() {
@@ -568,10 +580,10 @@ javascriptGenerator.forBlock['screen_window'] = () => 'setturtlemodeCT("window")
 
 Blockly.Blocks['turtle_arc'] = {
   init() {
-    this.appendDummyInput()
+    this.appendValueInput('angle')
+      .setCheck('Number')
       .appendField(Turtle_Msg.ARC)
-      .appendField(Turtle_Msg.ANGLE)
-      .appendField(new FieldAngle('90'), 'angle');
+      .appendField(Turtle_Msg.ANGLE);
     this.appendValueInput('radius').setCheck('Number').appendField('radius');
     this.setInputsInline(true);
     this.setPreviousStatement(true);
@@ -580,8 +592,8 @@ Blockly.Blocks['turtle_arc'] = {
   },
 };
 javascriptGenerator.forBlock['turtle_arc'] = (block, gen) => {
-  const angle = block.getFieldValue('angle');
-  const radius = gen.valueToCode(block, 'radius', Order.ATOMIC);
+  const angle = gen.valueToCode(block, 'angle', Order.ATOMIC) || '90';
+  const radius = gen.valueToCode(block, 'radius', Order.ATOMIC) || '100';
   return `arcCT(${angle},${radius});\n`;
 };
 
@@ -592,7 +604,7 @@ Blockly.Blocks['turtle_xcor'] = {
     this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_xcor'] = () => ['getxyCT()[0]', Order.ATOMIC];
+javascriptGenerator.forBlock['turtle_xcor'] = () => ['getxCT()', Order.ATOMIC];
 
 Blockly.Blocks['turtle_ycor'] = {
   init() {
@@ -601,7 +613,7 @@ Blockly.Blocks['turtle_ycor'] = {
     this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_ycor'] = () => ['getxyCT()[1]', Order.ATOMIC];
+javascriptGenerator.forBlock['turtle_ycor'] = () => ['getyCT()', Order.ATOMIC];
 
 Blockly.Blocks['turtle_heading'] = {
   init() {
@@ -754,16 +766,16 @@ const toolbox = {
       contents: [
         { kind: 'block', type: 'turtle_forward', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_back', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
-        { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
-        { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
+        { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
+        { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
-        { kind: 'block', type: 'turtle_arc', inputs: { radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
+        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_setpos' },
         { kind: 'block', type: 'turtle_setposx' },
         { kind: 'block', type: 'turtle_xcor' },
         { kind: 'block', type: 'turtle_setposy' },
         { kind: 'block', type: 'turtle_ycor' },
-        { kind: 'block', type: 'turtle_setheading' },
+        { kind: 'block', type: 'turtle_setheading', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_heading' },
         { kind: 'block', type: 'turtle_show' },
         { kind: 'block', type: 'turtle_hide' },
@@ -927,8 +939,8 @@ function _startWorker(code) {
       window.workspace.highlightBlock(null);
       _worker.terminate();
       _worker = null;
-      // Flush any commands after the last highlight into a final step
-      window.currentworld.flushFinalStep();
+      // Record final step and composite pen+turtle into renderCanvas
+      window.currentworld.render();
       const btn = document.getElementById('runButton');
       _finishExecution(btn);
     }

@@ -121,12 +121,8 @@ function initApi(interpreter, scope) {
   addFn('getturtlemodeCT',   function() { return interpreter.createPrimitive(ts.turtleMode); });
   addFn('getstateCT',        function() { return interpreter.createPrimitive(ts.state); });
 
-  addFn('getxyCT', function() {
-    const obj = interpreter.createObject(interpreter.OBJECT);
-    interpreter.setProperty(obj, 'x', interpreter.createPrimitive(ts.x));
-    interpreter.setProperty(obj, 'y', interpreter.createPrimitive(ts.y));
-    return obj;
-  });
+  addFn('getxCT', function() { return interpreter.createPrimitive(ts.x); });
+  addFn('getyCT', function() { return interpreter.createPrimitive(ts.y); });
 
   // ── UI functions ───────────────────────────────────────────────────────────
 

@@ -163,6 +163,12 @@ function getheadingCT() {
 function getxyCT() {
   return currentworld.getxy();
 }
+function getxCT() {
+  return currentworld.getxy()[0];
+}
+function getyCT() {
+  return currentworld.getxy()[1];
+}
 function drawtextCT(text) {
   return currentworld.drawtext(text);
 }
