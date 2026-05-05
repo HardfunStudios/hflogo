@@ -1,5 +1,5 @@
-<header class="fixed top-0 left-0 w-full bg-white z-50" style="height:72px;box-shadow:0 4px 4px 0 rgba(0,0,0,0.25);">
-  <div class="flex items-center h-full px-10 gap-12">
+<header class="fixed top-0 left-0 w-full bg-white z-50" style="height:104px;box-shadow:0 4px 4px 0 rgba(0,0,0,0.25);">
+  <div class="flex items-center h-full" style="padding:0 64px;gap:96px;">
 
     <%# Logo %>
     <%= link_to root_path, class: "flex items-center gap-2 flex-shrink-0" do %>
@@ -12,15 +12,18 @@
     <% end %>
 
     <%# Nav %>
-    <nav class="flex items-center" style="gap:40px;">
+    <nav class="flex items-center" style="gap:48px;">
+      <% nav_active = ->(path) { request.path == path ? "font-weight:600;border-bottom:2px solid #000;" : "font-weight:400;" } %>
       <%= link_to t("nav.explore"), explore_path,
-          class: "text-black hover:opacity-70 transition-opacity",
-          style: "font-size:18px;font-weight:400;" %>
+          class: "text-black hover:opacity-70 transition-opacity relative",
+          style: "font-size:20px;padding-bottom:2px;#{nav_active.(explore_path)}" %>
       <% if user_signed_in? %>
-        <%= link_to "Meus Projetos", projects_path, class: "text-black hover:opacity-70 transition-opacity", style: "font-size:18px;font-weight:400;" %>
-      <%= link_to t("nav.feed"), feed_path,
+        <%= link_to "Meus Projetos", projects_path,
             class: "text-black hover:opacity-70 transition-opacity",
-            style: "font-size:18px;font-weight:400;" %>
+            style: "font-size:20px;padding-bottom:2px;#{nav_active.(projects_path)}" %>
+        <%= link_to t("nav.feed"), feed_path,
+            class: "text-black hover:opacity-70 transition-opacity",
+            style: "font-size:20px;padding-bottom:2px;#{nav_active.(feed_path)}" %>
       <% end %>
     </nav>
 
@@ -28,9 +31,9 @@
     <div class="flex items-center gap-4 ml-auto">
       <% if user_signed_in? %>
         <%= link_to t("nav.new_project"), new_project_path,
-            class: "btn-primary", style: "font-size:14px;padding:7px 16px;" %>
+            class: "btn-primary", style: "font-size:14px;padding:8px 20px;" %>
         <div class="relative group">
-          <button class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+          <button class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <% if current_user.avatar_url.present? %>
               <img src="<%= current_user.avatar_url %>" class="rounded-full" style="width:40px;height:40px;object-fit:cover;" alt="">
             <% else %>
@@ -39,39 +42,39 @@
                 <%= current_user.display.first.upcase %>
               </div>
             <% end %>
-            <span style="font-size:16px;font-weight:400;color:black;"><%= current_user.display %></span>
+            <span style="font-size:20px;font-weight:400;color:black;"><%= current_user.display %></span>
           </button>
           <div class="absolute right-0 hidden group-hover:block"
-               style="top:100%;min-width:180px;padding-top:8px;">
-          <div class="bg-white rounded-xl py-2"
-               style="box-shadow:1px 1px 6px 0 rgba(0,0,0,0.25);border:1px solid #e5e5e5;">
-            <%= link_to t("nav.profile"), user_profile_path(current_user.username),
-                class: "block px-4 py-2 text-black hover:bg-gray-50 transition-colors",
-                style: "font-size:15px;" %>
-            <%= link_to t("nav.settings"), edit_user_registration_path,
-                class: "block px-4 py-2 text-black hover:bg-gray-50 transition-colors",
-                style: "font-size:15px;" %>
-            <% if current_user.admin? || current_user.moderator? %>
-              <%= link_to "Admin", admin_root_path,
-                  class: "block px-4 py-2 text-hf-blue hover:bg-gray-50 transition-colors",
-                  style: "font-size:15px;font-weight:500;" %>
-            <% end %>
-            <div class="border-t border-gray-100 my-1"></div>
-            <%= button_to t("nav.sign_out"), destroy_user_session_path, method: :delete,
-                class: "block w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors",
-                style: "font-size:15px;color:#D51414;background:transparent;border:none;cursor:pointer;" %>
-          </div>
+               style="top:100%;min-width:200px;padding-top:8px;">
+            <div class="bg-white rounded-xl py-2"
+                 style="box-shadow:1px 1px 6px 0 rgba(0,0,0,0.25);border:1px solid #e5e5e5;">
+              <%= link_to t("nav.profile"), user_profile_path(current_user.username),
+                  class: "block px-5 py-2 text-black hover:bg-gray-50 transition-colors",
+                  style: "font-size:16px;" %>
+              <%= link_to t("nav.settings"), edit_user_registration_path,
+                  class: "block px-5 py-2 text-black hover:bg-gray-50 transition-colors",
+                  style: "font-size:16px;" %>
+              <% if current_user.admin? || current_user.moderator? %>
+                <%= link_to "Admin", admin_root_path,
+                    class: "block px-5 py-2 hover:bg-gray-50 transition-colors",
+                    style: "font-size:16px;font-weight:600;color:#0081A6;" %>
+              <% end %>
+              <div class="border-t border-gray-100 my-1"></div>
+              <%= button_to t("nav.sign_out"), destroy_user_session_path, method: :delete,
+                  class: "block w-full text-left px-5 py-2 hover:bg-gray-50 transition-colors",
+                  style: "font-size:16px;color:#D51414;background:transparent;border:none;cursor:pointer;" %>
+            </div>
           </div>
         </div>
       <% else %>
         <%= link_to t("nav.sign_in"), new_user_session_path,
             class: "text-black hover:opacity-70 transition-opacity",
-            style: "font-size:16px;font-weight:400;" %>
+            style: "font-size:20px;font-weight:400;" %>
         <%= link_to t("nav.sign_up"), new_user_registration_path,
-            class: "btn-primary", style: "font-size:14px;padding:7px 16px;" %>
+            class: "btn-primary", style: "font-size:14px;padding:8px 20px;" %>
       <% end %>
     </div>
 
   </div>
 </header>
-<div style="height:72px;flex-shrink:0;"></div>
+<div style="height:104px;flex-shrink:0;"></div>

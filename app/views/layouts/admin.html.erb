@@ -5,35 +5,42 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-100 text-black min-h-screen flex">
+  <body class="text-black min-h-screen flex" style="background:#f8f8f8;">
 
     <%# Sidebar %>
-    <aside class="flex-shrink-0 bg-white border-r border-gray-200 flex flex-col" style="width:220px;min-height:100vh;">
-      <%= link_to admin_root_path, class: "flex items-center gap-2 px-5 py-4 border-b border-gray-100" do %>
-        <span class="font-bold text-hf-blue text-lg">Admin</span>
+    <aside class="flex-shrink-0 bg-white flex flex-col" style="width:220px;min-height:100vh;border-right:1px solid #e5e5e5;">
+      <%= link_to admin_root_path, class: "flex items-center gap-2 px-5 py-4" style: "border-bottom:1px solid #e5e5e5;" do %>
+        <span style="font-size:18px;font-weight:700;color:#0081A6;">Admin</span>
       <% end %>
       <nav class="flex flex-col py-4 gap-1 px-3 flex-1">
-        <%= link_to "Dashboard", admin_root_path,
-            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'dashboard' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
-        <%= link_to "Usuários", admin_users_path,
-            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'users' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
-        <%= link_to "Projetos", admin_projects_path,
-            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'projects' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
+        <% [
+          ["Dashboard", admin_root_path, "dashboard"],
+          ["Usuários",  admin_users_path,   "users"],
+          ["Projetos",  admin_projects_path, "projects"],
+        ].each do |label, path, ctrl| %>
+          <%= link_to label, path,
+              style: "display:block;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:#{controller_name == ctrl ? '600' : '400'};color:#{controller_name == ctrl ? '#0081A6' : '#000'};text-decoration:none;background:#{controller_name == ctrl ? 'rgba(0,129,166,0.08)' : 'transparent'};transition:background .15s;",
+              onmouseover: "if(!this.style.background.includes('129'))this.style.background='#f8f8f8'",
+              onmouseout:  "if(!this.style.background.includes('129'))this.style.background='transparent'" %>
+        <% end %>
       </nav>
-      <div class="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+      <div style="padding:12px 16px;border-top:1px solid #e5e5e5;font-size:12px;color:#929292;">
         <%= current_user.display %> · <%= current_user.role %>
       </div>
     </aside>
 
     <%# Main %>
     <div class="flex-1 flex flex-col min-h-screen">
-      <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center gap-4">
-        <h1 class="text-lg font-semibold flex-1"><%= content_for(:page_title) || "Admin" %></h1>
-        <%= link_to "← Voltar ao site", root_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+      <header class="bg-white px-8 py-5 flex items-center gap-4" style="border-bottom:1px solid #e5e5e5;box-shadow:0 2px 4px 0 rgba(0,0,0,0.06);">
+        <h1 style="font-size:20px;font-weight:700;color:#000;flex:1;"><%= content_for(:page_title) || "Admin" %></h1>
+        <%= link_to "← Voltar ao site", root_path, style: "font-size:14px;color:#929292;text-decoration:none;" %>
       </header>
       <main class="flex-1 p-8">
         <%= render "layouts/flash" %>

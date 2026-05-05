@@ -1,6 +1,6 @@
-<div class="card p-0 overflow-hidden hover:shadow-md transition-shadow">
+<div class="card-light overflow-hidden transition-shadow duration-150 hover:shadow-md" style="padding:0;">
   <%= link_to card do %>
-    <div class="bg-gray-100 h-32 flex items-center justify-center">
+    <div style="height:128px;background:#f8f9fb;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid #e5e5e5;">
       <% if card.thumbnail_url.present? %>
         <img src="<%= card.thumbnail_url %>" class="w-full h-full object-cover" alt="">
       <% else %>
@@ -8,8 +8,8 @@
       <% end %>
     </div>
     <div class="p-3">
-      <p class="font-semibold text-sm truncate"><%= card.title %></p>
-      <p class="text-xs text-gray-500">por <%= card.user.display %></p>
+      <p style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#000;"><%= card.title %></p>
+      <p style="font-size:12px;color:#929292;margin-top:2px;">por <%= card.user.display %></p>
     </div>
   <% end %>
 </div>

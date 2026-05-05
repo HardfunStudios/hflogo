@@ -1,55 +1,62 @@
 <% content_for :page_title, "Projetos" %>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-  <%= form_with url: admin_projects_path, method: :get, local: true, class: "mb-4 flex gap-2 items-center" do |f| %>
+<div class="card-light" style="padding:24px;">
+  <%= form_with url: admin_projects_path, method: :get, local: true, class: "flex gap-3 items-center mb-5" do |f| %>
     <%= f.text_field :q, value: params[:q], placeholder: "Buscar por título…",
-        class: "border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-hf-blue" %>
-    <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+        class: "form-input", style: "max-width:300px;" %>
+    <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:#000;cursor:pointer;">
       <%= f.check_box :featured, { checked: params[:featured] == "1" }, "1", "0" %>
       Apenas destaques
     </label>
-    <%= f.submit "Buscar", class: "btn-primary text-sm px-4 py-2 cursor-pointer" %>
+    <%= f.submit "Buscar", class: "btn-primary", style: "font-size:14px;padding:6px 16px;" %>
     <% if params[:q].present? || params[:featured] == "1" %>
-      <%= link_to "Limpar", admin_projects_path, class: "text-sm text-gray-500 px-3 py-2 hover:text-gray-700" %>
+      <%= link_to "Limpar", admin_projects_path, style: "font-size:14px;color:#929292;text-decoration:none;padding:6px;" %>
     <% end %>
   <% end %>
 
-  <table class="w-full text-sm">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
     <thead>
-      <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
-        <th class="pb-2">Título</th>
-        <th class="pb-2">Autor</th>
-        <th class="pb-2">Visibilidade</th>
-        <th class="pb-2">Destaque</th>
-        <th class="pb-2">Criado</th>
+      <tr style="border-bottom:2px solid #e5e5e5;">
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Título</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Autor</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Visibilidade</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Destaque</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Criado</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
       <% @projects.each do |p| %>
-        <tr class="border-t border-gray-50 hover:bg-gray-50">
-          <td class="py-2 font-medium"><%= link_to p.title, admin_project_path(p), class: "hover:text-hf-blue" %></td>
-          <td class="py-2 text-gray-500"><%= link_to p.user.username, admin_user_path(p.user), class: "hover:text-hf-blue" %></td>
-          <td class="py-2"><span class="px-2 py-0.5 rounded text-xs font-medium <%= p.published? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' %>"><%= p.visibility %></span></td>
-          <td class="py-2">
+        <tr style="border-top:1px solid #f0f0f0;">
+          <td style="padding:10px 0;font-weight:600;">
+            <%= link_to p.title, admin_project_path(p), style: "color:#000;text-decoration:none;" %>
+          </td>
+          <td style="padding:10px 0;color:#929292;">
+            <%= link_to p.user.username, admin_user_path(p.user), style: "color:#929292;text-decoration:none;" %>
+          </td>
+          <td style="padding:10px 0;">
+            <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:<%= p.published? ? 'rgba(0,129,166,0.10)' : '#f5f5f5' %>;color:<%= p.published? ? '#0081A6' : '#929292' %>;">
+              <%= p.visibility %>
+            </span>
+          </td>
+          <td style="padding:10px 0;">
             <% if p.featured %>
-              <span class="text-yellow-500 font-semibold text-sm">★</span>
+              <span style="color:#B87A00;font-weight:600;margin-right:6px;">★</span>
               <%= button_to "Remover", unfeature_admin_project_path(p), method: :post,
-                  class: "text-xs text-gray-400 hover:text-red-500 ml-1 border-none bg-transparent cursor-pointer" %>
+                  style: "font-size:11px;color:#929292;background:transparent;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;padding:0;text-decoration:underline;" %>
             <% else %>
               <%= button_to "Destacar", feature_admin_project_path(p), method: :post,
-                  class: "text-xs text-hf-blue hover:underline border-none bg-transparent cursor-pointer" %>
+                  style: "font-size:12px;font-weight:700;color:#0081A6;background:transparent;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;padding:0;text-decoration:underline;" %>
             <% end %>
           </td>
-          <td class="py-2 text-gray-400"><%= p.created_at.strftime("%d/%m/%Y") %></td>
-          <td class="py-2 text-right flex gap-2 justify-end">
-            <%= link_to "Ver", admin_project_path(p), class: "text-xs text-hf-blue hover:underline" %>
+          <td style="padding:10px 0;color:#929292;"><%= p.created_at.strftime("%d/%m/%Y") %></td>
+          <td style="padding:10px 0;text-align:right;display:flex;gap:12px;justify-content:flex-end;">
+            <%= link_to "Ver", admin_project_path(p), style: "font-size:12px;font-weight:700;color:#0081A6;text-decoration:none;" %>
             <%= button_to "Excluir", admin_project_path(p), method: :delete, data: { turbo_confirm: "Excluir '#{p.title}'? Esta ação não pode ser desfeita." },
-                class: "text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer" %>
+                style: "font-size:12px;font-weight:700;color:#D51414;background:transparent;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;padding:0;" %>
           </td>
         </tr>
       <% end %>
     </tbody>
   </table>
-
 </div>

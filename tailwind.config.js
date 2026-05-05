@@ -10,15 +10,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'hf-blue':      '#0081A6',
-        'hf-blue-dark': '#00607e',
-        'hf-orange':    '#F07D00',
-        'hf-green':     '#2ECC71',
-        'hf-purple':    '#8B5CF6',
-        'hf-yellow':    '#F5C518',
+        'hf-blue':       '#0081A6',
+        'hf-blue-dark':  '#006e8e',
+        'hf-blue-light': '#00A8C0',
+        'hf-yellow':     '#FFAA00',
+        'hf-red':        '#D51414',
+        'hf-gray':       '#929292',
       },
       fontFamily: {
-        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
+        sans:   ['Montserrat', ...defaultTheme.fontFamily.sans],
+        roboto: ['Roboto', ...defaultTheme.fontFamily.sans],
       },
     },
   },

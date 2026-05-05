@@ -1,0 +1,45 @@
+<div class="flex items-center justify-center px-4 py-10" style="min-height:calc(100vh - 104px);background:#f8f8f8;">
+  <div class="w-full max-w-md">
+
+    <div class="text-center mb-8">
+      <h1 class="text-center mb-1" style="font-size:24px;font-weight:700;color:#000;">Reenviar confirmação</h1>
+      <p class="text-center" style="font-size:14px;color:#929292;">Enviaremos um novo e-mail de confirmação</p>
+    </div>
+
+    <div class="card-light p-8">
+
+      <% if resource.errors.any? %>
+        <div class="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+          <ul class="list-disc list-inside text-sm text-red-600 space-y-0.5">
+            <% resource.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+
+        <div>
+          <%= f.label :email, "E-mail", class: "form-label" %>
+          <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              placeholder: "seu@email.com",
+              class: "form-input" %>
+        </div>
+
+        <div class="mt-6">
+          <%= f.submit "Reenviar e-mail", class: "btn-primary w-full py-2.5 text-sm cursor-pointer" %>
+        </div>
+
+      <% end %>
+
+    </div>
+
+    <div class="mt-6 space-y-2">
+      <%= render "devise/shared/links" %>
+    </div>
+
+  </div>
+</div>

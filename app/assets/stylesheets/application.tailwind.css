@@ -1,52 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --color-hf-blue: #0081A6;
-    --color-hf-blue-dark: #00607e;
-    --color-hf-orange: #F07D00;
-    --color-hf-green: #2ECC71;
-    --color-hf-purple: #8B5CF6;
+    --color-hf-blue:       #0081A6;
+    --color-hf-blue-dark:  #006e8e;
+    --color-hf-blue-light: #00A8C0;
+    --color-hf-yellow:     #FFAA00;
+    --color-hf-red:        #D51414;
+    --color-hf-gray:       #929292;
   }
 
   body {
     font-family: 'Montserrat', system-ui, sans-serif;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    font-weight: 700;
+    color: #000;
+    background: #fff;
   }
 }
 
 @layer components {
+  /* ── Buttons ──────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-hf-blue text-white font-semibold
-           hover:bg-hf-blue-dark transition-colors duration-150 cursor-pointer;
+    @apply inline-flex items-center justify-center cursor-pointer;
+    border-radius: 6px;
+    background-color: var(--color-hf-blue);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    transition: background-color .18s;
   }
+  .btn-primary:hover { background-color: var(--color-hf-blue-dark); }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border-2 border-hf-blue text-hf-blue
-           font-semibold hover:bg-hf-blue hover:text-white transition-colors duration-150 cursor-pointer;
+    @apply inline-flex items-center justify-center cursor-pointer;
+    border-radius: 6px;
+    background-color: transparent;
+    color: #000;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 2px solid var(--color-hf-gray);
+    transition: background-color .18s, border-color .18s;
   }
+  .btn-secondary:hover { background-color: #f9f9f9; }
+
+  .btn-stroke {
+    @apply inline-flex items-center justify-center cursor-pointer;
+    border-radius: 6px;
+    background-color: transparent;
+    color: var(--color-hf-blue);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 2px solid var(--color-hf-blue);
+    transition: background-color .18s, border-color .18s, color .18s;
+  }
+  .btn-stroke:hover { background-color: rgba(0,129,166,0.08); }
+
+  .btn-yellow {
+    @apply inline-flex items-center justify-center cursor-pointer;
+    border-radius: 6px;
+    background-color: var(--color-hf-yellow);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    transition: background-color .18s;
+  }
+  .btn-yellow:hover { background-color: #B87A00; }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-lg bg-red-600 text-white font-semibold
-           hover:bg-red-700 transition-colors duration-150 cursor-pointer;
+    @apply inline-flex items-center justify-center cursor-pointer;
+    border-radius: 6px;
+    background-color: var(--color-hf-red);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    transition: background-color .18s;
   }
+  .btn-danger:hover { background-color: #9F1414; }
 
-  .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  /* ── Form elements ────────────────────────────────────────────────── */
+  .form-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+    margin-bottom: 6px;
   }
 
   .form-input {
-    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-           focus:outline-none focus:ring-2 focus:ring-hf-blue focus:border-transparent;
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--color-hf-gray);
+    border-radius: 5px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    background: #fff;
+    color: #000;
+    transition: border-color .15s;
+    box-sizing: border-box;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--color-hf-blue);
+  }
+  .form-input::placeholder { color: var(--color-hf-gray); }
+
+  /* ── Cards ────────────────────────────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-hf-gray);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px 1px rgba(0,0,0,0.25);
+    padding: 24px;
   }
 
-  .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+  .card-light {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    box-shadow: 1px 1px 6px 0 rgba(0,0,0,0.25);
+  }
+
+  /* ── Visibility badges ────────────────────────────────────────────── */
+  .badge-published {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(0,129,166,0.10);
+    color: var(--color-hf-blue);
+    white-space: nowrap;
+  }
+  .badge-draft {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    background: #f5f5f5;
+    color: var(--color-hf-gray);
+    white-space: nowrap;
+  }
+  .badge-unlisted {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(255,170,0,0.12);
+    color: #B87A00;
+    white-space: nowrap;
   }
 }

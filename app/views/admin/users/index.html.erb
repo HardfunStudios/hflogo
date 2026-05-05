@@ -1,42 +1,52 @@
 <% content_for :page_title, "Usuários" %>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-  <%= form_with url: admin_users_path, method: :get, local: true, class: "mb-4 flex gap-2" do |f| %>
+<div class="card-light" style="padding:24px;">
+  <%= form_with url: admin_users_path, method: :get, local: true, class: "flex gap-2 mb-5" do |f| %>
     <%= f.text_field :q, value: params[:q], placeholder: "Buscar por nome ou e-mail…",
-        class: "border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-hf-blue" %>
-    <%= f.submit "Buscar", class: "btn-primary text-sm px-4 py-2 cursor-pointer" %>
+        class: "form-input flex-1", style: "max-width:320px;" %>
+    <%= f.submit "Buscar", class: "btn-primary", style: "font-size:14px;padding:6px 16px;" %>
     <% if params[:q].present? %>
-      <%= link_to "Limpar", admin_users_path, class: "text-sm text-gray-500 px-3 py-2 hover:text-gray-700" %>
+      <%= link_to "Limpar", admin_users_path, style: "font-size:14px;color:#929292;padding:6px 12px;text-decoration:none;align-self:center;" %>
     <% end %>
   <% end %>
 
-  <table class="w-full text-sm">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
     <thead>
-      <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
-        <th class="pb-2">Usuário</th>
-        <th class="pb-2">E-mail</th>
-        <th class="pb-2">Papel</th>
-        <th class="pb-2">Status</th>
-        <th class="pb-2">Cadastro</th>
+      <tr style="border-bottom:2px solid #e5e5e5;">
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Usuário</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">E-mail</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Papel</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Status</th>
+        <th style="text-align:left;padding:0 0 10px;font-size:12px;font-weight:600;color:#929292;">Cadastro</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
       <% @users.each do |u| %>
-        <tr class="border-t border-gray-50 hover:bg-gray-50">
-          <td class="py-2 font-medium"><%= link_to u.display, admin_user_path(u), class: "hover:text-hf-blue" %><br>
-            <span class="text-gray-400 text-xs">@<%= u.username %></span>
+        <tr style="border-top:1px solid #f0f0f0;">
+          <td style="padding:10px 0;">
+            <%= link_to u.display, admin_user_path(u), style: "font-weight:600;color:#000;text-decoration:none;" %>
+            <br><span style="font-size:11px;color:#929292;">@<%= u.username %></span>
           </td>
-          <td class="py-2 text-gray-500"><%= u.email %></td>
-          <td class="py-2"><span class="px-2 py-0.5 rounded text-xs font-medium <%= u.admin? ? 'bg-red-100 text-red-700' : u.moderator? ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600' %>"><%= u.role %></span></td>
-          <td class="py-2"><% if u.banned_at %><span class="text-xs text-red-500">Banido</span><% else %><span class="text-xs text-green-600">Ativo</span><% end %></td>
-          <td class="py-2 text-gray-400"><%= u.created_at.strftime("%d/%m/%Y") %></td>
-          <td class="py-2 text-right">
-            <%= link_to "Ver", admin_user_path(u), class: "text-xs text-hf-blue hover:underline" %>
+          <td style="padding:10px 0;color:#929292;"><%= u.email %></td>
+          <td style="padding:10px 0;">
+            <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:<%= u.admin? ? 'rgba(213,20,20,0.10)' : u.moderator? ? 'rgba(255,170,0,0.12)' : '#f5f5f5' %>;color:<%= u.admin? ? '#D51414' : u.moderator? ? '#B87A00' : '#929292' %>;">
+              <%= u.role %>
+            </span>
+          </td>
+          <td style="padding:10px 0;">
+            <% if u.banned_at %>
+              <span style="font-size:12px;color:#D51414;font-weight:600;">Banido</span>
+            <% else %>
+              <span style="font-size:12px;color:#0081A6;font-weight:600;">Ativo</span>
+            <% end %>
+          </td>
+          <td style="padding:10px 0;color:#929292;"><%= u.created_at.strftime("%d/%m/%Y") %></td>
+          <td style="padding:10px 0;text-align:right;">
+            <%= link_to "Ver →", admin_user_path(u), style: "font-size:12px;font-weight:700;color:#0081A6;text-decoration:none;" %>
           </td>
         </tr>
       <% end %>
     </tbody>
   </table>
-
 </div>
