@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title>Admin — <%= content_for(:title) || t("app.name") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-100 text-black min-h-screen flex">
+
+    <%# Sidebar %>
+    <aside class="flex-shrink-0 bg-white border-r border-gray-200 flex flex-col" style="width:220px;min-height:100vh;">
+      <%= link_to admin_root_path, class: "flex items-center gap-2 px-5 py-4 border-b border-gray-100" do %>
+        <span class="font-bold text-hf-blue text-lg">Admin</span>
+      <% end %>
+      <nav class="flex flex-col py-4 gap-1 px-3 flex-1">
+        <%= link_to "Dashboard", admin_root_path,
+            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'dashboard' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
+        <%= link_to "Usuários", admin_users_path,
+            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'users' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
+        <%= link_to "Projetos", admin_projects_path,
+            class: "px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 #{controller_name == 'projects' ? 'bg-blue-50 text-hf-blue' : 'text-gray-700'}" %>
+      </nav>
+      <div class="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+        <%= current_user.display %> · <%= current_user.role %>
+      </div>
+    </aside>
+
+    <%# Main %>
+    <div class="flex-1 flex flex-col min-h-screen">
+      <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center gap-4">
+        <h1 class="text-lg font-semibold flex-1"><%= content_for(:page_title) || "Admin" %></h1>
+        <%= link_to "← Voltar ao site", root_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+      </header>
+      <main class="flex-1 p-8">
+        <%= render "layouts/flash" %>
+        <%= yield %>
+      </main>
+    </div>
+
+  </body>
+</html>

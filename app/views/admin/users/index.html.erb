@@ -1,0 +1,42 @@
+<% content_for :page_title, "Usuários" %>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <%= form_with url: admin_users_path, method: :get, local: true, class: "mb-4 flex gap-2" do |f| %>
+    <%= f.text_field :q, value: params[:q], placeholder: "Buscar por nome ou e-mail…",
+        class: "border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-hf-blue" %>
+    <%= f.submit "Buscar", class: "btn-primary text-sm px-4 py-2 cursor-pointer" %>
+    <% if params[:q].present? %>
+      <%= link_to "Limpar", admin_users_path, class: "text-sm text-gray-500 px-3 py-2 hover:text-gray-700" %>
+    <% end %>
+  <% end %>
+
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
+        <th class="pb-2">Usuário</th>
+        <th class="pb-2">E-mail</th>
+        <th class="pb-2">Papel</th>
+        <th class="pb-2">Status</th>
+        <th class="pb-2">Cadastro</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |u| %>
+        <tr class="border-t border-gray-50 hover:bg-gray-50">
+          <td class="py-2 font-medium"><%= link_to u.display, admin_user_path(u), class: "hover:text-hf-blue" %><br>
+            <span class="text-gray-400 text-xs">@<%= u.username %></span>
+          </td>
+          <td class="py-2 text-gray-500"><%= u.email %></td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded text-xs font-medium <%= u.admin? ? 'bg-red-100 text-red-700' : u.moderator? ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600' %>"><%= u.role %></span></td>
+          <td class="py-2"><% if u.banned_at %><span class="text-xs text-red-500">Banido</span><% else %><span class="text-xs text-green-600">Ativo</span><% end %></td>
+          <td class="py-2 text-gray-400"><%= u.created_at.strftime("%d/%m/%Y") %></td>
+          <td class="py-2 text-right">
+            <%= link_to "Ver", admin_user_path(u), class: "text-xs text-hf-blue hover:underline" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+</div>

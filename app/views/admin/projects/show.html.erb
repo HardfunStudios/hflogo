@@ -1,0 +1,56 @@
+<% content_for :page_title, "Projeto: #{@project.title}" %>
+
+<div class="grid grid-cols-3 gap-6">
+  <div class="col-span-1 space-y-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-3">
+      <h2 class="font-semibold text-lg"><%= @project.title %></h2>
+      <% if @project.description.present? %>
+        <p class="text-sm text-gray-500"><%= @project.description %></p>
+      <% end %>
+      <dl class="text-sm space-y-2">
+        <div><dt class="text-gray-400 text-xs">Autor</dt><dd><%= link_to @project.user.display, admin_user_path(@project.user), class: "hover:text-hf-blue" %></dd></div>
+        <div><dt class="text-gray-400 text-xs">Visibilidade</dt><dd><%= @project.visibility %></dd></div>
+        <div><dt class="text-gray-400 text-xs">Destaque</dt><dd><%= @project.featured? ? "Sim ★" : "Não" %></dd></div>
+        <div><dt class="text-gray-400 text-xs">Criado em</dt><dd><%= @project.created_at.strftime("%d/%m/%Y %H:%M") %></dd></div>
+        <% if @project.published_at %>
+          <div><dt class="text-gray-400 text-xs">Publicado em</dt><dd><%= @project.published_at.strftime("%d/%m/%Y") %></dd></div>
+        <% end %>
+      </dl>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-2">
+      <% if @project.featured? %>
+        <%= button_to "Remover destaque", unfeature_admin_project_path(@project), method: :post,
+            class: "w-full text-center text-sm bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg py-2 cursor-pointer hover:bg-yellow-100" %>
+      <% else %>
+        <%= button_to "★ Marcar como destaque", feature_admin_project_path(@project), method: :post,
+            class: "w-full text-center text-sm bg-blue-50 text-hf-blue border border-blue-200 rounded-lg py-2 cursor-pointer hover:bg-blue-100" %>
+      <% end %>
+      <%= button_to "Excluir projeto", admin_project_path(@project), method: :delete,
+          data: { turbo_confirm: "Excluir '#{@project.title}'? Esta ação não pode ser desfeita." },
+          class: "w-full text-center text-sm bg-red-50 text-red-600 border border-red-200 rounded-lg py-2 cursor-pointer hover:bg-red-100" %>
+    </div>
+  </div>
+
+  <div class="col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h3 class="font-semibold mb-3">Versões (<%= @project.versions.count %>)</h3>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
+          <th class="pb-2">#</th>
+          <th class="pb-2">Tipo</th>
+          <th class="pb-2">Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @project.versions.order(created_at: :desc).limit(20).each do |v| %>
+          <tr class="border-t border-gray-50">
+            <td class="py-1.5 text-gray-500">v<%= v.version_number %></td>
+            <td class="py-1.5"><%= v.auto_save? ? "auto" : "manual" %></td>
+            <td class="py-1.5 text-gray-400"><%= v.created_at.strftime("%d/%m/%Y %H:%M") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

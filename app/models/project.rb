@@ -12,6 +12,7 @@ class Project < ApplicationRecord
   validates :data, exclusion: { in: [ nil ], message: :blank }
 
   scope :published,     -> { where(visibility: :published).where.not(published_at: nil) }
+  scope :featured,      -> { where(featured: true) }
   scope :by_popularity, -> { order(Arel.sql("loves_count + remixes_count * 2 DESC")) }
   scope :recent,        -> { order(published_at: :desc) }
 

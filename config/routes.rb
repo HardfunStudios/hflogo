@@ -28,7 +28,18 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "dashboard#index"
     resources :reports, only: [ :index, :show, :update ]
-    resources :users,   only: [ :index, :show, :update ]
+    resources :users, only: [ :index, :show, :update ] do
+      member do
+        post :ban
+        post :unban
+      end
+    end
+    resources :projects, only: [ :index, :show, :destroy ] do
+      member do
+        post :feature
+        post :unfeature
+      end
+    end
   end
 
   # API interna do editor (fase 1+)

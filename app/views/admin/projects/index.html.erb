@@ -1,0 +1,55 @@
+<% content_for :page_title, "Projetos" %>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <%= form_with url: admin_projects_path, method: :get, local: true, class: "mb-4 flex gap-2 items-center" do |f| %>
+    <%= f.text_field :q, value: params[:q], placeholder: "Buscar por título…",
+        class: "border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-hf-blue" %>
+    <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+      <%= f.check_box :featured, { checked: params[:featured] == "1" }, "1", "0" %>
+      Apenas destaques
+    </label>
+    <%= f.submit "Buscar", class: "btn-primary text-sm px-4 py-2 cursor-pointer" %>
+    <% if params[:q].present? || params[:featured] == "1" %>
+      <%= link_to "Limpar", admin_projects_path, class: "text-sm text-gray-500 px-3 py-2 hover:text-gray-700" %>
+    <% end %>
+  <% end %>
+
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
+        <th class="pb-2">Título</th>
+        <th class="pb-2">Autor</th>
+        <th class="pb-2">Visibilidade</th>
+        <th class="pb-2">Destaque</th>
+        <th class="pb-2">Criado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @projects.each do |p| %>
+        <tr class="border-t border-gray-50 hover:bg-gray-50">
+          <td class="py-2 font-medium"><%= link_to p.title, admin_project_path(p), class: "hover:text-hf-blue" %></td>
+          <td class="py-2 text-gray-500"><%= link_to p.user.username, admin_user_path(p.user), class: "hover:text-hf-blue" %></td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded text-xs font-medium <%= p.published? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' %>"><%= p.visibility %></span></td>
+          <td class="py-2">
+            <% if p.featured %>
+              <span class="text-yellow-500 font-semibold text-sm">★</span>
+              <%= button_to "Remover", unfeature_admin_project_path(p), method: :post,
+                  class: "text-xs text-gray-400 hover:text-red-500 ml-1 border-none bg-transparent cursor-pointer" %>
+            <% else %>
+              <%= button_to "Destacar", feature_admin_project_path(p), method: :post,
+                  class: "text-xs text-hf-blue hover:underline border-none bg-transparent cursor-pointer" %>
+            <% end %>
+          </td>
+          <td class="py-2 text-gray-400"><%= p.created_at.strftime("%d/%m/%Y") %></td>
+          <td class="py-2 text-right flex gap-2 justify-end">
+            <%= link_to "Ver", admin_project_path(p), class: "text-xs text-hf-blue hover:underline" %>
+            <%= button_to "Excluir", admin_project_path(p), method: :delete, data: { turbo_confirm: "Excluir '#{p.title}'? Esta ação não pode ser desfeita." },
+                class: "text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+</div>

@@ -1,0 +1,97 @@
+<% content_for :page_title, "Usuário: #{@user.display}" %>
+
+<div class="grid grid-cols-3 gap-6">
+  <%# Info card %>
+  <div class="col-span-1 space-y-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <% if @user.avatar_url.present? %>
+          <img src="<%= @user.avatar_url %>" class="rounded-full w-12 h-12 object-cover" alt="">
+        <% else %>
+          <div class="rounded-full w-12 h-12 flex items-center justify-center text-white font-bold" style="background:#0081A6;"><%= @user.display.first.upcase %></div>
+        <% end %>
+        <div>
+          <div class="font-semibold"><%= @user.display %></div>
+          <div class="text-sm text-gray-400">@<%= @user.username %></div>
+        </div>
+      </div>
+      <dl class="text-sm space-y-2">
+        <div><dt class="text-gray-400 text-xs">E-mail</dt><dd><%= @user.email %></dd></div>
+        <div><dt class="text-gray-400 text-xs">Papel</dt><dd><%= @user.role %></dd></div>
+        <div><dt class="text-gray-400 text-xs">Cadastro</dt><dd><%= @user.created_at.strftime("%d/%m/%Y") %></dd></div>
+        <% if @user.banned_at %>
+          <div><dt class="text-gray-400 text-xs">Banido em</dt><dd class="text-red-500"><%= @user.banned_at.strftime("%d/%m/%Y") %></dd></div>
+          <% if @user.banned_reason.present? %>
+            <div><dt class="text-gray-400 text-xs">Motivo</dt><dd><%= @user.banned_reason %></dd></div>
+          <% end %>
+        <% end %>
+      </dl>
+    </div>
+
+    <%# Alterar papel %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      <h3 class="font-semibold text-sm mb-3">Alterar papel</h3>
+      <%= form_with url: admin_user_path(@user), method: :patch, local: true, class: "flex gap-2" do |f| %>
+        <%= f.select :role, [["user","user"],["moderator","moderator"],["admin","admin"]], { selected: @user.role },
+            class: "border border-gray-200 rounded-lg px-2 py-1.5 text-sm flex-1 focus:outline-none focus:border-hf-blue" %>
+        <button type="submit" class="btn-primary text-xs px-3 py-1.5 cursor-pointer">Salvar</button>
+      <% end %>
+    </div>
+
+    <%# Alterar senha %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      <h3 class="font-semibold text-sm mb-3">Alterar senha</h3>
+      <%= form_with url: admin_user_path(@user), method: :patch, local: true, class: "space-y-2" do |f| %>
+        <%= f.password_field :password, placeholder: "Nova senha…",
+            class: "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-hf-blue" %>
+        <button type="submit" class="btn-primary text-xs px-3 py-1.5 cursor-pointer w-full">Alterar senha</button>
+      <% end %>
+    </div>
+
+    <%# Ban/Unban %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      <% if @user.banned_at %>
+        <%= button_to "Remover ban", unban_admin_user_path(@user), method: :post,
+            class: "w-full text-center text-sm bg-green-50 text-green-700 border border-green-200 rounded-lg py-2 cursor-pointer hover:bg-green-100" %>
+      <% else %>
+        <h3 class="font-semibold text-sm mb-2">Banir usuário</h3>
+        <%= form_with url: ban_admin_user_path(@user), method: :post, local: true, class: "space-y-2" do |f| %>
+          <%= f.text_field :reason, placeholder: "Motivo (opcional)…",
+              class: "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-hf-blue" %>
+          <button type="submit" class="w-full text-center text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg py-2 cursor-pointer hover:bg-red-100">Banir</button>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Projects %>
+  <div class="col-span-2">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h2 class="font-semibold mb-4">Projetos (<%= @projects.count %>)</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-400 text-xs border-b border-gray-100">
+            <th class="pb-2">Título</th>
+            <th class="pb-2">Visibilidade</th>
+            <th class="pb-2">Destaque</th>
+            <th class="pb-2">Criado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @projects.each do |p| %>
+            <tr class="border-t border-gray-50">
+              <td class="py-2"><%= link_to p.title, admin_project_path(p), class: "hover:text-hf-blue" %></td>
+              <td class="py-2 text-gray-500 text-xs"><%= p.visibility %></td>
+              <td class="py-2"><% if p.featured %><span class="text-xs text-yellow-600 font-medium">★ Destaque</span><% end %></td>
+              <td class="py-2 text-gray-400"><%= p.created_at.strftime("%d/%m/%Y") %></td>
+              <td class="py-2 text-right">
+                <%= link_to "Ver", admin_project_path(p), class: "text-xs text-hf-blue hover:underline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

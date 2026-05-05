@@ -1,0 +1,53 @@
+<% content_for :page_title, "Dashboard" %>
+
+<div class="grid grid-cols-4 gap-4 mb-8">
+  <% [
+    ["Usuários", @total_users, admin_users_path],
+    ["Projetos", @total_projects, admin_projects_path],
+    ["Publicados", @published, admin_projects_path],
+    ["Destaques", @featured, admin_projects_path(featured: 1)],
+  ].each do |label, count, path| %>
+    <%= link_to path, class: "bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:border-blue-200 transition-colors" do %>
+      <div class="text-2xl font-bold text-hf-blue"><%= count %></div>
+      <div class="text-sm text-gray-500 mt-1"><%= label %></div>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h2 class="font-semibold text-gray-700 mb-4">Usuários recentes</h2>
+    <table class="w-full text-sm">
+      <tbody>
+        <% @recent_users.each do |u| %>
+          <tr class="border-t border-gray-50">
+            <td class="py-2">
+              <%= link_to u.display, admin_user_path(u), class: "font-medium hover:text-hf-blue" %>
+              <span class="text-gray-400 text-xs ml-1">@<%= u.username %></span>
+            </td>
+            <td class="py-2 text-gray-400 text-right"><%= u.created_at.strftime("%d/%m/%Y") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <%= link_to "Ver todos →", admin_users_path, class: "text-xs text-hf-blue mt-3 inline-block" %>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h2 class="font-semibold text-gray-700 mb-4">Projetos recentes</h2>
+    <table class="w-full text-sm">
+      <tbody>
+        <% @recent_projects.each do |p| %>
+          <tr class="border-t border-gray-50">
+            <td class="py-2">
+              <%= link_to p.title, admin_project_path(p), class: "font-medium hover:text-hf-blue" %>
+              <span class="text-gray-400 text-xs ml-1"><%= p.visibility %></span>
+            </td>
+            <td class="py-2 text-gray-400 text-right text-xs"><%= p.user.username %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <%= link_to "Ver todos →", admin_projects_path, class: "text-xs text-hf-blue mt-3 inline-block" %>
+  </div>
+</div>
