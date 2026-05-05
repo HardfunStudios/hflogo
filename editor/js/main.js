@@ -308,13 +308,56 @@ Blockly.fieldRegistry.register('field_color_swatch', FieldColorSwatch);
 
 // ─── Block definitions ────────────────────────────────────────────────────────
 
-const hue_category_pen = 230;
+const COLOR_TURTLE   = '#0081A6';
+const COLOR_CONTROL  = '#8B5CF6';
+const COLOR_NUMBERS  = '#F07D00';
+const COLOR_PEN      = '#2ECC71';
+const COLOR_SCREEN   = '#00607e';
+const COLOR_START    = '#16A34A';
+const COLOR_STOP     = '#D51414';
+
+const hue_category_pen = COLOR_PEN;
+
+// Override colors of built-in Blockly blocks to match our palette
+[
+  'controls_repeat_ext', 'controls_if', 'controls_whileUntil',
+  'controls_for', 'controls_forEach', 'controls_flow_statements',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour(COLOR_CONTROL); };
+});
+
+[
+  'math_number', 'math_arithmetic', 'math_single', 'math_trig',
+  'math_change', 'math_modulo', 'math_random_int', 'math_random_float',
+  'math_constrain', 'math_number_property',
+  'logic_compare', 'logic_operation', 'logic_negate',
+  'logic_boolean', 'logic_null', 'logic_ternary',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour(COLOR_NUMBERS); };
+});
+
+[
+  'procedures_defnoreturn', 'procedures_defreturn',
+  'procedures_callnoreturn', 'procedures_callreturn',
+  'procedures_ifreturn',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour('#F5C518'); };
+});
 
 Blockly.Blocks['controls_start'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.GREEN_FLAG);
     this.setNextStatement(true);
-    this.setColour(120);
+    this.setColour(COLOR_START);
   },
 };
 javascriptGenerator.forBlock['controls_start'] = () => '';
@@ -324,7 +367,7 @@ Blockly.Blocks['controls_stop'] = {
     this.appendDummyInput().appendField('pare');
     this.setPreviousStatement(true);
     this.setNextStatement(false);
-    this.setColour(120);
+    this.setColour(COLOR_STOP);
     this.setTooltip('Para a execução do escopo atual. Dentro de uma função, sai da função. No programa principal, encerra a execução.');
   },
 };
@@ -335,7 +378,7 @@ Blockly.Blocks['turtle_forward'] = {
     this.appendValueInput('steps').setCheck('Number').appendField(Turtle_Msg.FORWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_forward'] = (block, gen) => {
@@ -348,7 +391,7 @@ Blockly.Blocks['turtle_back'] = {
     this.appendValueInput('steps').setCheck('Number').appendField(Turtle_Msg.BACKWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_back'] = (block, gen) => {
@@ -358,29 +401,29 @@ javascriptGenerator.forBlock['turtle_back'] = (block, gen) => {
 
 Blockly.Blocks['turtle_right'] = {
   init() {
-    this.appendDummyInput()
-      .appendField(Turtle_Msg.RIGHT)
-      .appendField(new FieldAngle('90'), 'degrees');
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.RIGHT);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_right'] = (block) =>
-  `turnCT(${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_right'] = (block, gen) =>
+  `turnCT(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'});\n`;
 
 Blockly.Blocks['turtle_left'] = {
   init() {
-    this.appendDummyInput()
-      .appendField(Turtle_Msg.LEFT)
-      .appendField(new FieldAngle('90'), 'degrees');
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.LEFT);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_left'] = (block) =>
-  `turnCT(-${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_left'] = (block, gen) =>
+  `turnCT(-(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'}));\n`;
 
 Blockly.Blocks['turtle_setpos'] = {
   init() {
@@ -390,7 +433,7 @@ Blockly.Blocks['turtle_setpos'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setpos'] = (block, gen) => {
@@ -406,7 +449,7 @@ Blockly.Blocks['turtle_setposx'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setposx'] = (block, gen) => {
@@ -421,7 +464,7 @@ Blockly.Blocks['turtle_setposy'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setposy'] = (block, gen) => {
@@ -437,7 +480,7 @@ Blockly.Blocks['turtle_setheading'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setheading'] = (block) =>
@@ -448,7 +491,7 @@ Blockly.Blocks['turtle_home'] = {
     this.appendDummyInput().appendField(Turtle_Msg.HOME);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_home'] = () => 'homeCT();\n';
@@ -458,7 +501,7 @@ Blockly.Blocks['turtle_show'] = {
     this.appendDummyInput().appendField(Turtle_Msg.SHOW_TURTLE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_show'] = () => 'showCT();\n';
@@ -468,7 +511,7 @@ Blockly.Blocks['turtle_hide'] = {
     this.appendDummyInput().appendField(Turtle_Msg.HIDE_TURTLE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_hide'] = () => 'hideCT();\n';
@@ -478,7 +521,7 @@ Blockly.Blocks['screen_clean'] = {
     this.appendDummyInput().appendField(Turtle_Msg.CLEAN);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_clean'] = () => 'clearCT();\n';
@@ -488,7 +531,7 @@ Blockly.Blocks['screen_clearscreen'] = {
     this.appendDummyInput().appendField(Turtle_Msg.CLEAR_SCREEN);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_clearscreen'] = () => 'clearscreenCT();\n';
@@ -498,7 +541,7 @@ Blockly.Blocks['screen_wrap'] = {
     this.appendDummyInput().appendField(Turtle_Msg.WRAP);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_wrap'] = () => 'setturtlemodeCT("wrap");\n';
@@ -508,7 +551,7 @@ Blockly.Blocks['screen_fence'] = {
     this.appendDummyInput().appendField(Turtle_Msg.FENCE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_fence'] = () => 'setturtlemodeCT("fence");\n';
@@ -518,7 +561,7 @@ Blockly.Blocks['screen_window'] = {
     this.appendDummyInput().appendField(Turtle_Msg.WINDOW);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_window'] = () => 'setturtlemodeCT("window");\n';
@@ -533,7 +576,7 @@ Blockly.Blocks['turtle_arc'] = {
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_arc'] = (block, gen) => {
@@ -546,7 +589,7 @@ Blockly.Blocks['turtle_xcor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.X_COORDINATE);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_xcor'] = () => ['getxyCT()[0]', Order.ATOMIC];
@@ -555,7 +598,7 @@ Blockly.Blocks['turtle_ycor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.Y_COORDINATE);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_ycor'] = () => ['getxyCT()[1]', Order.ATOMIC];
@@ -564,7 +607,7 @@ Blockly.Blocks['turtle_heading'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.HEADING);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_heading'] = () => ['getheadingCT()', Order.ATOMIC];
@@ -577,7 +620,7 @@ Blockly.Blocks['turtle_towards'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_towards'] = (block, gen) => {
@@ -684,7 +727,7 @@ javascriptGenerator.forBlock['pen_ispendown?'] = () => ['ispendownCT()', Order.A
 Blockly.Blocks['pen_pencolor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.GET_PENCOLOR);
-    this.setOutput(true, 'Boolean');
+    this.setOutput(true, 'Number');
     this.setColour(hue_category_pen);
   },
 };
@@ -707,11 +750,12 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Tartaruga',
+      colour: COLOR_TURTLE,
       contents: [
         { kind: 'block', type: 'turtle_forward', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_back', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
-        { kind: 'block', type: 'turtle_right' },
-        { kind: 'block', type: 'turtle_left' },
+        { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
+        { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
         { kind: 'block', type: 'turtle_arc', inputs: { radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_setpos' },
@@ -729,6 +773,7 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Controle',
+      colour: COLOR_CONTROL,
       contents: [
         { kind: 'block', type: 'controls_start' },
         { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
@@ -740,6 +785,7 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Números',
+      colour: COLOR_NUMBERS,
       contents: [
         { kind: 'block', type: 'math_number' },
         { kind: 'block', type: 'math_arithmetic' },
@@ -763,6 +809,7 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Caneta',
+      colour: COLOR_PEN,
       contents: [
         { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'pen_colornumber', fields: { NUM: 9, SWATCH: COLOR_TABLE[9] } } } } },
         { kind: 'block', type: 'pen_colornumber' },
@@ -778,13 +825,14 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Tela',
+      colour: COLOR_SCREEN,
       contents: [
         { kind: 'block', type: 'screen_clean' },
         { kind: 'block', type: 'screen_clearscreen' },
       ],
     },
-    { kind: 'category', name: 'Variáveis', custom: 'VARIABLE' },
-    { kind: 'category', name: 'Ensinar', custom: 'PROCEDURE' },
+    { kind: 'category', name: 'Variáveis', colour: '#9E6B00', custom: 'VARIABLE' },
+    { kind: 'category', name: 'Ensinar', colour: '#F5C518', custom: 'PROCEDURE' },
   ],
 };
 

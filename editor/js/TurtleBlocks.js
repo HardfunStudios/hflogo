@@ -1,5 +1,12 @@
 
-var hue_category_pen = 230;
+var COLOR_TURTLE  = '#0081A6'; // hf-blue      — movimento
+var COLOR_CONTROL = '#8B5CF6'; // hf-purple    — fluxo/controle
+var COLOR_NUMBERS = '#F07D00'; // hf-orange    — dados/valores
+var COLOR_PEN     = '#2ECC71'; // hf-green     — desenho
+var COLOR_SCREEN  = '#00607e'; // hf-blue-dark — tela
+var COLOR_START   = '#D51414'; // vermelho logo — gatilho
+
+var hue_category_pen = COLOR_PEN;
 
 /******************************************************************************
  * START
@@ -10,7 +17,7 @@ Blockly.Blocks['controls_start'] = {
     this.appendDummyInput()
         .appendField(Turtle_Msg.GREEN_FLAG);
     this.setNextStatement(true);
-    this.setColour(120);
+    this.setColour(COLOR_START);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -35,7 +42,7 @@ Blockly.Blocks['turtle_forward'] = {
         .appendField(Turtle_Msg.FORWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -59,7 +66,7 @@ Blockly.Blocks['turtle_back'] = {
         .appendField(Turtle_Msg.BACKWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -84,7 +91,7 @@ Blockly.JavaScript['turtle_back'] = function(block) {
          .appendField(new Blockly.FieldAngle("90"), "degrees")
      this.setPreviousStatement(true);
      this.setNextStatement(true);
-     this.setColour(210);
+     this.setColour(COLOR_TURTLE);
      this.setTooltip('');
      this.setHelpUrl('http://www.example.com/');
    }
@@ -106,7 +113,7 @@ Blockly.JavaScript['turtle_back'] = function(block) {
          .appendField(new Blockly.FieldAngle("90"), "degrees")
      this.setPreviousStatement(true);
      this.setNextStatement(true);
-     this.setColour(210);
+     this.setColour(COLOR_TURTLE);
      this.setTooltip('');
      this.setHelpUrl('http://www.example.com/');
    }
@@ -135,7 +142,7 @@ Blockly.JavaScript['turtle_back'] = function(block) {
      this.setPreviousStatement(true);
      this.setInputsInline(true);
      this.setNextStatement(true);
-     this.setColour(210);
+     this.setColour(COLOR_TURTLE);
      this.setTooltip('');
      this.setHelpUrl('http://www.example.com/');
    }
@@ -159,7 +166,7 @@ Blockly.Blocks['turtle_setposx'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -183,7 +190,7 @@ Blockly.Blocks['turtle_setposy'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -204,7 +211,7 @@ Blockly.Blocks['turtle_setheading'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -227,7 +234,7 @@ Blockly.JavaScript['turtle_setheading'] = function(block) {
         .appendField(Turtle_Msg.HOME);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -246,7 +253,7 @@ Blockly.Blocks['turtle_show'] = {
        .appendField(Turtle_Msg.SHOW_TURTLE);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(210);
+   this.setColour(COLOR_TURTLE);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -265,7 +272,7 @@ Blockly.Blocks['turtle_hide'] = {
        .appendField(Turtle_Msg.HIDE_TURTLE);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(210);
+   this.setColour(COLOR_TURTLE);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -284,7 +291,7 @@ Blockly.Blocks['screen_clean'] = {
        .appendField(Turtle_Msg.CLEAN);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(60);
+   this.setColour(COLOR_SCREEN);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -303,7 +310,7 @@ Blockly.Blocks['screen_clearscreen'] = {
        .appendField(Turtle_Msg.CLEAR_SCREEN);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(60);
+   this.setColour(COLOR_SCREEN);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -323,7 +330,7 @@ Blockly.Blocks['screen_wrap'] = {
        .appendField(Turtle_Msg.WRAP);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(60);
+   this.setColour(COLOR_SCREEN);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -341,7 +348,7 @@ Blockly.Blocks['screen_fence'] = {
        .appendField(Turtle_Msg.FENCE);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(60);
+   this.setColour(COLOR_SCREEN);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -359,7 +366,7 @@ Blockly.Blocks['screen_window'] = {
        .appendField(Turtle_Msg.WINDOW);
    this.setPreviousStatement(true);
    this.setNextStatement(true);
-   this.setColour(60);
+   this.setColour(COLOR_SCREEN);
    this.setTooltip('');
    this.setHelpUrl('http://www.example.com/');
  }
@@ -386,7 +393,7 @@ Blockly.JavaScript['screen_window'] = function(block) {
      this.setInputsInline(true);
      this.setPreviousStatement(true);
      this.setNextStatement(true);
-     this.setColour(210);
+     this.setColour(COLOR_TURTLE);
      this.setTooltip('');
      this.setHelpUrl('http://www.example.com/');
    }
@@ -409,7 +416,7 @@ Blockly.JavaScript['screen_window'] = function(block) {
      this.appendDummyInput()
          .appendField(Turtle_Msg.X_COORDINATE);
      this.setOutput(true, "Number");
-     this.setColour(210);
+     this.setColour(COLOR_TURTLE);
      this.setTooltip('');
      this.setHelpUrl('http://www.example.com/');
    }
@@ -425,7 +432,7 @@ Blockly.Blocks['turtle_ycor'] = {
     this.appendDummyInput()
         .appendField(Turtle_Msg.Y_COORDINATE);
     this.setOutput(true, "Number");
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -441,7 +448,7 @@ Blockly.Blocks['turtle_heading'] = {
     this.appendDummyInput()
         .appendField(Turtle_Msg.HEADING);
     this.setOutput(true, "Number");
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }
@@ -466,7 +473,7 @@ Blockly.Blocks['turtle_towards'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
     this.setTooltip('');
     this.setHelpUrl('http://www.example.com/');
   }

@@ -28,6 +28,15 @@ function Microworld(canvasParentSelector,width, height) {
   width = Number(width);
   height = Number(height);
 
+  // ── Logical coordinate system ─────────────────────────────────────────────────
+  // Turtle state (self.x, self.y) is stored in logical coords: -500..+500, Y-up.
+  // All canvas draw calls convert via lx2cx / ly2cy.
+  var WORLD_HALF = 500;                                // logical half-extent
+
+  function getScale() { return Math.min(width, height) / (WORLD_HALF * 2); }
+  function lx2cx(lx) { return  lx * getScale() + width  / 2; }
+  function ly2cy(ly) { return -ly * getScale() + height / 2; }  // Y-flip
+
   canvasElement = document.createElement("CANVAS");
   canvasElement.id = "microworldCavnas";
   canvasElement.width = width;
@@ -118,24 +127,27 @@ function Microworld(canvasParentSelector,width, height) {
 	}
 
   function moveto(x, y) {
+    // All coordinates here are logical (±WORLD_HALF, Y-up).
+    // _go converts to canvas pixels for actual drawing.
     function _go(x1, y1, x2, y2) {
       if (_skipDrawing) return;
+      var cx1 = lx2cx(x1), cy1 = ly2cy(y1);
+      var cx2 = lx2cx(x2), cy2 = ly2cy(y2);
       if (self.filling) {
-        penCanvas_ctx.lineTo(x1, y1);
-        penCanvas_ctx.lineTo(x2, y2);
+        penCanvas_ctx.lineTo(cx1, cy1);
+        penCanvas_ctx.lineTo(cx2, cy2);
       } else if (self.down) {
         penCanvas_ctx.beginPath();
-        penCanvas_ctx.moveTo(x1, y1);
-        penCanvas_ctx.lineTo(x2, y2);
+        penCanvas_ctx.moveTo(cx1, cy1);
+        penCanvas_ctx.lineTo(cx2, cy2);
         penCanvas_ctx.stroke();
       }
     }
 
     var ix, iy, wx, wy, fx, fy, less;
+    var B = WORLD_HALF;
 
     while (true) {
-      // TODO: What happens if we switch modes and turtle is outside bounds?
-
       switch (self.turtlemode) {
         case 'window':
           _go(self.x, self.y, x, y);
@@ -148,57 +160,50 @@ function Microworld(canvasParentSelector,width, height) {
         case 'wrap':
         case 'fence':
 
-          // fraction before intersecting
           fx = 1;
           fy = 1;
 
-          if (x < 0) {
-            fx = (self.x - 0) / (self.x - x);
-          } else if (x >= width) {
-            fx = (self.x - width) / (self.x - x);
+          if (x < -B) {
+            fx = (self.x + B) / (self.x - x);
+          } else if (x > B) {
+            fx = (self.x - B) / (self.x - x);
           }
 
-          if (y < 0) {
-            fy = (self.y - 0) / (self.y - y);
-          } else if (y >= height) {
-            fy = (self.y - height) / (self.y - y);
+          if (y < -B) {
+            fy = (self.y + B) / (self.y - y);
+          } else if (y > B) {
+            fy = (self.y - B) / (self.y - y);
           }
 
-          // intersection point (draw current to here)
           ix = x;
           iy = y;
-
-          // endpoint after wrapping (next "here")
           wx = x;
           wy = y;
 
           if (fx < 1 && fx <= fy) {
-            less = (x < 0);
-            ix = less ? 0 : width;
+            less = (x < -B);
+            ix = less ? -B : B;
             iy = self.y - fx * (self.y - y);
-            x += less ? width : -width;
-            wx = less ? width : 0;
+            x += less ? B * 2 : -B * 2;
+            wx = less ? B : -B;
             wy = iy;
           } else if (fy < 1 && fy <= fx) {
-            less = (y < 0);
+            less = (y < -B);
             ix = self.x - fy * (self.x - x);
-            iy = less ? 0 : height;
-            y += less ? height : -height;
+            iy = less ? -B : B;
+            y += less ? B * 2 : -B * 2;
             wx = ix;
-            wy = less ? height : 0;
+            wy = less ? B : -B;
           }
 
           _go(self.x, self.y, ix, iy);
 
-
           if (self.turtlemode === 'fence') {
-            // FENCE - stop on collision
             self.x = ix;
             self.y = iy;
             if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
             return;
           } else {
-            // WRAP - keep going
             self.x = wx;
             self.y = wy;
             if (fx === 1 && fy === 1) {
@@ -210,7 +215,6 @@ function Microworld(canvasParentSelector,width, height) {
           break;
       }
     }
-
   }
 
   this.move = function(distance) {
@@ -226,8 +230,9 @@ function Microworld(canvasParentSelector,width, height) {
       distance = EPSILON;
     }
 
+    // Logical Y-up: no sign flip on Y
     x = this.x + distance * Math.cos(this.r);
-    y = this.y - distance * Math.sin(this.r);
+    y = this.y + distance * Math.sin(this.r);
     moveto(x, y);
 
     if (point) {
@@ -318,20 +323,15 @@ function Microworld(canvasParentSelector,width, height) {
   this.getfontsize = function() { return this.fontsize; };
 
   this.setposition = function(x, y) {
-    x = (x === undefined) ? this.x : x + (width / 2);
-    y = (y === undefined) ? this.y : -y + (height / 2);
-
+    // Logical coords passed directly — no pixel conversion.
+    x = (x === undefined) ? this.x : Number(x);
+    y = (y === undefined) ? this.y : Number(y);
     moveto(x, y);
-
   };
 
   this.towards = function(x, y) {
-    x = x + (width / 2);
-    y = -y + (height / 2);
-
-    return 90 - rad2deg(Math.atan2(this.y - y, x - this.x));
-
-
+    // Logical Y-up: atan2(dy, dx), heading = 90 - math_angle.
+    return 90 - rad2deg(Math.atan2(Number(y) - this.y, Number(x) - this.x));
   };
 
   this.setheading = function(angle) {
@@ -347,8 +347,8 @@ function Microworld(canvasParentSelector,width, height) {
     replayStep = -1;
 
     // Reset turtle state to defaults
-    self.x = width / 2;
-    self.y = height / 2;
+    self.x = 0;
+    self.y = 0;
     self.r = Math.PI / 2;
     self.down = true;
     self.color = 0;
@@ -394,10 +394,8 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.home = function() {
-    moveto(width / 2, height / 2);
-    this.r = deg2rad(90);
-
-
+    moveto(0, 0);          // logical origin
+    this.r = deg2rad(90);  // heading 0 = north
   };
 
   this.showturtle = function() {
@@ -422,13 +420,13 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.getxy = function() {
-    return [this.x - (width / 2), -this.y + (height / 2)];
+    return [this.x, this.y];  // logical coords directly
   };
 
   this.drawtext = function(text) {
     if (_skipDrawing) return;
     penCanvas_ctx.save();
-    penCanvas_ctx.translate(this.x, this.y);
+    penCanvas_ctx.translate(lx2cx(this.x), ly2cy(this.y));
     penCanvas_ctx.rotate(-this.r);
     penCanvas_ctx.fillText(text, 0, 0);
     penCanvas_ctx.restore();
@@ -473,20 +471,21 @@ function Microworld(canvasParentSelector,width, height) {
   this.arc = function(angle, radius) {
     if (_skipDrawing) return;
     var self = this;
+    var cx = lx2cx(this.x), cy = ly2cy(this.y), sr = radius * getScale();
     if (this.turtlemode == 'wrap') {
-      [self.x, self.x + width, this.x - width].forEach(function(x) {
-        [self.y, self.y + height, this.y - height].forEach(function(y) {
-          if (!this.filling)
+      [cx, cx + width, cx - width].forEach(function(x) {
+        [cy, cy + height, cy - height].forEach(function(y) {
+          if (!self.filling)
             penCanvas_ctx.beginPath();
-          penCanvas_ctx.arc(x, y, radius, -self.r, -self.r + deg2rad(angle), false);
-          if (!this.filling)
+          penCanvas_ctx.arc(x, y, sr, -self.r, -self.r + deg2rad(angle), false);
+          if (!self.filling)
             penCanvas_ctx.stroke();
         });
       });
     } else {
       if (!this.filling)
         penCanvas_ctx.beginPath();
-      penCanvas_ctx.arc(this.x, this.y, radius, -this.r, -this.r + deg2rad(angle), false);
+      penCanvas_ctx.arc(cx, cy, sr, -this.r, -this.r + deg2rad(angle), false);
       if (!this.filling)
         penCanvas_ctx.stroke();
     }
@@ -538,7 +537,7 @@ function Microworld(canvasParentSelector,width, height) {
     var turtle = currentTurtle;
 
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(lx2cx(this.x), ly2cy(this.y));
 
     if(turtle.rotationStyle == "HEADING") {
       ctx.rotate(Math.PI/2 - this.r);
@@ -621,8 +620,8 @@ function Microworld(canvasParentSelector,width, height) {
 
   function _replayState(endCmdIndex, startCmd) {
     // Reset turtle to initial state before replaying
-    self.x = width / 2;
-    self.y = height / 2;
+    self.x = 0;
+    self.y = 0;
     self.r = Math.PI / 2;
     self.down = true;
     self.color = 0;
@@ -701,8 +700,8 @@ function Microworld(canvasParentSelector,width, height) {
     updateRenderCanvas();
   };
 
-  this.x = width / 2;
-  this.y = height / 2;
+  this.x = 0;
+  this.y = 0;
   this.r = Math.PI / 2;
 
   this.bgcolor = '#ffffff';

@@ -72,9 +72,9 @@ function initApi(interpreter, scope) {
   // ── Drawing commands ───────────────────────────────────────────────────────
 
   drawFn('moveCT', function(s) {
-    const rad = (ts.heading - 90) * Math.PI / 180;
-    ts.x += Number(s) * Math.cos(rad);
-    ts.y += Number(s) * Math.sin(rad);
+    const hr = ts.heading * Math.PI / 180;
+    ts.x += Number(s) * Math.sin(hr);
+    ts.y += Number(s) * Math.cos(hr);
   });
 
   drawFn('turnCT', function(d) {
