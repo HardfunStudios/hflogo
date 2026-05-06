@@ -313,7 +313,7 @@ Blockly.fieldRegistry.register('field_color_swatch', FieldColorSwatch);
 
 const COLOR_TURTLE   = '#0081A6';
 const COLOR_CONTROL  = '#8B5CF6';
-const COLOR_NUMBERS  = '#F07D00';
+const COLOR_NUMBERS  = '#D97706';
 const COLOR_PEN      = '#2ECC71';
 const COLOR_SCREEN   = '#00607e';
 const COLOR_START    = '#16A34A';
@@ -773,16 +773,16 @@ const toolbox = {
         { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
         { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
-        { kind: 'block', type: 'turtle_setpos' },
-        { kind: 'block', type: 'turtle_setposx' },
+        { kind: 'block', type: 'turtle_setpos', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'turtle_setposx', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_xcor' },
-        { kind: 'block', type: 'turtle_setposy' },
+        { kind: 'block', type: 'turtle_setposy', inputs: { y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_ycor' },
         { kind: 'block', type: 'turtle_setheading', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_heading' },
         { kind: 'block', type: 'turtle_show' },
         { kind: 'block', type: 'turtle_hide' },
-        { kind: 'block', type: 'turtle_towards' },
+        { kind: 'block', type: 'turtle_towards', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
       ],
     },
     {
@@ -792,8 +792,8 @@ const toolbox = {
       contents: [
         { kind: 'block', type: 'controls_start' },
         { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'controls_if' },
-        { kind: 'block', type: 'controls_if', extraState: { hasElse: true } },
+        { kind: 'block', type: 'controls_if', inputs: { IF0: { shadow: { type: 'logic_boolean' } } } },
+        { kind: 'block', type: 'controls_if', extraState: { hasElse: true }, inputs: { IF0: { shadow: { type: 'logic_boolean' } } } },
         { kind: 'block', type: 'controls_stop' },
       ],
     },
@@ -803,14 +803,14 @@ const toolbox = {
       colour: COLOR_NUMBERS,
       contents: [
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic' },
-        { kind: 'block', type: 'math_single' },
-        { kind: 'block', type: 'math_trig' },
-        { kind: 'block', type: 'logic_compare' },
-        { kind: 'block', type: 'logic_operation' },
-        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 10 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
+        { kind: 'block', type: 'math_single', inputs: { NUM: { shadow: { type: 'math_number', fields: { NUM: 9 } } } } },
+        { kind: 'block', type: 'math_trig', inputs: { NUM: { shadow: { type: 'math_number', fields: { NUM: 45 } } } } },
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'logic_operation', inputs: { A: { shadow: { type: 'logic_boolean' } }, B: { shadow: { type: 'logic_boolean' } } } },
+        { kind: 'block', type: 'logic_negate', inputs: { BOOL: { shadow: { type: 'logic_boolean' } } } },
         { kind: 'block', type: 'math_change', inputs: { DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-        { kind: 'block', type: 'math_modulo' },
+        { kind: 'block', type: 'math_modulo', inputs: { DIVIDEND: { shadow: { type: 'math_number', fields: { NUM: 10 } } }, DIVISOR: { shadow: { type: 'math_number', fields: { NUM: 3 } } } } },
         {
           kind: 'block',
           type: 'math_random_int',
