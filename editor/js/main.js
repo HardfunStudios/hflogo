@@ -2,6 +2,7 @@ import * as Blockly from 'blockly';
 import { javascriptGenerator, Order } from 'blockly/javascript';
 import * as ptBR from 'blockly/msg/pt-br';
 import { FieldAngle } from '@blockly/field-angle';
+import { logoGenerator } from './logo-generator.js';
 
 Blockly.setLocale(ptBR);
 
@@ -861,9 +862,8 @@ function lpHighlighBlockTime(time) {
 }
 
 function generateCode() {
-  javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-  javascriptGenerator.addReservedWords('highlightBlock');
-  return javascriptGenerator.workspaceToCode(window.workspace);
+  logoGenerator.STATEMENT_PREFIX = '__hl__ "%1\n';
+  return logoGenerator.workspaceToCode(window.workspace);
 }
 
 function getExecutionDelay() {
@@ -910,7 +910,7 @@ function _startWorker(code) {
   time_block_mapping = [];
   window.workspace.highlightBlock(null);
 
-  _worker = new Worker('/editor-assets/js/logo-worker.js');
+  _worker = new Worker('/editor-assets/js/logo-worker-v2.js');
 
   _worker.onmessage = function(e) {
     const msg = e.data;
