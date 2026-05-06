@@ -25,12 +25,63 @@
 
     #editor-main { display:flex; flex:1; overflow:hidden; min-height:0; }
 
-    /* Esquerda: Blockly */
-    #blocklyDiv {
-      flex:1; min-width:0; position:relative; overflow:hidden; background:white;
+    /* Esquerda: painel com abas */
+    #leftPanel {
+      flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden;
       border-right:1px solid #e0e0e0;
     }
+
+    /* Barra de abas */
+    #editorTabBar {
+      display:flex; align-items:stretch; flex-shrink:0;
+      height:38px; background:white;
+      border-bottom:1px solid #e0e0e0;
+      padding:0 12px; gap:0;
+    }
+    .editor-tab {
+      display:flex; align-items:center; padding:0 16px;
+      font-size:13px; font-weight:600; font-family:'Montserrat',sans-serif;
+      color:#929292; background:transparent; border:none;
+      cursor:pointer; position:relative; white-space:nowrap;
+      transition:color 120ms;
+    }
+    .editor-tab::after {
+      content:''; position:absolute; bottom:0; left:0; right:0;
+      height:2px; background:#0081A6;
+      transform:scaleX(0); transition:transform 120ms;
+    }
+    .editor-tab.active { color:#0081A6; }
+    .editor-tab.active::after { transform:scaleX(1); }
+    .editor-tab:hover:not(.active) { color:#555; }
+
+    /* Blockly */
+    #blocklyDiv {
+      flex:1; min-width:0; position:relative; overflow:hidden; background:white;
+    }
     #blocklyDiv > svg { display:block; }
+
+    /* Painel de texto Logo */
+    #logoTextPanel {
+      flex:1; min-width:0; display:none; flex-direction:column;
+      background:#1e1e1e; overflow:hidden;
+    }
+    #logoTextPanel.active { display:flex; }
+    #logoTextToolbar {
+      display:flex; align-items:center; gap:8px;
+      padding:6px 12px; background:#2d2d2d; flex-shrink:0;
+      border-bottom:1px solid #444;
+    }
+    #logoTextToolbar span {
+      font-size:11px; font-family:'Montserrat',sans-serif;
+      color:#929292;
+    }
+    #logoCodeEditor {
+      flex:1; width:100%; border:none; outline:none; resize:none;
+      background:#1e1e1e; color:#d4d4d4;
+      font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
+      font-size:13px; line-height:1.6; padding:16px;
+      tab-size:2; white-space:pre;
+    }
     .blocklyFlyout ~ .blocklyScrollbarVertical,
     .blocklyFlyoutScrollbar,
     g.blocklyScrollbar[display="none"],
@@ -154,7 +205,28 @@
   <%# ── Main: Blockly (esquerda) | Stage (direita) ── %>
   <div id="editor-main">
 
-    <div id="blocklyDiv"></div>
+    <%# ── Painel esquerdo: abas + conteúdo ── %>
+    <div id="leftPanel">
+
+      <%# Barra de abas %>
+      <div id="editorTabBar">
+        <button class="editor-tab active" id="tabBlocos" aria-selected="true">Blocos</button>
+        <button class="editor-tab"        id="tabLogo"   aria-selected="false">Logo</button>
+      </div>
+
+      <%# Workspace Blockly %>
+      <div id="blocklyDiv"></div>
+
+      <%# Painel de edição de texto Logo (oculto por enquanto) %>
+      <div id="logoTextPanel">
+        <div id="logoTextToolbar">
+          <span>Edição em texto — Logo</span>
+        </div>
+        <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
+                  placeholder="; código Logo aparecerá aqui"></textarea>
+      </div>
+
+    </div>
 
     <div id="stagePanel">
       <div id="stageFrame"></div>
