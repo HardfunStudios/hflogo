@@ -19,28 +19,57 @@ logoGenerator.scrub_ = function(block, code, opt_thisOnly) {
   return code + nextCode;
 };
 
+logoGenerator.init = function(workspace) {
+  // Call the base init so internal Blockly state is set up
+  Object.getPrototypeOf(logoGenerator).init.call(this, workspace);
+  if (!this.nameDB_) {
+    this.nameDB_ = new Blockly.Names(this.RESERVED_WORDS_ || '');
+  } else {
+    this.nameDB_.reset();
+  }
+  this.nameDB_.setVariableMap(workspace.getVariableMap());
+  this.nameDB_.populateVariables(workspace);
+  this.nameDB_.populateProcedures(workspace);
+};
+
 logoGenerator.workspaceToCode = function(workspace) {
-  // Find the start block
   const allBlocks = workspace.getTopBlocks(true);
   const start = allBlocks.find(b => b.type === 'controls_start');
   if (!start) return '';
 
   this.init(workspace);
-  let code = '';
+
+  // Procedure definitions first (they may be called from the main body)
+  let procCode = '';
+  for (const b of allBlocks) {
+    if (b.type === 'procedures_defnoreturn' || b.type === 'procedures_defreturn') {
+      procCode += logoGenerator.blockToCode(b, true);
+    }
+  }
+
+  // Main body: blocks chained after controls_start
+  let mainCode = '';
   let block = start.getNextBlock();
   while (block) {
-    code += logoGenerator.blockToCode(block, true);
-    block  = block.getNextBlock();
+    mainCode += logoGenerator.blockToCode(block, true);
+    block = block.getNextBlock();
   }
-  return code;
+
+  return procCode + mainCode;
 };
 
 // Prefix injected before each statement for block highlighting
 logoGenerator.STATEMENT_PREFIX = '';
 
+// Encode block ID to base64url so it contains only [A-Za-z0-9\-_] — safe
+// for the Logo lexer (no brackets, semicolons, or whitespace).
+function encodeId(id) {
+  return btoa(id).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
 function statementCode(block, gen) {
-  if (!gen.STATEMENT_PREFIX) return '';
-  return gen.STATEMENT_PREFIX.replace('%1', block.id);
+  if (gen._noHighlight) return '';
+  return `__hl__ "${encodeId(block.id)}\n`;
 }
 
 function valueCode(block, inputName, gen, fallback = '0') {
@@ -106,14 +135,14 @@ logoGenerator.forBlock['turtle_angle'] = (block) =>
 logoGenerator.forBlock['turtle_setpos'] = (block, gen) => {
   const x = valueCode(block, 'x', gen, '0');
   const y = valueCode(block, 'y', gen, '0');
-  return `${statementCode(block, gen)}vaipara x ${x} y ${y}\n`;
+  return `${statementCode(block, gen)}vaipara ${x} ${y}\n`;
 };
 
 logoGenerator.forBlock['turtle_setposx'] = (block, gen) =>
-  `${statementCode(block, gen)}vaipara x ${valueCode(block, 'x', gen, '0')}\n`;
+  `${statementCode(block, gen)}vaipara_x ${valueCode(block, 'x', gen, '0')}\n`;
 
 logoGenerator.forBlock['turtle_setposy'] = (block, gen) =>
-  `${statementCode(block, gen)}vaipara y ${valueCode(block, 'y', gen, '0')}\n`;
+  `${statementCode(block, gen)}vaipara_y ${valueCode(block, 'y', gen, '0')}\n`;
 
 logoGenerator.forBlock['turtle_setheading'] = (block, gen) =>
   `${statementCode(block, gen)}mudadireção ${valueCode(block, 'degrees', gen, '0')}\n`;
@@ -215,7 +244,7 @@ logoGenerator.forBlock['math_random_int'] = (block, gen) => {
 };
 
 logoGenerator.forBlock['math_change'] = (block, gen) => {
-  const name  = block.getFieldValue('VAR');
+  const name  = gen.getVariableName(block.getFieldValue('VAR'));
   const delta = valueCode(block, 'DELTA', gen, '1');
   return `${statementCode(block, gen)}faça "${name} (:${name} + ${delta})\n`;
 };
@@ -248,13 +277,13 @@ logoGenerator.forBlock['logic_boolean'] = (block) =>
 // ── Variables ─────────────────────────────────────────────────────────────────
 
 logoGenerator.forBlock['variables_set'] = (block, gen) => {
-  const name  = block.getFieldValue('VAR');
+  const name  = gen.getVariableName(block.getFieldValue('VAR'));
   const value = valueCode(block, 'VALUE', gen, '0');
   return `${statementCode(block, gen)}faça "${name} ${value}\n`;
 };
 
-logoGenerator.forBlock['variables_get'] = (block) =>
-  [`:${block.getFieldValue('VAR')}`, Order.ATOMIC];
+logoGenerator.forBlock['variables_get'] = (block, gen) =>
+  [`:${gen.getVariableName(block.getFieldValue('VAR'))}`, Order.ATOMIC];
 
 // ── Procedures ────────────────────────────────────────────────────────────────
 
