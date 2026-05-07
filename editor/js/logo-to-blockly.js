@@ -13,6 +13,9 @@ function ensureVar(name) {
   return _vars[name];
 }
 
+// ── Procedure param registry ──────────────────────────────────────────────────
+let _procParams = {}; // procName → string[]
+
 function normalise(s) {
   return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
@@ -21,12 +24,16 @@ function normalise(s) {
 export function logoToBlocklyState(code) {
   _seq = 0;
   _vars = {};
+  _procParams = {};
 
   const tokens = new Lexer(code).tokenize();
   const ast    = new Parser(tokens).parse();
 
   const procDefs = ast.body.filter(s => s.type === 'ProcDef');
   const mainBody = ast.body.filter(s => s.type !== 'ProcDef');
+
+  // Register proc params before converting calls so call blocks get correct names
+  for (const p of procDefs) _procParams[p.name] = p.params ?? [];
 
   const topBlocks = [];
 
@@ -114,14 +121,13 @@ function cmdToBlock(node) {
     case 'mudacor':      return { type: 'pen_setpencolor',   id: uid(), inputs: { color: vi(a[0]) } };
     case 'mudatamanho':  return { type: 'pen_setpensize',    id: uid(), inputs: { size:  vi(a[0]) } };
     default: {
-      // User-defined procedure call (no return value)
+      // User-defined procedure call — params must be string[] for Blockly
+      const params = _procParams[node.name] ?? [];
       const b = { type: 'procedures_callnoreturn', id: uid(),
-        extraState: { name: node.name, hasReturn: false },
-        fields: { NAME: node.name } };
-      if (a.length) {
-        b.extraState.params = a.map((_, i) => ({ name: `arg${i}`, id: uid() }));
-        a.forEach((arg, i) => { b.inputs = b.inputs || {}; b.inputs[`ARG${i}`] = vi(arg); });
-      }
+        extraState: { name: node.name, params },
+        fields: { NAME: node.name },
+        inputs: {} };
+      params.forEach((_, i) => { if (a[i]) b.inputs[`ARG${i}`] = vi(a[i]); });
       return b;
     }
   }
@@ -178,7 +184,7 @@ function procDefToBlock(node) {
 function outputToBlock(node) {
   return {
     type: 'procedures_ifreturn', id: uid(),
-    fields: { CONDITION: 1 },
+    fields: { CONDITION: 'TRUE' },
     inputs: { VALUE: vi(node.value) },
   };
 }
@@ -238,9 +244,14 @@ function funcCallToBlock(node) {
     case 'coordenadax': case 'xcor': return { type: 'turtle_xcor',    id: uid() };
     case 'coordenaday': case 'ycor': return { type: 'turtle_ycor',    id: uid() };
     case 'direcao':     case 'heading': return { type: 'turtle_heading', id: uid() };
-    default:
-      return { type: 'procedures_callreturn', id: uid(),
-        extraState: { name: node.name, hasReturn: true },
-        fields: { NAME: node.name } };
+    default: {
+      const params = _procParams[node.name] ?? [];
+      const b = { type: 'procedures_callreturn', id: uid(),
+        extraState: { name: node.name, params },
+        fields: { NAME: node.name },
+        inputs: {} };
+      params.forEach((_, i) => { if (a[i]) b.inputs[`ARG${i}`] = vi(a[i]); });
+      return b;
+    }
   }
 }
