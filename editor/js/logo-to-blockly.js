@@ -121,8 +121,11 @@ function cmdToBlock(node) {
     case 'mudacor':      return { type: 'pen_setpencolor',   id: uid(), inputs: { color: vi(a[0]) } };
     case 'mudatamanho':  return { type: 'pen_setpensize',    id: uid(), inputs: { size:  vi(a[0]) } };
     default: {
-      // User-defined procedure call — params must be string[] for Blockly
-      const params = _procParams[node.name] ?? [];
+      // User-defined procedure call — must be defined in the same code
+      const params = _procParams[node.name];
+      if (params === undefined) {
+        throw new Error(`Comando desconhecido: "${node.name}"`);
+      }
       const b = { type: 'procedures_callnoreturn', id: uid(),
         extraState: { name: node.name, params },
         fields: { NAME: node.name },
@@ -245,7 +248,10 @@ function funcCallToBlock(node) {
     case 'coordenaday': case 'ycor': return { type: 'turtle_ycor',    id: uid() };
     case 'direcao':     case 'heading': return { type: 'turtle_heading', id: uid() };
     default: {
-      const params = _procParams[node.name] ?? [];
+      const params = _procParams[node.name];
+      if (params === undefined) {
+        throw new Error(`Função desconhecida: "${node.name}"`);
+      }
       const b = { type: 'procedures_callreturn', id: uid(),
         extraState: { name: node.name, params },
         fields: { NAME: node.name },
