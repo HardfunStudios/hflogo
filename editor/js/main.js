@@ -857,6 +857,7 @@ const toolbox = {
 
 let _activeTab = 'blocos'; // 'blocos' | 'logo'
 let _running   = false;
+let _hadError  = false;
 
 function _setRunning(val) {
   _running = val;
@@ -987,6 +988,7 @@ function _applyCommand(name, args) {
 
 function _startWorker(code) {
   if (_worker) { _worker.terminate(); _worker = null; }
+  _hadError = false;
   _setRunning(true);
 
   time_block_mapping = [];
@@ -1035,6 +1037,12 @@ function _startWorker(code) {
       return;
     }
 
+    if (msg.type === 'error') {
+      _hadError = true;
+      console.error('[Logo] runtime error:', msg.message);
+      return;
+    }
+
     if (msg.type === 'done') {
       window.workspace.highlightBlock(null);
       _clearLogoHighlight();
@@ -1042,7 +1050,7 @@ function _startWorker(code) {
       _worker = null;
       window.currentworld.render();
       const btn = document.getElementById('runButton');
-      _finishExecution(btn);
+      _finishExecution(btn, { stopped: msg.stopped, hadError: _hadError });
       _setRunning(false);
     }
   };
@@ -1053,6 +1061,7 @@ function _startWorker(code) {
     btn?.classList.remove('running');
     btn && (btn.disabled = false);
     _clearLogoHighlight();
+    _hadError = true;
     _setRunning(false);
     if (_worker) { _worker.terminate(); _worker = null; }
   };
@@ -1154,7 +1163,7 @@ function setCurrentStepLabel(current) {
   if (el) el.textContent = 'passo ' + current + ' de ' + _totalSteps + ' passos';
 }
 
-function _finishExecution(btn) {
+function _finishExecution(btn, { stopped = false, hadError = false } = {}) {
   const totalSteps = window.currentworld.getTotalTime();
   setStepsLabel(totalSteps);
 
@@ -1166,9 +1175,12 @@ function _finishExecution(btn) {
     slider.value = totalSteps;
     slider.disabled = totalSteps === 0;
   }
-  setTimeout(() => {
-    if (window._onThumbnailCallback) window._onThumbnailCallback();
-  }, 100);
+  // Only update thumbnail after a clean, uninterrupted execution
+  if (!stopped && !hadError) {
+    setTimeout(() => {
+      if (window._onThumbnailCallback) window._onThumbnailCallback();
+    }, 100);
+  }
   btn?.classList.remove('running');
   btn && (btn.disabled = false);
 }
