@@ -161,7 +161,7 @@ export function mountHighlighter(textarea) {
     overflowY:     'auto',
     // Hide scrollbars — textarea's scrollbars are on top and are the ones used
     scrollbarWidth: 'none',
-    color:         'transparent', // only spans inside are coloured
+    color:         '#d4d4d4', // default text colour; spans override with token colours
     background:    'transparent',
     pointerEvents: 'none',
     zIndex:        '0',
