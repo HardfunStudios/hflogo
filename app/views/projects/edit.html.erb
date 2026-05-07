@@ -139,6 +139,12 @@
       font-size:13px; line-height:1.6; padding:16px;
       tab-size:2; white-space:pre; overflow:auto;
     }
+    #logoStatusBar {
+      flex-shrink:0; display:flex; align-items:center; justify-content:flex-end;
+      padding:2px 12px; background:#2d2d2d; border-top:1px solid #444;
+      font-family:'Montserrat',sans-serif; font-size:11px; color:#929292;
+      user-select:none;
+    }
 
     /* ═══════════════════════════════════════════════════════════════
        PAINEL DIREITO — micromundo estilo tabela
@@ -308,6 +314,7 @@
               <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
                         placeholder="; código Logo aparecerá aqui"></textarea>
             </div>
+            <div id="logoStatusBar"><span id="logoCursorPos">Ln 1, Col 1</span></div>
           </div>
 
         </div>
@@ -377,11 +384,24 @@
       logoLineNumbers.textContent = nums;
       logoLineNumbers.scrollTop  = logoCodeEditor.scrollTop;
     }
-    logoCodeEditor.addEventListener('input',  updateLineNumbers);
+    var logoCursorPos = document.getElementById('logoCursorPos');
+    function updateCursorPos() {
+      var pos = logoCodeEditor.selectionStart;
+      var text = logoCodeEditor.value.substring(0, pos);
+      var ln  = text.split('\n').length;
+      var col = pos - text.lastIndexOf('\n');
+      if (logoCursorPos) logoCursorPos.textContent = 'Ln ' + ln + ', Col ' + col;
+    }
+    logoCodeEditor.addEventListener('input',     updateLineNumbers);
+    logoCodeEditor.addEventListener('keyup',     updateCursorPos);
+    logoCodeEditor.addEventListener('mouseup',   updateCursorPos);
+    logoCodeEditor.addEventListener('click',     updateCursorPos);
+    logoCodeEditor.addEventListener('selectionchange', updateCursorPos);
     logoCodeEditor.addEventListener('scroll', function() {
       logoLineNumbers.scrollTop = logoCodeEditor.scrollTop;
     });
     updateLineNumbers();
+    updateCursorPos();
   }
 })();
 </script>
