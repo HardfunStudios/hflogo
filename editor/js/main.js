@@ -862,7 +862,8 @@ function lpHighlighBlockTime(time) {
 }
 
 function generateCode() {
-  logoGenerator.STATEMENT_PREFIX = '__hl__ "%1\n';
+  logoGenerator.STATEMENT_PREFIX = ''; // prevent Blockly's auto-injection
+  logoGenerator._noHighlight     = false;
   return logoGenerator.workspaceToCode(window.workspace);
 }
 
@@ -1085,7 +1086,7 @@ function executeCode() {
       window.currentworld.reset();
       window.currentworld.setTimeVisibleMode(isTimeVisible());
       const code = generateCode();
-      console.log('[Logo] starting worker, code length:', code.length);
+      console.log('[Logo] código gerado:\n' + code);
       _startWorker(code);
     } catch(e) {
       console.error('executeCode error:', e);

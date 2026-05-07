@@ -45,37 +45,43 @@
     /* ═══════════════════════════════════════════════════════════════
        PAINEL ESQUERDO — editor com abas estilo browser
     ═══════════════════════════════════════════════════════════════ */
-    #leftPanel { flex:1; min-width:0; }
+    #leftPanel { flex:0 0 60%; min-width:0; display:flex; flex-direction:column; }
 
-    /* Barra de abas */
+    /* Barra de abas — fora do card, acima dele */
     #editorTabBar {
       display:flex; align-items:flex-end; flex-shrink:0;
-      background:transparent; padding:8px 12px 0; gap:4px;
+      padding:0; gap:3px; min-height:54px;
     }
 
     .editor-tab {
       display:flex; align-items:center; gap:7px;
-      padding:7px 16px 8px;
+      padding:6px 16px 8px;
       font-size:13px; font-weight:600; font-family:'Montserrat',sans-serif;
-      border:1px solid #c0c0c0; border-bottom:none; border-radius:6px 6px 0 0;
-      background:#e8e8e8; color:#777;
+      border:1px solid #c8c8c8; border-bottom:none; border-radius:6px 6px 0 0;
+      background:#f0f0f0; color:#929292;
       cursor:pointer; white-space:nowrap;
       transition:background 120ms, color 120ms;
-      position:relative; bottom:-1px;
     }
     .editor-tab.active {
       background:white; color:#0081A6;
-      border-color:#929292;
-      z-index:1;
+      border-color:#c8c8c8;
+      margin-bottom:-1px; position:relative; z-index:1;
     }
-    .editor-tab:hover:not(.active) { background:#ddd; color:#444; }
+    .editor-tab:hover:not(.active) { background:#e4e4e4; color:#444; }
 
     .editor-tab svg { flex-shrink:0; }
 
-    /* Linha separadora entre abas e conteúdo */
+    /* O card começa abaixo da barra de abas */
+    #leftCard {
+      flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+      border:1px solid #c8c8c8; border-radius:0 12px 12px 12px;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
+      background:white;
+    }
+
+    /* Conteúdo das abas */
     #editorTabContent {
       flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
-      border-top:1px solid #929292;
     }
 
     /* Blockly */
@@ -113,7 +119,7 @@
     /* ═══════════════════════════════════════════════════════════════
        PAINEL DIREITO — micromundo estilo tabela
     ═══════════════════════════════════════════════════════════════ */
-    #stagePanel { width:420px; flex-shrink:0; }
+    #stagePanel { flex:0 0 40%; min-width:0; }
 
     /* Header gradiente — igual ao cabeçalho da tabela */
     #stageHeader {
@@ -235,10 +241,10 @@
   <%# ── Main ── %>
   <div id="editor-main">
 
-    <%# ── Card esquerdo: editor com abas ── %>
-    <div id="leftPanel" class="editor-card">
+    <%# ── Painel esquerdo: abas + card ── %>
+    <div id="leftPanel">
 
-      <%# Barra de abas estilo browser %>
+      <%# Barra de abas — fora do card %>
       <div id="editorTabBar">
         <button class="editor-tab active" id="tabBlocos" aria-selected="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -257,21 +263,25 @@
         </button>
       </div>
 
-      <%# Conteúdo das abas %>
-      <div id="editorTabContent">
+      <%# Card do editor — começa abaixo das abas %>
+      <div id="leftCard">
 
-        <%# Workspace Blockly %>
-        <div id="blocklyDiv"></div>
+        <%# Conteúdo das abas %>
+        <div id="editorTabContent">
 
-        <%# Painel de texto Logo (oculto por enquanto) %>
-        <div id="logoTextPanel">
-          <div id="logoTextToolbar">
-            <span>Edição em texto — Logo</span>
+          <%# Workspace Blockly %>
+          <div id="blocklyDiv"></div>
+
+          <%# Painel de texto Logo (oculto por enquanto) %>
+          <div id="logoTextPanel">
+            <div id="logoTextToolbar">
+              <span>Edição em texto — Logo</span>
+            </div>
+            <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
+                      placeholder="; código Logo aparecerá aqui"></textarea>
           </div>
-          <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
-                    placeholder="; código Logo aparecerá aqui"></textarea>
-        </div>
 
+        </div>
       </div>
     </div>
 
