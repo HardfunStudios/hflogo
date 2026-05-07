@@ -2,7 +2,8 @@ import * as Blockly from 'blockly';
 import { javascriptGenerator, Order } from 'blockly/javascript';
 import * as ptBR from 'blockly/msg/pt-br';
 import { FieldAngle } from '@blockly/field-angle';
-import { logoGenerator } from './logo-generator.js';
+import { logoGenerator }     from './logo-generator.js';
+import { logoToBlocklyState } from './logo-to-blockly.js';
 
 Blockly.setLocale(ptBR);
 
@@ -852,6 +853,10 @@ const toolbox = {
   ],
 };
 
+// ─── Tab state ────────────────────────────────────────────────────────────────
+
+let _activeTab = 'blocos'; // 'blocos' | 'logo'
+
 // ─── LP code execution ────────────────────────────────────────────────────────
 
 let time_block_mapping = [];
@@ -862,10 +867,19 @@ function lpHighlighBlockTime(time) {
 }
 
 function generateCode() {
-  logoGenerator.STATEMENT_PREFIX = ''; // prevent Blockly's auto-injection
+  logoGenerator.STATEMENT_PREFIX = '';
   logoGenerator._noHighlight     = false;
   return logoGenerator.workspaceToCode(window.workspace);
 }
+
+function _getLogoCode() {
+  if (_activeTab === 'logo') {
+    return document.getElementById('logoCodeEditor')?.value ?? '';
+  }
+  return generateCode();
+}
+
+function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); }
 
 function getExecutionDelay() {
   const slider = document.getElementById('speedSlider');
@@ -1085,7 +1099,7 @@ function executeCode() {
       window.currentworld.renderAtEachCommand = true;
       window.currentworld.reset();
       window.currentworld.setTimeVisibleMode(isTimeVisible());
-      const code = generateCode();
+      const code = _getLogoCode();
       console.log('[Logo] código gerado:\n' + code);
       _startWorker(code);
     } catch(e) {
@@ -1239,10 +1253,68 @@ function _initLogoEditor() {
     stageSize
   );
 
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  const tabBlocos     = document.getElementById('tabBlocos');
+  const tabLogo       = document.getElementById('tabLogo');
+  const blocklyDiv    = document.getElementById('blocklyDiv');
+  const logoTextPanel = document.getElementById('logoTextPanel');
+  const logoCodeEl    = _getLogoTextarea();
+
+  function _switchToLogo() {
+    if (_activeTab === 'logo') return;
+    const code = generateCode();
+    if (logoCodeEl) logoCodeEl.value = code;
+    _activeTab = 'logo';
+    tabLogo.classList.add('active');
+    tabBlocos.classList.remove('active');
+    blocklyDiv.style.display    = 'none';
+    logoTextPanel.classList.add('active');
+  }
+
+  function _switchToBlocos() {
+    if (_activeTab === 'blocos') return;
+    const code = logoCodeEl?.value ?? '';
+    try {
+      const state = logoToBlocklyState(code);
+      window.workspace.clear();
+      Blockly.Events.disable();
+      try {
+        Blockly.serialization.workspaces.load(state, window.workspace, { recordUndo: false });
+      } finally {
+        Blockly.Events.enable();
+      }
+      window.workspace.render();
+    } catch (e) {
+      alert('Erro ao converter Logo para Blocos:\n' + e.message);
+      return;
+    }
+    _activeTab = 'blocos';
+    tabBlocos.classList.add('active');
+    tabLogo.classList.remove('active');
+    blocklyDiv.style.display = '';
+    logoTextPanel.classList.remove('active');
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  }
+
+  tabLogo?.addEventListener('click', _switchToLogo);
+  tabBlocos?.addEventListener('click', _switchToBlocos);
+
+  // Autosave ao editar o código Logo diretamente
+  logoCodeEl?.addEventListener('input', () => {
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  });
+
   // API para o Rails (editor_controller.js)
   window.LogoEditor = {
     getProjectState() {
-      return Blockly.serialization.workspaces.save(window.workspace);
+      const state = Blockly.serialization.workspaces.save(window.workspace);
+      state.logoCode     = logoCodeEl?.value ?? '';
+      state.activeTab    = _activeTab;
+      return state;
     },
     loadProjectState(state) {
       try {
@@ -1255,6 +1327,10 @@ function _initLogoEditor() {
           Blockly.Events.enable();
         }
         window.workspace.render();
+        // Restaura código Logo salvo
+        if (logoCodeEl && obj.logoCode) logoCodeEl.value = obj.logoCode;
+        // Restaura aba ativa
+        if (obj.activeTab === 'logo') _switchToLogo();
       } catch (e) {
         console.error('LogoEditor.loadProjectState:', e, e.stack);
       }
