@@ -108,6 +108,15 @@
     #logoTextToolbar span {
       font-size:11px; font-family:'Montserrat',sans-serif; color:#929292;
     }
+    #logoSyntaxError {
+      display:none; align-items:center; gap:5px; margin-left:auto;
+      font-size:11px; font-family:'Montserrat',sans-serif;
+      color:#f87171; background:rgba(248,113,113,0.1);
+      border:1px solid rgba(248,113,113,0.3);
+      border-radius:4px; padding:2px 8px; max-width:60%;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    #logoSyntaxError.visible { display:flex; }
     #logoEditorWrap {
       flex:1; display:flex; overflow:hidden; min-height:0; position:relative;
     }
@@ -310,6 +319,7 @@
           <div id="logoTextPanel">
             <div id="logoTextToolbar">
               <span>Edição em texto — Logo</span>
+              <div id="logoSyntaxError" title=""></div>
             </div>
             <div id="logoEditorWrap">
               <div id="logoLineNumbers">1</div>

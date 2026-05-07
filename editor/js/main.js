@@ -1368,6 +1368,20 @@ function _initLogoEditor() {
     logoTextPanel.classList.add('active');
   }
 
+  const syntaxErrorEl = document.getElementById('logoSyntaxError');
+
+  function _showSyntaxError(msg) {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.textContent = '⚠ ' + msg;
+    syntaxErrorEl.title = msg;
+    syntaxErrorEl.classList.add('visible');
+  }
+
+  function _clearSyntaxError() {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.classList.remove('visible');
+  }
+
   function _switchToBlocos() {
     if (_activeTab === 'blocos') return;
     const code = logoCodeEl?.value ?? '';
@@ -1382,9 +1396,10 @@ function _initLogoEditor() {
       }
       window.workspace.render();
     } catch (e) {
-      alert('Erro ao converter Logo para Blocos:\n' + e.message);
+      _showSyntaxError(e.message);
       return;
     }
+    _clearSyntaxError();
     _activeTab = 'blocos';
     tabBlocos.classList.add('active');
     tabLogo.classList.remove('active');
@@ -1394,6 +1409,8 @@ function _initLogoEditor() {
       window._onChangedCallback(window.LogoEditor.getProjectState());
     }
   }
+
+  logoCodeEl?.addEventListener('input', _clearSyntaxError);
 
   tabLogo?.addEventListener('click', _switchToLogo);
   tabBlocos?.addEventListener('click', _switchToBlocos);
