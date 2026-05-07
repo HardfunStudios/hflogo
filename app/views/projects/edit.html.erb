@@ -50,8 +50,7 @@
     /* Barra de abas */
     #editorTabBar {
       display:flex; align-items:flex-end; flex-shrink:0;
-      background:#e8e8e8; padding:8px 12px 0; gap:4px;
-      border-radius:12px 12px 0 0;
+      background:transparent; padding:8px 12px 0; gap:4px;
     }
 
     .editor-tab {
@@ -59,7 +58,7 @@
       padding:7px 16px 8px;
       font-size:13px; font-weight:600; font-family:'Montserrat',sans-serif;
       border:1px solid #c0c0c0; border-bottom:none; border-radius:6px 6px 0 0;
-      background:#d4d4d4; color:#777;
+      background:#e8e8e8; color:#777;
       cursor:pointer; white-space:nowrap;
       transition:background 120ms, color 120ms;
       position:relative; bottom:-1px;
@@ -69,7 +68,7 @@
       border-color:#929292;
       z-index:1;
     }
-    .editor-tab:hover:not(.active) { background:#c8c8c8; color:#444; }
+    .editor-tab:hover:not(.active) { background:#ddd; color:#444; }
 
     .editor-tab svg { flex-shrink:0; }
 
