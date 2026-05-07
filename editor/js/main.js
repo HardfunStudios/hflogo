@@ -856,6 +856,52 @@ const toolbox = {
 // ─── Tab state ────────────────────────────────────────────────────────────────
 
 let _activeTab = 'blocos'; // 'blocos' | 'logo'
+let _running   = false;
+
+function _setRunning(val) {
+  _running = val;
+  ['tabBlocos', 'tabLogo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = val;
+  });
+}
+
+function _shouldHighlight() {
+  return parseInt(document.getElementById('speedSlider')?.value ?? '5') < 6;
+}
+
+// Inject __hl__ "base64(L{line}) before each executable line for Logo-mode stepping
+function _injectLineMarkers(code) {
+  const enc = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return code.split('\n').flatMap((line, i) => {
+    const t = line.trim();
+    if (!t || t.startsWith(';') || t === '[' || t === ']' || t === 'fim') return [line];
+    return [`__hl__ "${enc('L' + (i + 1))}`, line];
+  }).join('\n');
+}
+
+const _LOGO_LINE_HEIGHT = 13 * 1.6; // must match CSS font-size × line-height
+const _LOGO_PADDING_TOP = 16;
+
+function _highlightLogoLine(lineNum) {
+  const ta = document.getElementById('logoCodeEditor');
+  const hl = document.getElementById('logoLineHighlight');
+  if (!ta || !hl) return;
+  const y = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT - ta.scrollTop;
+  hl.style.top    = y + 'px';
+  hl.style.height = _LOGO_LINE_HEIGHT + 'px';
+  hl.style.opacity = '1';
+  // Keep line visible
+  const taH = ta.clientHeight;
+  if (y < _LOGO_PADDING_TOP || y + _LOGO_LINE_HEIGHT > taH - _LOGO_PADDING_TOP) {
+    ta.scrollTop = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT - taH / 2;
+  }
+}
+
+function _clearLogoHighlight() {
+  const hl = document.getElementById('logoLineHighlight');
+  if (hl) hl.style.opacity = '0';
+}
 
 // ─── LP code execution ────────────────────────────────────────────────────────
 
@@ -880,10 +926,13 @@ function generateDisplayCode() {
   return logoGenerator.workspaceToCode(window.workspace);
 }
 
-// Code to send to the worker: instrumented from Blockly, plain from Logo tab
+// Code to send to the worker: instrumented when highlighting, plain otherwise
 function _getLogoCode() {
-  if (_activeTab === 'logo') return document.getElementById('logoCodeEditor')?.value ?? '';
-  return generateCode();
+  if (_activeTab === 'logo') {
+    const raw = document.getElementById('logoCodeEditor')?.value ?? '';
+    return _shouldHighlight() ? _injectLineMarkers(raw) : raw;
+  }
+  return _shouldHighlight() ? generateCode() : generateDisplayCode();
 }
 
 function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); }
@@ -891,7 +940,7 @@ function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); 
 function getExecutionDelay() {
   const slider = document.getElementById('speedSlider');
   if (!slider) return 0;
-  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0 };
+  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0, 6: 0 };
   return map[parseInt(slider.value)] ?? 0;
 }
 
@@ -928,6 +977,7 @@ function _applyCommand(name, args) {
 
 function _startWorker(code) {
   if (_worker) { _worker.terminate(); _worker = null; }
+  _setRunning(true);
 
   time_block_mapping = [];
   window.workspace.highlightBlock(null);
@@ -943,9 +993,23 @@ function _startWorker(code) {
     }
 
     if (msg.type === 'highlight') {
+      // Speed 6: skip all highlighting, ack immediately
+      if (!_shouldHighlight()) {
+        if (_worker) _worker.postMessage({ type: 'ack' });
+        return;
+      }
+
       window.currentworld.render();
       time_block_mapping.push(msg.blockId);
-      window.workspace.highlightBlock(msg.blockId);
+
+      // Highlight block or Logo line depending on active tab
+      if (_activeTab === 'logo' && msg.blockId.startsWith('L')) {
+        _highlightLogoLine(parseInt(msg.blockId.slice(1)));
+      } else {
+        _clearLogoHighlight();
+        window.workspace.highlightBlock(msg.blockId);
+      }
+
       const delay = getExecutionDelay();
       if (delay > 0) {
         setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
@@ -962,12 +1026,13 @@ function _startWorker(code) {
 
     if (msg.type === 'done') {
       window.workspace.highlightBlock(null);
+      _clearLogoHighlight();
       _worker.terminate();
       _worker = null;
-      // Record final step and composite pen+turtle into renderCanvas
       window.currentworld.render();
       const btn = document.getElementById('runButton');
       _finishExecution(btn);
+      _setRunning(false);
     }
   };
 
@@ -976,6 +1041,8 @@ function _startWorker(code) {
     const btn = document.getElementById('runButton');
     btn?.classList.remove('running');
     btn && (btn.disabled = false);
+    _clearLogoHighlight();
+    _setRunning(false);
     if (_worker) { _worker.terminate(); _worker = null; }
   };
 
