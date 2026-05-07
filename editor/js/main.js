@@ -1422,13 +1422,13 @@ function _initLogoEditor() {
           Blockly.Events.enable();
         }
         window.workspace.render();
-        // Restaura código Logo salvo
-        if (logoCodeEl && obj.logoCode) {
+        // Restaura aba ativa primeiro (_switchToLogo regenera o textarea dos blocos)
+        if (obj.activeTab === 'logo') _switchToLogo();
+        // Depois sobrescreve com o código Logo salvo (tem precedência sobre blocos)
+        if (logoCodeEl && obj.logoCode != null) {
           logoCodeEl.value = obj.logoCode;
           logoCodeEl.dispatchEvent(new Event('input'));
         }
-        // Restaura aba ativa
-        if (obj.activeTab === 'logo') _switchToLogo();
       } catch (e) {
         console.error('LogoEditor.loadProjectState:', e, e.stack);
       }
