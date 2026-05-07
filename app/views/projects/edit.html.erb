@@ -116,6 +116,12 @@
       background:rgba(255,255,255,0.07); pointer-events:none;
       opacity:0;
     }
+    #logoLineArrow {
+      position:absolute; left:0; width:44px; z-index:2;
+      display:flex; align-items:center; justify-content:flex-end;
+      padding-right:6px; pointer-events:none; opacity:0;
+      color:#0081A6; font-size:11px; box-sizing:border-box;
+    }
     .editor-tab:disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; }
     #logoLineNumbers {
       flex-shrink:0; width:44px;
@@ -297,6 +303,7 @@
             </div>
             <div id="logoEditorWrap">
               <div id="logoLineNumbers">1</div>
+              <div id="logoLineArrow">▶</div>
               <div id="logoLineHighlight"></div>
               <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
                         placeholder="; código Logo aparecerá aqui"></textarea>

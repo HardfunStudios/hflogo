@@ -884,23 +884,33 @@ const _LOGO_LINE_HEIGHT = 13 * 1.6; // must match CSS font-size × line-height
 const _LOGO_PADDING_TOP = 16;
 
 function _highlightLogoLine(lineNum) {
-  const ta = document.getElementById('logoCodeEditor');
-  const hl = document.getElementById('logoLineHighlight');
+  const ta    = document.getElementById('logoCodeEditor');
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
   if (!ta || !hl) return;
-  const y = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT - ta.scrollTop;
+  // Auto-scroll to keep line visible
+  const taH = ta.clientHeight;
+  const yRaw = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT;
+  if (yRaw - ta.scrollTop < _LOGO_PADDING_TOP ||
+      yRaw - ta.scrollTop + _LOGO_LINE_HEIGHT > taH - _LOGO_PADDING_TOP) {
+    ta.scrollTop = yRaw - taH / 2;
+  }
+  const y = yRaw - ta.scrollTop;
   hl.style.top    = y + 'px';
   hl.style.height = _LOGO_LINE_HEIGHT + 'px';
   hl.style.opacity = '1';
-  // Keep line visible
-  const taH = ta.clientHeight;
-  if (y < _LOGO_PADDING_TOP || y + _LOGO_LINE_HEIGHT > taH - _LOGO_PADDING_TOP) {
-    ta.scrollTop = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT - taH / 2;
+  if (arrow) {
+    arrow.style.top    = y + 'px';
+    arrow.style.height = _LOGO_LINE_HEIGHT + 'px';
+    arrow.style.opacity = '1';
   }
 }
 
 function _clearLogoHighlight() {
-  const hl = document.getElementById('logoLineHighlight');
-  if (hl) hl.style.opacity = '0';
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
+  if (hl)    hl.style.opacity    = '0';
+  if (arrow) arrow.style.opacity = '0';
 }
 
 // ─── LP code execution ────────────────────────────────────────────────────────
