@@ -937,13 +937,13 @@ function generateDisplayCode() {
   return logoGenerator.workspaceToCode(window.workspace);
 }
 
-// Code to send to the worker: instrumented when highlighting, plain otherwise
+// Code to send to the worker: always instrumented so time slider records steps
 function _getLogoCode() {
   if (_activeTab === 'logo') {
     const raw = document.getElementById('logoCodeEditor')?.value ?? '';
-    return _shouldHighlight() ? _injectLineMarkers(raw) : raw;
+    return _injectLineMarkers(raw);
   }
-  return _shouldHighlight() ? generateCode() : generateDisplayCode();
+  return generateCode();
 }
 
 function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); }
