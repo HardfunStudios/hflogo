@@ -46,7 +46,7 @@ class Api::V1::ProjectsController < ApplicationController
   def project_params
     attrs = params.require(:project).permit(:title, :description, :visibility).to_h
     if params[:project][:data].present?
-      attrs[:data] = params[:project][:data].to_json
+      attrs[:data] = params[:project][:data].to_unsafe_h.to_json
     end
     attrs
   end
