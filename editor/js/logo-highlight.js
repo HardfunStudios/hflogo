@@ -129,55 +129,69 @@ export function highlightLogo(code) {
 // The textarea is made colour:transparent / caret-color:white so only the
 // backdrop colours are visible, while keyboard input still goes to the textarea.
 
+// CSS properties that affect text layout and must match exactly between
+// the textarea and the pre backdrop.
+const MIRROR_PROPS = [
+  'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontVariant',
+  'lineHeight', 'letterSpacing', 'wordSpacing',
+  'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+  'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+  'boxSizing', 'tabSize',
+];
+
 export function mountHighlighter(textarea) {
   injectCSS();
 
   const wrap = textarea.parentElement;
 
-  const backdrop = document.createElement('div');
-  backdrop.id = 'logoHighlightBackdrop';
-  Object.assign(backdrop.style, {
-    position:   'absolute',
-    top:        '0', left: '0', right: '0', bottom: '0',
-    pointerEvents: 'none',
-    overflow:   'hidden',
-    zIndex:     '0',
-  });
-
   const pre = document.createElement('pre');
   pre.id = 'logoHighlightPre';
-  // Pre must mirror the textarea's box model exactly
+
+  // Mirror textarea's computed layout so text positions match pixel-perfect
+  const cs = window.getComputedStyle(textarea);
+  MIRROR_PROPS.forEach(p => { pre.style[p] = cs[p]; });
+
   Object.assign(pre.style, {
-    margin:     '0',
-    padding:    '16px',
-    fontFamily: 'inherit',
-    fontSize:   'inherit',
-    lineHeight: 'inherit',
-    tabSize:    '2',
-    whiteSpace: 'pre',
-    wordWrap:   'normal',
-    color:      'transparent', // invisible — only spans inside are coloured
-    background: 'transparent',
-    minHeight:  '100%',
+    position:      'absolute',
+    top:           '0', left: '0', right: '0', bottom: '0',
+    margin:        '0',
+    whiteSpace:    'pre',
+    wordWrap:      'normal',
+    overflowX:     'auto',
+    overflowY:     'auto',
+    // Hide scrollbars — textarea's scrollbars are on top and are the ones used
+    scrollbarWidth: 'none',
+    color:         'transparent', // only spans inside are coloured
+    background:    'transparent',
+    pointerEvents: 'none',
+    zIndex:        '0',
   });
 
-  backdrop.appendChild(pre);
-  wrap.insertBefore(backdrop, textarea);
+  // Hide webkit scrollbar on pre
+  const noScrollStyle = document.createElement('style');
+  noScrollStyle.textContent = '#logoHighlightPre::-webkit-scrollbar { display:none }';
+  document.head.appendChild(noScrollStyle);
 
-  // textarea: text transparent, caret visible
-  textarea.style.color       = 'transparent';
-  textarea.style.caretColor  = '#d4d4d4';
-  textarea.style.background  = 'transparent';
+  wrap.insertBefore(pre, textarea);
+
+  // Make selection visible on transparent textarea
+  const selStyle = document.createElement('style');
+  selStyle.textContent = '#logoCodeEditor::selection { background: rgba(255,255,255,0.18); color: transparent; }';
+  document.head.appendChild(selStyle);
+
+  // Ensure textarea is above pre
+  textarea.style.zIndex      = '1';
   textarea.style.position    = 'absolute';
   textarea.style.top         = '0';
   textarea.style.left        = '0';
   textarea.style.right       = '0';
   textarea.style.bottom      = '0';
-  textarea.style.zIndex      = '1';
-  textarea.style.resize      = 'none';
+  textarea.style.color       = 'transparent';
+  textarea.style.caretColor  = '#d4d4d4';
+  textarea.style.background  = 'transparent';
 
   function sync() {
-    pre.innerHTML = highlightLogo(textarea.value) + '\n'; // trailing \n prevents last-line collapse
+    pre.innerHTML  = highlightLogo(textarea.value) + '\n';
     pre.scrollTop  = textarea.scrollTop;
     pre.scrollLeft = textarea.scrollLeft;
   }
