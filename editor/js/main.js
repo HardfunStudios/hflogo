@@ -1263,7 +1263,7 @@ function _initLogoEditor() {
   function _switchToLogo() {
     if (_activeTab === 'logo') return;
     const code = generateCode();
-    if (logoCodeEl) logoCodeEl.value = code;
+    if (logoCodeEl) { logoCodeEl.value = code; logoCodeEl.dispatchEvent(new Event('input')); }
     _activeTab = 'logo';
     tabLogo.classList.add('active');
     tabBlocos.classList.remove('active');
@@ -1328,7 +1328,10 @@ function _initLogoEditor() {
         }
         window.workspace.render();
         // Restaura código Logo salvo
-        if (logoCodeEl && obj.logoCode) logoCodeEl.value = obj.logoCode;
+        if (logoCodeEl && obj.logoCode) {
+          logoCodeEl.value = obj.logoCode;
+          logoCodeEl.dispatchEvent(new Event('input'));
+        }
         // Restaura aba ativa
         if (obj.activeTab === 'logo') _switchToLogo();
       } catch (e) {

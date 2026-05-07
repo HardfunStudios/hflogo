@@ -108,8 +108,20 @@
     #logoTextToolbar span {
       font-size:11px; font-family:'Montserrat',sans-serif; color:#929292;
     }
+    #logoEditorWrap {
+      flex:1; display:flex; overflow:hidden; min-height:0;
+    }
+    #logoLineNumbers {
+      flex-shrink:0; width:44px;
+      background:#1a1a1a; color:#555; border-right:1px solid #333;
+      font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
+      font-size:13px; line-height:1.6;
+      padding:16px 8px 16px 0; text-align:right;
+      user-select:none; overflow:hidden;
+      white-space:pre;
+    }
     #logoCodeEditor {
-      flex:1; width:100%; border:none; outline:none; resize:none;
+      flex:1; border:none; outline:none; resize:none;
       background:#1e1e1e; color:#d4d4d4;
       font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
       font-size:13px; line-height:1.6; padding:16px;
@@ -277,8 +289,11 @@
             <div id="logoTextToolbar">
               <span>Edição em texto — Logo</span>
             </div>
-            <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
-                      placeholder="; código Logo aparecerá aqui"></textarea>
+            <div id="logoEditorWrap">
+              <div id="logoLineNumbers">1</div>
+              <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
+                        placeholder="; código Logo aparecerá aqui"></textarea>
+            </div>
           </div>
 
         </div>
@@ -335,6 +350,24 @@
     ['mousedown','mouseup','input','change'].forEach(function(ev) {
       speedSlider.addEventListener(ev, function(e) { e.stopPropagation(); }, true);
     });
+  }
+
+  // ── Logo line numbers ──────────────────────────────────────────────────────
+  var logoCodeEditor  = document.getElementById('logoCodeEditor');
+  var logoLineNumbers = document.getElementById('logoLineNumbers');
+  if (logoCodeEditor && logoLineNumbers) {
+    function updateLineNumbers() {
+      var lines = logoCodeEditor.value.split('\n').length;
+      var nums  = '';
+      for (var i = 1; i <= lines; i++) nums += i + '\n';
+      logoLineNumbers.textContent = nums;
+      logoLineNumbers.scrollTop  = logoCodeEditor.scrollTop;
+    }
+    logoCodeEditor.addEventListener('input',  updateLineNumbers);
+    logoCodeEditor.addEventListener('scroll', function() {
+      logoLineNumbers.scrollTop = logoCodeEditor.scrollTop;
+    });
+    updateLineNumbers();
   }
 })();
 </script>
