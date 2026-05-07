@@ -1005,29 +1005,27 @@ function _startWorker(code) {
     }
 
     if (msg.type === 'highlight') {
-      // Speed 6: skip all highlighting, ack immediately
-      if (!_shouldHighlight()) {
-        if (_worker) _worker.postMessage({ type: 'ack' });
-        return;
-      }
-
+      // Always record for time slider regardless of speed
       window.currentworld.render();
       time_block_mapping.push(msg.blockId);
 
-      // Highlight block or Logo line depending on active tab
-      if (_activeTab === 'logo' && msg.blockId.startsWith('L')) {
-        _highlightLogoLine(parseInt(msg.blockId.slice(1)));
+      if (_shouldHighlight()) {
+        // Visual highlight: block or Logo line
+        if (_activeTab === 'logo' && msg.blockId.startsWith('L')) {
+          _highlightLogoLine(parseInt(msg.blockId.slice(1)));
+        } else {
+          _clearLogoHighlight();
+          window.workspace.highlightBlock(msg.blockId);
+        }
+        const delay = getExecutionDelay();
+        if (delay > 0) {
+          setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+        } else {
+          requestAnimationFrame(() => { if (_worker) _worker.postMessage({ type: 'ack' }); });
+        }
       } else {
-        _clearLogoHighlight();
-        window.workspace.highlightBlock(msg.blockId);
-      }
-
-      const delay = getExecutionDelay();
-      if (delay > 0) {
-        setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
-      } else {
-        // yield to browser so the highlight repaints before next step
-        requestAnimationFrame(() => { if (_worker) _worker.postMessage({ type: 'ack' }); });
+        // Speed 6: no visual update, ack immediately
+        if (_worker) _worker.postMessage({ type: 'ack' });
       }
       return;
     }
