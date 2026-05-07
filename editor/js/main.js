@@ -774,7 +774,7 @@ const toolbox = {
         { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
-        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
+        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'math_number', fields: { NUM: 360 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_setpos', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_setposx', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_xcor' },
