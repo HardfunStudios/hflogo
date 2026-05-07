@@ -866,16 +866,23 @@ function lpHighlighBlockTime(time) {
   window.workspace.highlightBlock(block_id);
 }
 
+// With __hl__ markers — only for the worker (block highlighting)
 function generateCode() {
   logoGenerator.STATEMENT_PREFIX = '';
   logoGenerator._noHighlight     = false;
   return logoGenerator.workspaceToCode(window.workspace);
 }
 
+// Clean Logo — for display in the text editor
+function generateDisplayCode() {
+  logoGenerator.STATEMENT_PREFIX = '';
+  logoGenerator._noHighlight     = true;
+  return logoGenerator.workspaceToCode(window.workspace);
+}
+
+// Code to send to the worker: instrumented from Blockly, plain from Logo tab
 function _getLogoCode() {
-  if (_activeTab === 'logo') {
-    return document.getElementById('logoCodeEditor')?.value ?? '';
-  }
+  if (_activeTab === 'logo') return document.getElementById('logoCodeEditor')?.value ?? '';
   return generateCode();
 }
 
@@ -1262,7 +1269,7 @@ function _initLogoEditor() {
 
   function _switchToLogo() {
     if (_activeTab === 'logo') return;
-    const code = generateCode();
+    const code = generateDisplayCode();
     if (logoCodeEl) { logoCodeEl.value = code; logoCodeEl.dispatchEvent(new Event('input')); }
     _activeTab = 'logo';
     tabLogo.classList.add('active');
