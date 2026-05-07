@@ -1014,7 +1014,8 @@ function _startWorker(code) {
       if (delay > 0) {
         setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
       } else {
-        _worker.postMessage({ type: 'ack' });
+        // yield to browser so the highlight repaints before next step
+        requestAnimationFrame(() => { if (_worker) _worker.postMessage({ type: 'ack' }); });
       }
       return;
     }
