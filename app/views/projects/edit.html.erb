@@ -132,9 +132,13 @@
       user-select:none; overflow:hidden;
       white-space:pre;
     }
+    #logoCodeArea {
+      flex:1; position:relative; overflow:hidden; min-width:0;
+    }
     #logoCodeEditor {
-      flex:1; border:none; outline:none; resize:none; position:relative; z-index:0;
-      background:#1e1e1e; color:#d4d4d4;
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      border:none; outline:none; resize:none; z-index:1;
+      background:transparent; color:transparent; caret-color:#d4d4d4;
       font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
       font-size:13px; line-height:1.6; padding:16px;
       tab-size:2; white-space:pre; overflow:auto;
@@ -311,8 +315,10 @@
               <div id="logoLineNumbers">1</div>
               <div id="logoLineArrow">▶</div>
               <div id="logoLineHighlight"></div>
-              <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
-                        placeholder="; código Logo aparecerá aqui"></textarea>
+              <div id="logoCodeArea">
+                <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
+                          placeholder="; código Logo aparecerá aqui"></textarea>
+              </div>
             </div>
             <div id="logoStatusBar"><span id="logoCursorPos">Ln 1, Col 1</span></div>
           </div>

@@ -4,6 +4,7 @@ import * as ptBR from 'blockly/msg/pt-br';
 import { FieldAngle } from '@blockly/field-angle';
 import { logoGenerator }     from './logo-generator.js';
 import { logoToBlocklyState } from './logo-to-blockly.js';
+import { mountHighlighter }   from './logo-highlight.js';
 
 Blockly.setLocale(ptBR);
 
@@ -1354,6 +1355,7 @@ function _initLogoEditor() {
   const blocklyDiv    = document.getElementById('blocklyDiv');
   const logoTextPanel = document.getElementById('logoTextPanel');
   const logoCodeEl    = _getLogoTextarea();
+  if (logoCodeEl) mountHighlighter(logoCodeEl);
 
   function _switchToLogo() {
     if (_activeTab === 'logo') return;
