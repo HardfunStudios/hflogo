@@ -42,7 +42,7 @@
     }
 
     /* ── Left panel ─────────────────────────────────────────────────── */
-    #leftPanel { flex:0 0 60%; min-width:0; display:flex; flex-direction:column; }
+    #leftPanel { flex:1; min-width:0; display:flex; flex-direction:column; }
 
     #leftCard {
       flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
@@ -119,6 +119,34 @@
     #programTimeSlider { width:100%; accent-color:#0081A6; cursor:pointer; }
     #sliderArea output, #sliderArea span { display:none !important; }
     #stepsText { font-size:11px; color:#929292; font-family:'Montserrat',sans-serif; }
+
+    /* ── Sidebar ────────────────────────────────────────────────────── */
+    #show-sidebar {
+      width:240px; flex-shrink:0; overflow-y:auto;
+      background:white; border-radius:12px;
+      border:1px solid #c8c8c8;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
+      padding:20px 16px; display:flex; flex-direction:column; gap:16px;
+    }
+    #show-sidebar .project-title {
+      font-size:15px; font-weight:700; font-family:'Montserrat',sans-serif; color:black;
+    }
+    #show-sidebar .project-meta {
+      font-size:12px; color:#929292; margin-top:4px;
+      font-family:'Montserrat',sans-serif;
+    }
+    #show-sidebar .project-desc {
+      font-size:13px; color:#444; line-height:1.5;
+    }
+    #show-sidebar .project-stats {
+      display:flex; gap:12px; font-size:12px; color:#929292;
+    }
+    #show-sidebar .divider {
+      border:none; border-top:1px solid #f0f0f0; margin:0;
+    }
+    #show-sidebar .sidebar-actions {
+      display:flex; flex-direction:column; gap:8px;
+    }
   </style>
 <% end %>
 
@@ -136,21 +164,6 @@
 
     <h1><%= @project.title %></h1>
 
-    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
-      <span style="font-size:12px;color:#929292;font-family:'Montserrat',sans-serif;">
-        por <%= link_to @project.user.display, user_profile_path(@project.user.username),
-                style: "color:#0081A6;" %>
-      </span>
-      <% if user_signed_in? && current_user == @project.user %>
-        <%= link_to t("projects.edit"), edit_project_path(@project),
-            class: "btn-secondary", style: "font-size:12px;padding:4px 12px;",
-            data: { turbo: false } %>
-      <% end %>
-      <% if user_signed_in? && current_user != @project.user %>
-        <%= button_to t("projects.remix"), remix_project_path(@project), method: :post,
-            class: "btn-secondary", style: "font-size:12px;padding:4px 12px;" %>
-      <% end %>
-    </div>
   </div>
 
   <%# ── Main ── %>
@@ -165,6 +178,7 @@
 
     <%# ── Right: stage ── %>
     <div id="stagePanel" class="editor-card">
+
 
       <div id="stageHeader">
         <button id="runButton" title="Executar (F5)"><span>▶</span></button>
@@ -188,6 +202,53 @@
         <div id="stepsText"></div>
       </div>
 
+    </div>
+
+    <%# ── Sidebar ── %>
+    <div id="show-sidebar">
+      <div>
+        <div class="project-title"><%= @project.title %></div>
+        <div class="project-meta">
+          por <%= link_to @project.user.display, user_profile_path(@project.user.username),
+                  style: "color:#0081A6;" %>
+          <% if @project.published_at %>
+            · <%= l(@project.published_at, format: :short) %>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @project.description.present? %>
+        <hr class="divider">
+        <div class="project-desc"><%= simple_format(@project.description) %></div>
+      <% end %>
+
+      <hr class="divider">
+      <div class="project-stats">
+        <span>👁 <%= @project.views_count %></span>
+        <span>❤️ <%= @project.loves_count %></span>
+        <span>🔀 <%= @project.remixes_count %></span>
+      </div>
+
+      <% if @project.parent_project %>
+        <hr class="divider">
+        <div style="font-size:12px;color:#929292;font-family:'Montserrat',sans-serif;">
+          Remix de <%= link_to @project.parent_project.title, @project.parent_project,
+                          style: "color:#0081A6;" %>
+        </div>
+      <% end %>
+
+      <hr class="divider">
+      <div class="sidebar-actions">
+        <% if user_signed_in? && current_user == @project.user %>
+          <%= link_to t("projects.edit"), edit_project_path(@project),
+              class: "btn-secondary", style: "font-size:12px;padding:6px 12px;text-align:center;",
+              data: { turbo: false } %>
+        <% end %>
+        <% if user_signed_in? && current_user != @project.user %>
+          <%= button_to t("projects.remix"), remix_project_path(@project), method: :post,
+              class: "btn-secondary", style: "font-size:12px;padding:6px 12px;" %>
+        <% end %>
+      </div>
     </div>
 
   </div>
