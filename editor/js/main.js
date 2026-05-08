@@ -1354,6 +1354,7 @@ function _initLogoEditor() {
     stageSize,
     stageSize
   );
+  _applyTimeVisibleMode(); // sync initial checkbox state now that currentworld exists
 
   // ── Tab switching ──────────────────────────────────────────────────────────
   const tabBlocos     = document.getElementById('tabBlocos');
