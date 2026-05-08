@@ -58,7 +58,7 @@ function Microworld(canvasParentSelector,width, height) {
 
 
   //enables the make time visible mode
-  var makeTimeVisibleMode = true;
+  var makeTimeVisibleMode = false;
 
   // ── Replay-based time tracking (replaces canvas stack) ──────────────────────
   // commandLog stores {name, args} for every turtle command executed.
