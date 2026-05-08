@@ -1167,7 +1167,7 @@ function _finishExecution(btn, { stopped = false, hadError = false } = {}) {
   setStepsLabel(totalSteps);
 
   const slider = document.getElementById('programTimeSlider');
-  if (slider && isTimeVisible()) {
+  if (slider) {
     slider.max   = Math.max(1, totalSteps);
     slider.min   = 1;
     slider.step  = 1;
@@ -1312,15 +1312,9 @@ function _initLogoEditor() {
     slider.addEventListener('input', slideTime);
   }
 
-  function _applyTimeVisibleMode() {
-    const on = isTimeVisible();
-    if (window.currentworld) window.currentworld.setTimeVisibleMode(on);
-    const area = document.getElementById('sliderArea');
-    if (area) area.style.display = on ? '' : 'none';
-  }
-  // Hide slider area initially — shown only when checkbox is checked
-  _applyTimeVisibleMode();
-  document.getElementById('isTimeVisible')?.addEventListener('change', _applyTimeVisibleMode);
+  document.getElementById('isTimeVisible')?.addEventListener('change', () => {
+    if (window.currentworld) window.currentworld.setTimeVisibleMode(isTimeVisible());
+  });
 
   document.getElementById('save_button')?.addEventListener('click', save);
   document.getElementById('load_button')?.addEventListener('click', load);
@@ -1354,7 +1348,7 @@ function _initLogoEditor() {
     stageSize,
     stageSize
   );
-  _applyTimeVisibleMode(); // sync initial checkbox state now that currentworld exists
+  window.currentworld.setTimeVisibleMode(isTimeVisible());
 
   // ── Tab switching ──────────────────────────────────────────────────────────
   const tabBlocos     = document.getElementById('tabBlocos');
