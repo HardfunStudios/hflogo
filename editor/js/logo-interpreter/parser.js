@@ -195,7 +195,18 @@ export class Parser {
   //   unary      (- not)
   //   primary
 
-  parseExpr() { return this.parseComparison(); }
+  parseExpr() { return this.parseLogical(); }
+
+  parseLogical() {
+    let left = this.parseComparison();
+    while (this.peek().type === T.IDENT) {
+      const v = this.peek().value;
+      if (v !== 'ou' && v !== 'e' && v !== 'or' && v !== 'and') break;
+      const op = this.advance().value;
+      left = n('BinOp', { op, left, right: this.parseComparison() });
+    }
+    return left;
+  }
 
   parseComparison() {
     let left = this.parseAdditive();
