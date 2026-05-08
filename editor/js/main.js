@@ -1314,7 +1314,7 @@ function _initLogoEditor() {
 
   function _applyTimeVisibleMode() {
     const on = isTimeVisible();
-    window.currentworld.setTimeVisibleMode(on);
+    if (window.currentworld) window.currentworld.setTimeVisibleMode(on);
     const area = document.getElementById('sliderArea');
     if (area) area.style.display = on ? '' : 'none';
   }
