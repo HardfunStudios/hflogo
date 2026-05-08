@@ -1328,7 +1328,7 @@ function _initLogoEditor() {
     scrollbars: true,
     zoom: readOnly
       ? { controls: false, wheel: true, startScale: 0.65 }
-      : { controls: false, wheel: false, startScale: 1.0 },
+      : { controls: true, wheel: true, startScale: 1.0 },
   });
 
   setTimeout(() => window.workspace.resize(), 0);
