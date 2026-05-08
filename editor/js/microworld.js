@@ -65,7 +65,7 @@ function Microworld(canvasParentSelector,width, height) {
   // stepLog[i] = index into commandLog after step i completes.
   // To go to step N: replay commandLog[0..stepLog[N]-1] from scratch.
   var commandLog = [];
-  var stepLog = [];   // stepLog[i] = commandLog length after step i
+  var stepLog = [];   // stepLog[i] = {cmdCount, x, y} after step i
   var replayStep = -1; // which step is currently displayed (-1 = live)
 
   // Checkpoints: every CHECKPOINT_INTERVAL steps we store an ImageData snapshot
@@ -539,18 +539,16 @@ function Microworld(canvasParentSelector,width, height) {
   }
 
   // ── Render: called once per step during execution ────────────────────────────
-  // Records a step boundary (only when makeTimeVisibleMode is on) and redraws.
+  // Always records a step boundary (for the time slider) and redraws.
 	this.render = function() {
-    if (makeTimeVisibleMode) {
-      stepLog.push(commandLog.length);
+    stepLog.push({ cmdCount: commandLog.length, x: self.x, y: self.y });
 
-      // Save checkpoint every CHECKPOINT_INTERVAL steps
-      if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
-        checkpoints.push({
-          stepIndex: stepLog.length - 1,
-          imageData: penCanvas_ctx.getImageData(0, 0, width, height)
-        });
-      }
+    // Save checkpoint every CHECKPOINT_INTERVAL steps
+    if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
+      checkpoints.push({
+        stepIndex: stepLog.length - 1,
+        imageData: penCanvas_ctx.getImageData(0, 0, width, height)
+      });
     }
 
     turtleCanvas_ctx.clearRect(0, 0, width, height);
@@ -581,7 +579,7 @@ function Microworld(canvasParentSelector,width, height) {
     // Find the most recent checkpoint whose command count is > 0 and <= endCmdIndex
     for (var k = checkpoints.length - 1; k >= 0; k--) {
       var cp = checkpoints[k];
-      var cpCmds = stepLog[cp.stepIndex];
+      var cpCmds = stepLog[cp.stepIndex].cmdCount;
       if (cpCmds > 0 && cpCmds <= endCmdIndex) {
         penCanvas_ctx.putImageData(cp.imageData, 0, 0);
         startCmd = cpCmds;
@@ -662,6 +660,25 @@ function Microworld(canvasParentSelector,width, height) {
     renderCanvas_ctx.clearRect(0, 0, renderCanvas.width, renderCanvas.height);
     renderCanvas_ctx.globalAlpha = 1;
     renderCanvas_ctx.drawImage(penCanvas, 0, 0);
+
+    if (makeTimeVisibleMode && stepLog.length > 1 && currentTurtle && currentTurtle.turtleImage) {
+      // Draw ghost turtle at every recorded step position
+      var n = stepLog.length;
+      var img = currentTurtle.turtleImage;
+      var dx = -(img.width / 2);
+      var dy = -(img.height / 2);
+      for (var i = 0; i < n; i++) {
+        var entry = stepLog[i];
+        var alpha = 0.15 + 0.55 * (i / (n - 1));
+        renderCanvas_ctx.globalAlpha = alpha;
+        renderCanvas_ctx.save();
+        renderCanvas_ctx.translate(lx2cx(entry.x), ly2cy(entry.y));
+        renderCanvas_ctx.drawImage(img, dx, dy);
+        renderCanvas_ctx.restore();
+      }
+      renderCanvas_ctx.globalAlpha = 1;
+    }
+
     renderCanvas_ctx.globalAlpha = 1;
     renderCanvas_ctx.drawImage(turtleCanvas, 0, 0);
   }
@@ -675,7 +692,7 @@ function Microworld(canvasParentSelector,width, height) {
     stepIndex = Math.max(0, Math.min(stepIndex, stepLog.length - 1));
     replayStep = stepIndex;
 
-    var endCmd = stepLog[stepIndex] || 0;
+    var endCmd = stepLog[stepIndex] ? stepLog[stepIndex].cmdCount : 0;
 
     // Clear turtle canvas
     turtleCanvas_ctx.clearRect(0, 0, width, height);
@@ -733,9 +750,9 @@ function Microworld(canvasParentSelector,width, height) {
 
   // Capture any commands after the last highlight into a final step
   this.flushFinalStep = function() {
-    var lastLogged = stepLog.length > 0 ? stepLog[stepLog.length - 1] : 0;
+    var lastLogged = stepLog.length > 0 ? stepLog[stepLog.length - 1].cmdCount : 0;
     if (commandLog.length > lastLogged) {
-      stepLog.push(commandLog.length);
+      stepLog.push({ cmdCount: commandLog.length, x: self.x, y: self.y });
     }
   };
 
