@@ -539,16 +539,18 @@ function Microworld(canvasParentSelector,width, height) {
   }
 
   // ── Render: called once per step during execution ────────────────────────────
-  // Records a step boundary and updates the display. No DOM canvas created.
+  // Records a step boundary (only when makeTimeVisibleMode is on) and redraws.
 	this.render = function() {
-    stepLog.push(commandLog.length);
+    if (makeTimeVisibleMode) {
+      stepLog.push(commandLog.length);
 
-    // Save checkpoint every CHECKPOINT_INTERVAL steps
-    if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
-      checkpoints.push({
-        stepIndex: stepLog.length - 1,
-        imageData: penCanvas_ctx.getImageData(0, 0, width, height)
-      });
+      // Save checkpoint every CHECKPOINT_INTERVAL steps
+      if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
+        checkpoints.push({
+          stepIndex: stepLog.length - 1,
+          imageData: penCanvas_ctx.getImageData(0, 0, width, height)
+        });
+      }
     }
 
     turtleCanvas_ctx.clearRect(0, 0, width, height);

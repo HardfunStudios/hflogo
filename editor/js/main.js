@@ -1167,11 +1167,11 @@ function _finishExecution(btn, { stopped = false, hadError = false } = {}) {
   setStepsLabel(totalSteps);
 
   const slider = document.getElementById('programTimeSlider');
-  if (slider) {
-    slider.max = totalSteps;
-    slider.min = 1;
-    slider.step = 1;
-    slider.value = totalSteps;
+  if (slider && isTimeVisible()) {
+    slider.max   = Math.max(1, totalSteps);
+    slider.min   = 1;
+    slider.step  = 1;
+    slider.value = Math.max(1, totalSteps);
     slider.disabled = totalSteps === 0;
   }
   // Only update thumbnail after a clean, uninterrupted execution
@@ -1312,9 +1312,15 @@ function _initLogoEditor() {
     slider.addEventListener('input', slideTime);
   }
 
-  document.getElementById('isTimeVisible')?.addEventListener('click', () => {
-    window.currentworld.setTimeVisibleMode(isTimeVisible());
-  });
+  function _applyTimeVisibleMode() {
+    const on = isTimeVisible();
+    window.currentworld.setTimeVisibleMode(on);
+    const area = document.getElementById('sliderArea');
+    if (area) area.style.display = on ? '' : 'none';
+  }
+  // Hide slider area initially — shown only when checkbox is checked
+  _applyTimeVisibleMode();
+  document.getElementById('isTimeVisible')?.addEventListener('change', _applyTimeVisibleMode);
 
   document.getElementById('save_button')?.addEventListener('click', save);
   document.getElementById('load_button')?.addEventListener('click', load);
