@@ -1327,7 +1327,7 @@ function _initLogoEditor() {
     media: '/blockly/media/',
     scrollbars: true,
     zoom: readOnly
-      ? { controls: false, wheel: true, startScale: 0.65 }
+      ? { controls: true, wheel: true, startScale: 0.65 }
       : { controls: true, wheel: true, startScale: 1.0 },
   });
 
