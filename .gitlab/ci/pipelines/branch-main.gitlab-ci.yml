@@ -1,0 +1,25 @@
+workflow:
+  rules:
+    - if: $CI_PROJECT_ID == $HDFN_LOCAL_MAIN_PROJECT_ID
+      when: always
+      variables:
+        HDFN_LOCAL_DEFAULT_GIT_STRATEGY: "fetch"
+    - if: $CI_PROJECT_ID != $HDFN_LOCAL_MAIN_PROJECT_ID
+      when: always
+      variables:
+        HDFN_LOCAL_DEFAULT_GIT_STRATEGY: "clone"
+
+include:
+  - component: $CI_SERVER_FQDN/devops/jobs/ruby-rspec/run@1
+    inputs:
+      job_name: rspec
+      stage: test
+      image: "ruby:3.3.11-slim"
+      pg_service_enabled: true
+      pg_image: "postgres:16-alpine"
+      pg_db: "hflogo_test"
+      pg_user: "hflogo"
+      pg_password: "hflogo"
+      redis_service_enabled: true
+      os_extra_packages_debian: "libpq-dev libyaml-dev libvips pkg-config"
+      command: "bundle exec rspec"
