@@ -50,8 +50,8 @@ COMPOSE=(docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_
 echo ">> Pulling $IMAGE_URL:$IMAGE_TAG"
 "${COMPOSE[@]}" pull
 
-echo ">> Starting db and redis"
-"${COMPOSE[@]}" up -d db redis
+echo ">> Starting db"
+"${COMPOSE[@]}" up -d db
 
 echo ">> Preparing database"
 "${COMPOSE[@]}" run --rm app bin/rails db:prepare

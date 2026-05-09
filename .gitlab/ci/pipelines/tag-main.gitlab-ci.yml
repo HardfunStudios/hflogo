@@ -14,6 +14,7 @@ include:
     inputs:
       job_name: rspec
       stage: test
+      needs: []
       image: "ruby:3.3.11-slim"
       pg_service_enabled: true
       pg_image: "postgres:16-alpine"
