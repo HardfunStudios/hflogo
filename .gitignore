@@ -36,3 +36,4 @@
 # Local Docker image artifacts produced by the manual bootstrap deploy.
 /hflogo-app-*.tar.gz
 
+/.claude/
