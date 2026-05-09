@@ -138,7 +138,36 @@ SMTP_PORT=1025
 
 Acesse a caixa de entrada em **http://localhost:8025**.
 
-### 5.3 Exemplos de provedores
+### 5.3 Amazon SES (recomendado para produção)
+
+1. Acesse o [console do Amazon SES](https://console.aws.amazon.com/ses/)
+2. **Verifique o domínio** em *Verified identities → Create identity → Domain*
+   - Adicione os registros DNS (TXT, CNAME para DKIM) informados pelo SES no seu provedor
+3. **Crie credenciais SMTP** em *SMTP settings → Create SMTP credentials*
+   - Isso gera um usuário IAM com permissão `ses:SendRawEmail`
+   - Anote o **SMTP username** e **SMTP password** gerados (só aparecem uma vez)
+4. Escolha a região mais próxima. Os endpoints SMTP são:
+
+| Região | Address |
+|--------|---------|
+| us-east-1 (N. Virginia) | email-smtp.us-east-1.amazonaws.com |
+| us-east-2 (Ohio) | email-smtp.us-east-2.amazonaws.com |
+| sa-east-1 (São Paulo) | email-smtp.sa-east-1.amazonaws.com |
+| eu-west-1 (Irlanda) | email-smtp.eu-west-1.amazonaws.com |
+
+5. Configure o `.env`:
+
+```dotenv
+SMTP_ADDRESS=email-smtp.sa-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USERNAME=AKIAxxxxxxxxxxxxxxxxx   # SMTP username gerado pelo SES
+SMTP_PASSWORD=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SMTP_DOMAIN=hardfun.com.br
+```
+
+> **Sandbox:** contas novas do SES ficam em modo sandbox e só enviam para endereços verificados. Para enviar para qualquer e-mail, solicite a saída do sandbox em *Account dashboard → Request production access*.
+
+### 5.4 Outros provedores
 
 | Provedor | Address | Port |
 |----------|---------|------|
