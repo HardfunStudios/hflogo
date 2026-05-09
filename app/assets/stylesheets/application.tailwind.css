@@ -5,6 +5,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-y: auto;
+  }
+
   :root {
     --color-hf-blue:       #0081A6;
     --color-hf-blue-dark:  #006e8e;

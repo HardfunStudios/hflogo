@@ -56,6 +56,10 @@
           <button type="button" data-action="codeBlock" title="Código" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:11px;font-family:monospace;">{}</button>
           <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
           <button type="button" data-action="horizontalRule" title="Linha" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;">—</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="image" title="Inserir imagem" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:14px;">🖼</button>
+          <input type="file" id="rte-image-input" accept="image/*" style="display:none;">
+          <span id="rte-upload-status" style="font-size:12px;color:#929292;align-self:center;display:none;">Enviando…</span>
         </div>
         <div id="tiptap-content" style="padding:16px;min-height:350px;outline:none;" contenteditable="true"></div>
       </div>
@@ -73,34 +77,57 @@
 
 <script>
 (function() {
-  var hiddenField = document.getElementById('page_content_hidden');
-  var contentDiv  = document.getElementById('tiptap-content');
-  var toolbar     = document.getElementById('tiptap-toolbar');
+  var hiddenField   = document.getElementById('page_content_hidden');
+  var contentDiv    = document.getElementById('tiptap-content');
+  var toolbar       = document.getElementById('tiptap-toolbar');
+  var imageInput    = document.getElementById('rte-image-input');
+  var uploadStatus  = document.getElementById('rte-upload-status');
+  var savedRange    = null;
 
   // Load initial content
-  var initial = hiddenField.value || '';
-  contentDiv.innerHTML = initial;
+  contentDiv.innerHTML = hiddenField.value || '';
 
   // Sync on every input
   contentDiv.addEventListener('input', sync);
   function sync() { hiddenField.value = contentDiv.innerHTML; }
+
+  // Save selection before toolbar click (mousedown fires before blur)
+  toolbar.addEventListener('mousedown', function() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+  });
+
+  function restoreSelection() {
+    if (!savedRange) return;
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
 
   // Toolbar actions
   toolbar.addEventListener('click', function(e) {
     var btn = e.target.closest('button[data-action]');
     if (!btn) return;
     var action = btn.dataset.action;
+
+    if (action === 'image') {
+      imageInput.click();
+      return;
+    }
+
+    restoreSelection();
     contentDiv.focus();
+
     switch (action) {
-      case 'bold':         document.execCommand('bold'); break;
-      case 'italic':       document.execCommand('italic'); break;
-      case 'h1':           formatBlock('h1'); break;
-      case 'h2':           formatBlock('h2'); break;
-      case 'h3':           formatBlock('h3'); break;
-      case 'bulletList':   document.execCommand('insertUnorderedList'); break;
-      case 'orderedList':  document.execCommand('insertOrderedList'); break;
-      case 'blockquote':   formatBlock('blockquote'); break;
-      case 'codeBlock':    formatBlock('pre'); break;
+      case 'bold':           document.execCommand('bold'); break;
+      case 'italic':         document.execCommand('italic'); break;
+      case 'h1':             formatBlock('h1'); break;
+      case 'h2':             formatBlock('h2'); break;
+      case 'h3':             formatBlock('h3'); break;
+      case 'bulletList':     document.execCommand('insertUnorderedList'); break;
+      case 'orderedList':    document.execCommand('insertOrderedList'); break;
+      case 'blockquote':     formatBlock('blockquote'); break;
+      case 'codeBlock':      formatBlock('pre'); break;
       case 'horizontalRule': document.execCommand('insertHorizontalRule'); break;
     }
     sync();
@@ -109,6 +136,57 @@
   function formatBlock(tag) {
     document.execCommand('formatBlock', false, '<' + tag + '>');
   }
+
+  // Image upload
+  imageInput.addEventListener('change', function() {
+    var file = imageInput.files[0];
+    if (!file) return;
+
+    var fd = new FormData();
+    fd.append('file', file);
+
+    uploadStatus.style.display = 'inline';
+    var btn = toolbar.querySelector('[data-action="image"]');
+    btn.disabled = true;
+
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    fetch('<%= admin_image_upload_path %>', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrfToken },
+      body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) { alert('Erro: ' + data.error); return; }
+      restoreSelection();
+      contentDiv.focus();
+      var img = document.createElement('img');
+      img.src = data.url;
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '4px';
+      img.style.margin = '8px 0';
+      var sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        var range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        contentDiv.appendChild(img);
+      }
+      sync();
+    })
+    .catch(function(err) { alert('Falha no upload: ' + err); })
+    .finally(function() {
+      uploadStatus.style.display = 'none';
+      btn.disabled = false;
+      imageInput.value = '';
+    });
+  });
 
   // Sync before form submit
   document.querySelector('form').addEventListener('submit', sync);
