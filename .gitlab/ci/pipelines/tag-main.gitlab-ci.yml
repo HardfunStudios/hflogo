@@ -35,6 +35,21 @@ include:
       docker_image_tag: ${CI_COMMIT_TAG}
       update_latest: true
 
+  - local: /.gitlab/ci/templates/build-script-payload.yml
+    inputs:
+      job_name: prepare-deploy
+      stage: build
+      needs:
+        - build-prod
+      script_path: bin/deploy-host.sh
+      output_path: deploy-artifact/payload.sh
+      env_exports: |
+        IMAGE_URL=${CI_REGISTRY_IMAGE}
+        IMAGE_TAG=${CI_COMMIT_TAG}
+      b64_file_exports: |
+        COMPOSE_B64=docker-compose.prod.yml
+        CADDYFILE_B64=Caddyfile
+
   - local: /.gitlab/ci/templates/ssm-run-command.yml
     inputs:
       job_name: deploy-prod
@@ -50,37 +65,3 @@ include:
       payload_path: "deploy-artifact/payload.sh"
       timeout_seconds: 900
       comment: "hflogo deploy ${CI_COMMIT_TAG}"
-
-prepare-deploy:
-  stage: build
-  needs:
-    - build-prod
-  image: alpine:3.20
-  tags:
-    - docker-linux
-  interruptible: false
-  variables:
-    GIT_STRATEGY: fetch
-  before_script:
-    - |
-      if [ "${HDFN_LOCAL_MAIN_PROJECT_ID:-}" ] && [ "${CI_PROJECT_ID}" -ne "${HDFN_LOCAL_MAIN_PROJECT_ID}" ]; then
-        echo "Executando em fork, abortando."
-        exit 0
-      fi
-  script:
-    - apk add --no-cache coreutils bash >/dev/null
-    - mkdir -p deploy-artifact
-    - |
-      {
-        echo "export IMAGE_URL=${CI_REGISTRY_IMAGE}"
-        echo "export IMAGE_TAG=${CI_COMMIT_TAG}"
-        echo "export COMPOSE_B64=$(base64 -w0 docker-compose.prod.yml)"
-        echo "export CADDYFILE_B64=$(base64 -w0 Caddyfile)"
-        cat bin/deploy-host.sh
-      } > deploy-artifact/payload.sh
-    - chmod 0644 deploy-artifact/payload.sh
-    - wc -l deploy-artifact/payload.sh
-  artifacts:
-    paths:
-      - deploy-artifact/payload.sh
-    expire_in: 1 day
