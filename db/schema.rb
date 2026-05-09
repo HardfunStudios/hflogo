@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_224552) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_10_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "pages", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.string "nav_label", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "published", default: true, null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["position"], name: "index_pages_on_position"
+    t.index ["slug"], name: "index_pages_on_slug", unique: true
+  end
 
   create_table "project_versions", force: :cascade do |t|
     t.boolean "auto_save", default: false, null: false

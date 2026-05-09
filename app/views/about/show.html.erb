@@ -1,0 +1,97 @@
+<style>
+  #about-root { display:flex; min-height:calc(100vh - 104px); }
+
+  #about-sidebar {
+    width:240px; flex-shrink:0;
+    background:white; border-right:1px solid #e5e5e5;
+    padding:32px 0; position:sticky; top:104px; height:calc(100vh - 104px); overflow-y:auto;
+  }
+  #about-sidebar h2 {
+    font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#929292; padding:0 24px; margin-bottom:12px;
+  }
+  #about-sidebar nav { display:flex; flex-direction:column; }
+  #about-sidebar a {
+    display:block; padding:9px 24px;
+    font-size:14px; color:#333; text-decoration:none;
+    border-left:3px solid transparent;
+    transition:background .12s, color .12s;
+  }
+  #about-sidebar a:hover { background:#f8f9fb; color:#0081A6; }
+  #about-sidebar a.active {
+    color:#0081A6; font-weight:600;
+    border-left-color:#0081A6; background:rgba(0,129,166,0.06);
+  }
+
+  #about-content {
+    flex:1; padding:48px 64px; max-width:860px;
+  }
+  #about-content h1 { font-size:30px; font-weight:700; color:#000; margin-bottom:8px; }
+  #about-content .page-meta { font-size:13px; color:#929292; margin-bottom:32px; }
+  #about-content .prose { font-size:15px; line-height:1.75; color:#222; }
+  #about-content .prose h2 { font-size:20px; font-weight:700; margin:32px 0 12px; color:#000; }
+  #about-content .prose h3 { font-size:16px; font-weight:700; margin:24px 0 8px; color:#000; }
+  #about-content .prose p { margin:0 0 16px; }
+  #about-content .prose ul, #about-content .prose ol { margin:0 0 16px; padding-left:24px; }
+  #about-content .prose li { margin-bottom:6px; }
+  #about-content .prose blockquote {
+    border-left:3px solid #0081A6; margin:24px 0;
+    padding:12px 20px; background:#f0f8fb; color:#333; font-style:italic;
+    border-radius:0 6px 6px 0;
+  }
+  #about-content .prose pre {
+    background:#1e1e2e; color:#cdd6f4; border-radius:8px;
+    padding:16px 20px; font-size:13px; overflow-x:auto; margin:0 0 16px;
+    font-family:'Roboto Mono', 'Courier New', monospace;
+  }
+  #about-content .prose code {
+    background:#f0f0f0; color:#d63384; padding:2px 6px; border-radius:4px;
+    font-size:13px; font-family:'Roboto Mono', 'Courier New', monospace;
+  }
+  #about-content .prose pre code { background:none; color:inherit; padding:0; border-radius:0; }
+  #about-content .prose hr { border:none; border-top:1px solid #e5e5e5; margin:32px 0; }
+  #about-content .prose table { border-collapse:collapse; width:100%; margin:0 0 16px; }
+  #about-content .prose th { background:#f8f9fb; font-weight:600; }
+  #about-content .prose th, #about-content .prose td {
+    border:1px solid #e5e5e5; padding:8px 14px; font-size:14px; text-align:left;
+  }
+
+  .page-nav { display:flex; justify-content:space-between; margin-top:48px; padding-top:24px; border-top:1px solid #e5e5e5; }
+  .page-nav a { font-size:14px; color:#0081A6; text-decoration:none; }
+  .page-nav a:hover { text-decoration:underline; }
+</style>
+
+<div id="about-root">
+
+  <aside id="about-sidebar">
+    <h2>Documentação</h2>
+    <nav>
+      <% @pages.each do |p| %>
+        <%= link_to p.nav_label, about_page_path(p.slug), class: (p.slug == @page.slug ? "active" : "") %>
+      <% end %>
+    </nav>
+  </aside>
+
+  <div id="about-content">
+    <h1><%= @page.title %></h1>
+
+    <div class="prose">
+      <%= raw @page.content %>
+    </div>
+
+    <% current_index = @pages.index(@page) %>
+    <div class="page-nav">
+      <div>
+        <% if current_index > 0 %>
+          <%= link_to "← #{@pages[current_index - 1].nav_label}", about_page_path(@pages[current_index - 1].slug) %>
+        <% end %>
+      </div>
+      <div>
+        <% if current_index < @pages.length - 1 %>
+          <%= link_to "#{@pages[current_index + 1].nav_label} →", about_page_path(@pages[current_index + 1].slug) %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+</div>
