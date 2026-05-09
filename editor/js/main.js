@@ -2,6 +2,9 @@ import * as Blockly from 'blockly';
 import { javascriptGenerator, Order } from 'blockly/javascript';
 import * as ptBR from 'blockly/msg/pt-br';
 import { FieldAngle } from '@blockly/field-angle';
+import { logoGenerator }     from './logo-generator.js';
+import { logoToBlocklyState } from './logo-to-blockly.js';
+import { mountHighlighter }   from './logo-highlight.js';
 
 Blockly.setLocale(ptBR);
 
@@ -772,7 +775,7 @@ const toolbox = {
         { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
-        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
+        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'math_number', fields: { NUM: 360 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_setpos', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_setposx', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_xcor' },
@@ -851,6 +854,67 @@ const toolbox = {
   ],
 };
 
+// ─── Tab state ────────────────────────────────────────────────────────────────
+
+let _activeTab = 'blocos'; // 'blocos' | 'logo'
+let _running   = false;
+let _hadError  = false;
+
+function _setRunning(val) {
+  _running = val;
+  ['tabBlocos', 'tabLogo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = val;
+  });
+}
+
+function _shouldHighlight() {
+  return parseInt(document.getElementById('speedSlider')?.value ?? '5') < 6;
+}
+
+// Inject __hl__ "base64(L{line}) before each executable line for Logo-mode stepping
+function _injectLineMarkers(code) {
+  const enc = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return code.split('\n').flatMap((line, i) => {
+    const t = line.trim();
+    if (!t || t.startsWith(';') || t === '[' || t === ']' || t === 'fim') return [line];
+    return [`__hl__ "${enc('L' + (i + 1))}`, line];
+  }).join('\n');
+}
+
+const _LOGO_LINE_HEIGHT = 13 * 1.6; // must match CSS font-size × line-height
+const _LOGO_PADDING_TOP = 16;
+
+function _highlightLogoLine(lineNum) {
+  const ta    = document.getElementById('logoCodeEditor');
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
+  if (!ta || !hl) return;
+  // Auto-scroll to keep line visible
+  const taH = ta.clientHeight;
+  const yRaw = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT;
+  if (yRaw - ta.scrollTop < _LOGO_PADDING_TOP ||
+      yRaw - ta.scrollTop + _LOGO_LINE_HEIGHT > taH - _LOGO_PADDING_TOP) {
+    ta.scrollTop = yRaw - taH / 2;
+  }
+  const y = yRaw - ta.scrollTop;
+  hl.style.top    = y + 'px';
+  hl.style.height = _LOGO_LINE_HEIGHT + 'px';
+  hl.style.opacity = '1';
+  if (arrow) {
+    arrow.style.top    = y + 'px';
+    arrow.style.height = _LOGO_LINE_HEIGHT + 'px';
+    arrow.style.opacity = '1';
+  }
+}
+
+function _clearLogoHighlight() {
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
+  if (hl)    hl.style.opacity    = '0';
+  if (arrow) arrow.style.opacity = '0';
+}
+
 // ─── LP code execution ────────────────────────────────────────────────────────
 
 let time_block_mapping = [];
@@ -860,16 +924,35 @@ function lpHighlighBlockTime(time) {
   window.workspace.highlightBlock(block_id);
 }
 
+// With __hl__ markers — only for the worker (block highlighting)
 function generateCode() {
-  javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-  javascriptGenerator.addReservedWords('highlightBlock');
-  return javascriptGenerator.workspaceToCode(window.workspace);
+  logoGenerator.STATEMENT_PREFIX = '';
+  logoGenerator._noHighlight     = false;
+  return logoGenerator.workspaceToCode(window.workspace);
 }
+
+// Clean Logo — for display in the text editor
+function generateDisplayCode() {
+  logoGenerator.STATEMENT_PREFIX = '';
+  logoGenerator._noHighlight     = true;
+  return logoGenerator.workspaceToCode(window.workspace);
+}
+
+// Code to send to the worker: always instrumented so time slider records steps
+function _getLogoCode() {
+  if (_activeTab === 'logo') {
+    const raw = document.getElementById('logoCodeEditor')?.value ?? '';
+    return _injectLineMarkers(raw);
+  }
+  return generateCode();
+}
+
+function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); }
 
 function getExecutionDelay() {
   const slider = document.getElementById('speedSlider');
   if (!slider) return 0;
-  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0 };
+  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0, 6: 0 };
   return map[parseInt(slider.value)] ?? 0;
 }
 
@@ -906,11 +989,13 @@ function _applyCommand(name, args) {
 
 function _startWorker(code) {
   if (_worker) { _worker.terminate(); _worker = null; }
+  _hadError = false;
+  _setRunning(true);
 
   time_block_mapping = [];
   window.workspace.highlightBlock(null);
 
-  _worker = new Worker('/editor-assets/js/logo-worker.js');
+  _worker = new Worker('/editor-assets/js/logo-worker-v2.js');
 
   _worker.onmessage = function(e) {
     const msg = e.data;
@@ -921,14 +1006,27 @@ function _startWorker(code) {
     }
 
     if (msg.type === 'highlight') {
+      // Always record for time slider regardless of speed
       window.currentworld.render();
       time_block_mapping.push(msg.blockId);
-      window.workspace.highlightBlock(msg.blockId);
-      const delay = getExecutionDelay();
-      if (delay > 0) {
-        setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+
+      if (_shouldHighlight()) {
+        // Visual highlight: block or Logo line
+        if (_activeTab === 'logo' && msg.blockId.startsWith('L')) {
+          _highlightLogoLine(parseInt(msg.blockId.slice(1)));
+        } else {
+          _clearLogoHighlight();
+          window.workspace.highlightBlock(msg.blockId);
+        }
+        const delay = getExecutionDelay();
+        if (delay > 0) {
+          setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+        } else {
+          requestAnimationFrame(() => { if (_worker) _worker.postMessage({ type: 'ack' }); });
+        }
       } else {
-        _worker.postMessage({ type: 'ack' });
+        // Speed 6: no visual update, ack immediately
+        if (_worker) _worker.postMessage({ type: 'ack' });
       }
       return;
     }
@@ -938,14 +1036,21 @@ function _startWorker(code) {
       return;
     }
 
+    if (msg.type === 'error') {
+      _hadError = true;
+      console.error('[Logo] runtime error:', msg.message);
+      return;
+    }
+
     if (msg.type === 'done') {
       window.workspace.highlightBlock(null);
+      _clearLogoHighlight();
       _worker.terminate();
       _worker = null;
-      // Record final step and composite pen+turtle into renderCanvas
       window.currentworld.render();
       const btn = document.getElementById('runButton');
-      _finishExecution(btn);
+      _finishExecution(btn, { stopped: msg.stopped, hadError: _hadError });
+      _setRunning(false);
     }
   };
 
@@ -954,6 +1059,9 @@ function _startWorker(code) {
     const btn = document.getElementById('runButton');
     btn?.classList.remove('running');
     btn && (btn.disabled = false);
+    _clearLogoHighlight();
+    _hadError = true;
+    _setRunning(false);
     if (_worker) { _worker.terminate(); _worker = null; }
   };
 
@@ -1054,21 +1162,24 @@ function setCurrentStepLabel(current) {
   if (el) el.textContent = 'passo ' + current + ' de ' + _totalSteps + ' passos';
 }
 
-function _finishExecution(btn) {
+function _finishExecution(btn, { stopped = false, hadError = false } = {}) {
   const totalSteps = window.currentworld.getTotalTime();
   setStepsLabel(totalSteps);
 
   const slider = document.getElementById('programTimeSlider');
   if (slider) {
-    slider.max = totalSteps;
-    slider.min = 1;
-    slider.step = 1;
-    slider.value = totalSteps;
+    slider.max   = Math.max(1, totalSteps);
+    slider.min   = 1;
+    slider.step  = 1;
+    slider.value = Math.max(1, totalSteps);
     slider.disabled = totalSteps === 0;
   }
-  setTimeout(() => {
-    if (window._onThumbnailCallback) window._onThumbnailCallback();
-  }, 100);
+  // Only update thumbnail after a clean, uninterrupted execution
+  if (!stopped && !hadError) {
+    setTimeout(() => {
+      if (window._onThumbnailCallback) window._onThumbnailCallback();
+    }, 100);
+  }
   btn?.classList.remove('running');
   btn && (btn.disabled = false);
 }
@@ -1084,8 +1195,8 @@ function executeCode() {
       window.currentworld.renderAtEachCommand = true;
       window.currentworld.reset();
       window.currentworld.setTimeVisibleMode(isTimeVisible());
-      const code = generateCode();
-      console.log('[Logo] starting worker, code length:', code.length);
+      const code = _getLogoCode();
+      console.log('[Logo] código gerado:\n' + code);
       _startWorker(code);
     } catch(e) {
       console.error('executeCode error:', e);
@@ -1201,8 +1312,8 @@ function _initLogoEditor() {
     slider.addEventListener('input', slideTime);
   }
 
-  document.getElementById('isTimeVisible')?.addEventListener('click', () => {
-    window.currentworld.setTimeVisibleMode(isTimeVisible());
+  document.getElementById('isTimeVisible')?.addEventListener('change', () => {
+    if (window.currentworld) window.currentworld.setTimeVisibleMode(isTimeVisible());
   });
 
   document.getElementById('save_button')?.addEventListener('click', save);
@@ -1216,8 +1327,8 @@ function _initLogoEditor() {
     media: '/blockly/media/',
     scrollbars: true,
     zoom: readOnly
-      ? { controls: false, wheel: true, startScale: 0.65 }
-      : { controls: false, wheel: false, startScale: 1.0 },
+      ? { controls: true, wheel: true, startScale: 0.65 }
+      : { controls: true, wheel: true, startScale: 1.0 },
   });
 
   setTimeout(() => window.workspace.resize(), 0);
@@ -1237,11 +1348,88 @@ function _initLogoEditor() {
     stageSize,
     stageSize
   );
+  window.currentworld.setTimeVisibleMode(isTimeVisible());
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  const tabBlocos     = document.getElementById('tabBlocos');
+  const tabLogo       = document.getElementById('tabLogo');
+  const blocklyDiv    = document.getElementById('blocklyDiv');
+  const logoTextPanel = document.getElementById('logoTextPanel');
+  const logoCodeEl    = _getLogoTextarea();
+  if (logoCodeEl) mountHighlighter(logoCodeEl);
+
+  function _switchToLogo() {
+    if (_activeTab === 'logo') return;
+    const code = generateDisplayCode();
+    if (logoCodeEl) { logoCodeEl.value = code; logoCodeEl.dispatchEvent(new Event('input')); }
+    _activeTab = 'logo';
+    tabLogo.classList.add('active');
+    tabBlocos.classList.remove('active');
+    blocklyDiv.style.display    = 'none';
+    logoTextPanel.classList.add('active');
+  }
+
+  const syntaxErrorEl = document.getElementById('logoSyntaxError');
+
+  function _showSyntaxError(msg) {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.textContent = '⚠ ' + msg;
+    syntaxErrorEl.title = msg;
+    syntaxErrorEl.classList.add('visible');
+  }
+
+  function _clearSyntaxError() {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.classList.remove('visible');
+  }
+
+  function _switchToBlocos() {
+    if (_activeTab === 'blocos') return;
+    const code = logoCodeEl?.value ?? '';
+    try {
+      const state = logoToBlocklyState(code);
+      window.workspace.clear();
+      Blockly.Events.disable();
+      try {
+        Blockly.serialization.workspaces.load(state, window.workspace, { recordUndo: false });
+      } finally {
+        Blockly.Events.enable();
+      }
+      window.workspace.render();
+    } catch (e) {
+      _showSyntaxError(e.message);
+      return;
+    }
+    _clearSyntaxError();
+    _activeTab = 'blocos';
+    tabBlocos.classList.add('active');
+    tabLogo.classList.remove('active');
+    blocklyDiv.style.display = '';
+    logoTextPanel.classList.remove('active');
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  }
+
+  logoCodeEl?.addEventListener('input', _clearSyntaxError);
+
+  tabLogo?.addEventListener('click', _switchToLogo);
+  tabBlocos?.addEventListener('click', _switchToBlocos);
+
+  // Autosave ao editar o código Logo diretamente
+  logoCodeEl?.addEventListener('input', () => {
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  });
 
   // API para o Rails (editor_controller.js)
   window.LogoEditor = {
     getProjectState() {
-      return Blockly.serialization.workspaces.save(window.workspace);
+      const state = Blockly.serialization.workspaces.save(window.workspace);
+      state.logoCode     = logoCodeEl?.value ?? '';
+      state.activeTab    = _activeTab;
+      return state;
     },
     loadProjectState(state) {
       try {
@@ -1254,6 +1442,13 @@ function _initLogoEditor() {
           Blockly.Events.enable();
         }
         window.workspace.render();
+        // Restaura aba ativa primeiro (_switchToLogo regenera o textarea dos blocos)
+        if (obj.activeTab === 'logo') _switchToLogo();
+        // Depois sobrescreve com o código Logo salvo (tem precedência sobre blocos)
+        if (logoCodeEl && obj.logoCode != null) {
+          logoCodeEl.value = obj.logoCode;
+          logoCodeEl.dispatchEvent(new Event('input'));
+        }
       } catch (e) {
         console.error('LogoEditor.loadProjectState:', e, e.stack);
       }

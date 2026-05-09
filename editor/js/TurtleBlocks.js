@@ -1,4 +1,5 @@
 
+// Block colours — keep in sync with BLOCK_COLORS in editor/js/logo-colors.js
 var COLOR_TURTLE  = '#0081A6'; // hf-blue      — movimento
 var COLOR_CONTROL = '#8B5CF6'; // hf-purple    — fluxo/controle
 var COLOR_NUMBERS = '#F07D00'; // hf-orange    — dados/valores

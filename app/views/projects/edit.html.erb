@@ -8,8 +8,13 @@
   <script src="/editor-assets/js/microworld.js"></script>
   <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
   <style>
-    #editor-root { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; background:#f5f5f5; }
+    /* ── Root ───────────────────────────────────────────────────────── */
+    #editor-root {
+      display:flex; flex-direction:column; flex:1;
+      overflow:hidden; min-height:0; background:#f0f0f0;
+    }
 
+    /* ── Header ─────────────────────────────────────────────────────── */
     #editor-header {
       display:flex; align-items:center; gap:12px; flex-shrink:0;
       height:52px; padding:0 16px; background:white;
@@ -23,12 +28,65 @@
     #editor-header input[type="text"]:hover { background:#f5f5f5; }
     #editor-header input[type="text"]:focus { background:#f0f7fb; }
 
-    #editor-main { display:flex; flex:1; overflow:hidden; min-height:0; }
+    /* ── Main area ──────────────────────────────────────────────────── */
+    #editor-main {
+      display:flex; flex:1; overflow:hidden; min-height:0;
+      gap:12px; padding:12px;
+    }
 
-    /* Esquerda: Blockly */
+    /* ── Card shared ────────────────────────────────────────────────── */
+    .editor-card {
+      display:flex; flex-direction:column; overflow:hidden; min-height:0;
+      border:1px solid #929292; border-radius:12px;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
+      background:white;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAINEL ESQUERDO — editor com abas estilo browser
+    ═══════════════════════════════════════════════════════════════ */
+    #leftPanel { flex:0 0 60%; min-width:0; display:flex; flex-direction:column; }
+
+    /* Barra de abas — fora do card, acima dele */
+    #editorTabBar {
+      display:flex; align-items:flex-end; flex-shrink:0;
+      padding:0; gap:3px; min-height:54px;
+    }
+
+    .editor-tab {
+      display:flex; align-items:center; gap:7px;
+      padding:6px 16px 8px;
+      font-size:13px; font-weight:600; font-family:'Montserrat',sans-serif;
+      border:1px solid #c8c8c8; border-bottom:none; border-radius:6px 6px 0 0;
+      background:#f0f0f0; color:#929292;
+      cursor:pointer; white-space:nowrap;
+      transition:background 120ms, color 120ms;
+    }
+    .editor-tab.active {
+      background:white; color:#0081A6;
+      border-color:#c8c8c8;
+      margin-bottom:-1px; position:relative; z-index:1;
+    }
+    .editor-tab:hover:not(.active) { background:#e4e4e4; color:#444; }
+
+    .editor-tab svg { flex-shrink:0; }
+
+    /* O card começa abaixo da barra de abas */
+    #leftCard {
+      flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+      border:1px solid #c8c8c8; border-radius:0 12px 12px 12px;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
+      background:white;
+    }
+
+    /* Conteúdo das abas */
+    #editorTabContent {
+      flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+    }
+
+    /* Blockly */
     #blocklyDiv {
       flex:1; min-width:0; position:relative; overflow:hidden; background:white;
-      border-right:1px solid #e0e0e0;
     }
     #blocklyDiv > svg { display:block; }
     .blocklyFlyout ~ .blocklyScrollbarVertical,
@@ -36,68 +94,140 @@
     g.blocklyScrollbar[display="none"],
     .blocklyFlyout + .blocklyScrollbar { display:none !important; }
 
-    /* Direita: stage */
-    #stagePanel {
-      flex:1; min-width:0; display:flex; flex-direction:column;
-      background:#f5f5f5; overflow:hidden;
+    /* Painel de texto Logo */
+    #logoTextPanel {
+      flex:1; display:none; flex-direction:column; overflow:hidden;
+      background:#1e1e1e;
     }
-
-    #stageFrame {
-      flex:1; display:flex; align-items:center; justify-content:center;
-      background:#f5f5f5; overflow:hidden; padding:16px;
-    }
-    #stageFrame canvas {
-      display:block;
-      border:2px solid #e0e0e0;
-      border-radius:8px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.10);
-      background:white;
-    }
-
-    #stageToolbar {
+    #logoTextPanel.active { display:flex; }
+    #logoTextToolbar {
       display:flex; align-items:center; gap:8px;
-      padding:10px 14px; background:white;
-      border-top:1px solid #e8e8e8; flex-shrink:0;
+      padding:6px 12px; background:#2d2d2d; flex-shrink:0;
+      border-bottom:1px solid #444;
+    }
+    #logoTextToolbar span {
+      font-size:11px; font-family:'Montserrat',sans-serif; color:#929292;
+    }
+    #logoSyntaxError {
+      display:none; align-items:center; gap:5px; margin-left:auto;
+      font-size:11px; font-family:'Montserrat',sans-serif;
+      color:#f87171; background:rgba(248,113,113,0.1);
+      border:1px solid rgba(248,113,113,0.3);
+      border-radius:4px; padding:2px 8px; max-width:60%;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    #logoSyntaxError.visible { display:flex; }
+    #logoEditorWrap {
+      flex:1; display:flex; overflow:hidden; min-height:0; position:relative;
+    }
+    #logoLineHighlight {
+      position:absolute; left:52px; right:0; z-index:1;
+      background:rgba(255,255,255,0.07); pointer-events:none;
+      opacity:0;
+    }
+    #logoLineArrow {
+      position:absolute; left:0; width:16px; z-index:2;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none; opacity:0;
+      color:#0081A6; font-size:10px; box-sizing:border-box;
+    }
+    .editor-tab:disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; }
+    #logoLineNumbers {
+      flex-shrink:0; width:52px;
+      background:#1a1a1a; color:#555; border-right:1px solid #333;
+      font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
+      font-size:13px; line-height:1.6;
+      padding:16px 8px 16px 16px; text-align:right;
+      user-select:none; overflow:hidden;
+      white-space:pre;
+    }
+    #logoCodeArea {
+      flex:1; position:relative; overflow:hidden; min-width:0;
+    }
+    #logoCodeEditor {
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      border:none; outline:none; resize:none; z-index:1;
+      background:transparent; color:transparent; caret-color:#d4d4d4;
+      font-family:'Fira Code','Cascadia Code','Menlo','Consolas',monospace;
+      font-size:13px; line-height:1.6; padding:16px;
+      tab-size:2; white-space:pre; overflow:auto;
+    }
+    #logoStatusBar {
+      flex-shrink:0; display:flex; align-items:center; justify-content:flex-end;
+      padding:2px 12px; background:#2d2d2d; border-top:1px solid #444;
+      font-family:'Montserrat',sans-serif; font-size:11px; color:#929292;
+      user-select:none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAINEL DIREITO — micromundo estilo tabela
+    ═══════════════════════════════════════════════════════════════ */
+    #stagePanel { flex:0 0 40%; min-width:0; }
+
+    /* Header gradiente — igual ao cabeçalho da tabela */
+    #stageHeader {
+      display:flex; align-items:center; gap:8px; flex-shrink:0;
+      padding:10px 14px;
+      background:linear-gradient(to right, #0081A6, #00A8C0);
+      border-radius:12px 12px 0 0;
     }
 
     #runButton, #stopButton, #stepButton {
       display:flex; align-items:center; justify-content:center;
-      width:38px; height:38px; border-radius:50%;
-      cursor:pointer; font-size:15px; color:white; flex-shrink:0;
+      width:34px; height:34px; border-radius:50%;
+      cursor:pointer; font-size:14px; color:white; flex-shrink:0;
       transition:background 120ms;
     }
-    #runButton { background:#3dba4e; border:3px solid #2fa040; }
-    #runButton:hover:not(:disabled) { background:#35a844; }
-    #stopButton { background:#D51414; border:3px solid #b01010; }
-    #stopButton:hover { background:#b01010; }
-    #speedSlider { width:72px; accent-color:#0081A6; cursor:pointer; vertical-align:middle; margin:0 2px; }
-    .speed-wrap { display:flex; align-items:center; gap:3px; }
-    #stepButton { background:#0081A6; border:3px solid #006e8e; }
-    #stepButton:hover:not(:disabled) { background:#006e8e; }
+    #runButton  { background:rgba(255,255,255,0.20); border:2px solid rgba(255,255,255,0.50); }
+    #runButton:hover:not(:disabled) { background:rgba(255,255,255,0.32); }
+    #stopButton { background:rgba(213,20,20,0.75);   border:2px solid rgba(213,20,20,0.90); }
+    #stopButton:hover { background:rgba(176,16,16,0.90); }
+    #stepButton { background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.40); }
+    #stepButton:hover:not(:disabled) { background:rgba(255,255,255,0.28); }
 
-    /* Spinner during execution */
-    #runButton.running { background:#e8a000; border-color:#c88800; cursor:not-allowed; }
+    #runButton.running { background:rgba(232,160,0,0.80); border-color:rgba(200,136,0,0.90); cursor:not-allowed; }
     #runButton.running::after {
       content:''; display:block;
-      width:16px; height:16px; border-radius:50%;
-      border:3px solid rgba(255,255,255,0.3);
-      border-top-color:white;
+      width:14px; height:14px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.3); border-top-color:white;
       animation:spin 0.7s linear infinite;
     }
     #runButton.running span { display:none; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    #stageToolbar label {
+    #speedSlider { width:64px; accent-color:white; cursor:pointer; vertical-align:middle; }
+    .speed-wrap { display:flex; align-items:center; gap:3px; }
+
+    #stageHeader label {
       display:flex; align-items:center; gap:5px;
-      font-size:12px; color:#929292; cursor:pointer;
-      font-family:'Montserrat',sans-serif;
+      font-size:12px; color:rgba(255,255,255,0.85);
+      font-family:'Montserrat',sans-serif; cursor:pointer;
+    }
+    #stageHeader label input[type="checkbox"] { accent-color:white; }
+
+    /* Canvas area */
+    #stageFrame {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      background:#f5f5f5; overflow:hidden; padding:12px;
+    }
+    #stageFrame canvas {
+      display:block;
+      border:1px solid #e0e0e0; border-radius:6px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.10);
+      background:white;
     }
 
-    #sliderArea { padding:6px 14px 10px; background:white; flex-shrink:0; border-top:1px solid #f0f0f0; }
+    /* Slider area */
+    #sliderArea {
+      padding:6px 14px 8px; background:white; flex-shrink:0;
+      border-top:1px solid #e8e8e8;
+      border-radius:0 0 12px 12px;
+    }
     #programTimeSlider { width:100%; accent-color:#0081A6; cursor:pointer; }
     #sliderArea output, #sliderArea span { display:none !important; }
     #stepsText { font-size:11px; color:#929292; font-family:'Montserrat',sans-serif; }
 
+    /* Misc */
     select.vis-select {
       height:30px; border:1.5px solid #d0d0d0; border-radius:6px;
       font-size:12px; padding:0 8px; background:white;
@@ -151,33 +281,90 @@
     </div>
   </div>
 
-  <%# ── Main: Blockly (esquerda) | Stage (direita) ── %>
+  <%# ── Main ── %>
   <div id="editor-main">
 
-    <div id="blocklyDiv"></div>
+    <%# ── Painel esquerdo: abas + card ── %>
+    <div id="leftPanel">
 
-    <div id="stagePanel">
-      <div id="stageFrame"></div>
+      <%# Barra de abas — fora do card %>
+      <div id="editorTabBar">
+        <button class="editor-tab active" id="tabBlocos" aria-selected="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/>
+          </svg>
+          Blocos
+        </button>
+        <button class="editor-tab" id="tabLogo" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4l4 3-4 3M8 10h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Logo
+        </button>
+      </div>
 
-      <div id="stageToolbar">
+      <%# Card do editor — começa abaixo das abas %>
+      <div id="leftCard">
+
+        <%# Conteúdo das abas %>
+        <div id="editorTabContent">
+
+          <%# Workspace Blockly %>
+          <div id="blocklyDiv"></div>
+
+          <%# Painel de texto Logo (oculto por enquanto) %>
+          <div id="logoTextPanel">
+            <div id="logoTextToolbar">
+              <span>Edição em texto — Logo</span>
+              <div id="logoSyntaxError" title=""></div>
+            </div>
+            <div id="logoEditorWrap">
+              <div id="logoLineNumbers">1</div>
+              <div id="logoLineArrow">▶</div>
+              <div id="logoLineHighlight"></div>
+              <div id="logoCodeArea">
+                <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
+                          placeholder="; código Logo aparecerá aqui"></textarea>
+              </div>
+            </div>
+            <div id="logoStatusBar"><span id="logoCursorPos">Ln 1, Col 1</span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <%# ── Card direito: micromundo ── %>
+    <div id="stagePanel" class="editor-card">
+
+      <%# Header gradiente — estilo cabeçalho de tabela %>
+      <div id="stageHeader">
         <button id="runButton" title="Executar (F5)"><span>▶</span></button>
         <button id="stopButton" title="Parar execução">■</button>
         <button id="stepButton" title="Passo">→</button>
         <span class="speed-wrap">
-          <span style="font-size:13px;">🐢</span>
-          <input type="range" id="speedSlider" min="1" max="5" step="1" value="5" title="Velocidade de execução">
-          <span style="font-size:13px;">🐇</span>
+          <span style="font-size:13px;opacity:.7;">🐢</span>
+          <input type="range" id="speedSlider" min="1" max="6" step="1" value="5" title="Velocidade">
+          <span style="font-size:13px;opacity:.7;">🐇</span>
         </span>
-        <label style="margin-left:8px;">
-          <input type="checkbox" id="isTimeVisible" style="accent-color:#0081A6;">
+        <label style="margin-left:4px;">
+          <input type="checkbox" id="isTimeVisible">
           Mostra passos
         </label>
       </div>
 
+      <%# Canvas %>
+      <div id="stageFrame"></div>
+
+      <%# Slider de tempo %>
       <div id="sliderArea">
         <input type="range" id="programTimeSlider" min="1" max="1" value="1">
         <div id="stepsText"></div>
       </div>
+
     </div>
 
   </div>
@@ -195,12 +382,42 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'F5') { e.preventDefault(); document.getElementById('runButton').click(); }
   });
-  // Prevent Materialize from hijacking the speed slider (it crashes on range inputs it didn't initialize)
   var speedSlider = document.getElementById('speedSlider');
   if (speedSlider) {
     ['mousedown','mouseup','input','change'].forEach(function(ev) {
       speedSlider.addEventListener(ev, function(e) { e.stopPropagation(); }, true);
     });
+  }
+
+  // ── Logo line numbers ──────────────────────────────────────────────────────
+  var logoCodeEditor  = document.getElementById('logoCodeEditor');
+  var logoLineNumbers = document.getElementById('logoLineNumbers');
+  if (logoCodeEditor && logoLineNumbers) {
+    function updateLineNumbers() {
+      var lines = logoCodeEditor.value.split('\n').length;
+      var nums  = '';
+      for (var i = 1; i <= lines; i++) nums += i + '\n';
+      logoLineNumbers.textContent = nums;
+      logoLineNumbers.scrollTop  = logoCodeEditor.scrollTop;
+    }
+    var logoCursorPos = document.getElementById('logoCursorPos');
+    function updateCursorPos() {
+      var pos = logoCodeEditor.selectionStart;
+      var text = logoCodeEditor.value.substring(0, pos);
+      var ln  = text.split('\n').length;
+      var col = pos - text.lastIndexOf('\n');
+      if (logoCursorPos) logoCursorPos.textContent = 'Ln ' + ln + ', Col ' + col;
+    }
+    logoCodeEditor.addEventListener('input',     updateLineNumbers);
+    logoCodeEditor.addEventListener('keyup',     updateCursorPos);
+    logoCodeEditor.addEventListener('mouseup',   updateCursorPos);
+    logoCodeEditor.addEventListener('click',     updateCursorPos);
+    logoCodeEditor.addEventListener('selectionchange', updateCursorPos);
+    logoCodeEditor.addEventListener('scroll', function() {
+      logoLineNumbers.scrollTop = logoCodeEditor.scrollTop;
+    });
+    updateLineNumbers();
+    updateCursorPos();
   }
 })();
 </script>

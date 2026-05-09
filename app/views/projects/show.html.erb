@@ -9,112 +9,131 @@
   <script src="/editor-assets/js/microworld.js"></script>
   <script src="/editor-assets/js/microworld_procedural_bindings.js"></script>
   <style>
-    #show-root { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; background:#f5f5f5; }
+    /* ── Root ───────────────────────────────────────────────────────── */
+    #editor-root {
+      display:flex; flex-direction:column; flex:1;
+      overflow:hidden; min-height:0; background:#f0f0f0;
+    }
 
-    #show-header {
+    /* ── Header ─────────────────────────────────────────────────────── */
+    #editor-header {
       display:flex; align-items:center; gap:12px; flex-shrink:0;
       height:52px; padding:0 16px; background:white;
       box-shadow:0 2px 4px 0 rgba(0,0,0,0.12); z-index:10;
     }
-    #show-header h1 {
+    #editor-header h1 {
       flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       font-size:15px; font-weight:600; font-family:'Montserrat',sans-serif; color:black;
+      margin:0; padding:4px 8px;
     }
 
-    #show-main { display:flex; flex:1; overflow:hidden; min-height:0; }
-
-    #show-editor { display:flex; flex:1; overflow:hidden; min-height:0; min-width:0; }
-
-    #blocklyDiv {
-      flex:1; min-width:0; position:relative; overflow:hidden; background:white;
-      border-right:1px solid #e0e0e0;
-    }
-    #blocklyDiv > svg { display:block; }
-
-    #blockly-zoom {
-      position:absolute; bottom:12px; right:12px; z-index:10;
-      display:flex; flex-direction:column; gap:4px;
-    }
-    #blockly-zoom button {
-      width:30px; height:30px; border-radius:6px;
-      border:1.5px solid #d0d0d0; background:white;
-      font-size:16px; line-height:1; cursor:pointer; color:#444;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.10);
-      transition:background 100ms;
-    }
-    #blockly-zoom button:hover { background:#f0f0f0; }
-
-    #stagePanel {
-      flex:1; min-width:0; display:flex; flex-direction:column;
-      background:#f5f5f5; overflow:hidden;
+    /* ── Main area ──────────────────────────────────────────────────── */
+    #editor-main {
+      display:flex; flex:1; overflow:hidden; min-height:0;
+      gap:12px; padding:12px;
     }
 
-    #stageFrame {
-      flex:1; display:flex; align-items:center; justify-content:center;
-      background:#f5f5f5; overflow:hidden; padding:16px;
-    }
-    #stageFrame canvas {
-      display:block;
-      border:2px solid #e0e0e0;
-      border-radius:8px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.10);
+    /* ── Card shared ────────────────────────────────────────────────── */
+    .editor-card {
+      display:flex; flex-direction:column; overflow:hidden; min-height:0;
+      border:1px solid #929292; border-radius:12px;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
       background:white;
     }
 
-    #stageToolbar {
-      display:flex; align-items:center; gap:8px;
-      padding:10px 14px; background:white;
-      border-top:1px solid #e8e8e8; flex-shrink:0;
+    /* ── Left panel ─────────────────────────────────────────────────── */
+    #leftPanel { flex:1; min-width:0; display:flex; flex-direction:column; }
+
+    #leftCard {
+      flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+      border:1px solid #c8c8c8; border-radius:12px;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
+      background:white;
+    }
+
+    #blocklyDiv {
+      flex:1; min-width:0; position:relative; overflow:hidden; background:white;
+      border-radius:12px;
+    }
+    #blocklyDiv > svg { display:block; }
+
+    /* ── Right panel: stage ─────────────────────────────────────────── */
+    #stagePanel { flex:0 0 40%; min-width:0; }
+
+    #stageHeader {
+      display:flex; align-items:center; gap:8px; flex-shrink:0;
+      padding:10px 14px;
+      background:linear-gradient(to right, #0081A6, #00A8C0);
+      border-radius:12px 12px 0 0;
     }
 
     #runButton, #stopButton, #stepButton {
       display:flex; align-items:center; justify-content:center;
-      width:38px; height:38px; border-radius:50%;
-      cursor:pointer; font-size:15px; color:white; flex-shrink:0;
+      width:34px; height:34px; border-radius:50%;
+      cursor:pointer; font-size:14px; color:white; flex-shrink:0;
       transition:background 120ms;
     }
-    #runButton { background:#3dba4e; border:3px solid #2fa040; }
-    #runButton:hover:not(:disabled) { background:#35a844; }
-    #stopButton { background:#D51414; border:3px solid #b01010; }
-    #stopButton:hover { background:#b01010; }
-    #speedSlider { width:72px; accent-color:#0081A6; cursor:pointer; vertical-align:middle; margin:0 2px; }
-    .speed-wrap { display:flex; align-items:center; gap:3px; }
-    #stepButton { background:#0081A6; border:3px solid #006e8e; }
-    #stepButton:hover:not(:disabled) { background:#006e8e; }
+    #runButton  { background:rgba(255,255,255,0.20); border:2px solid rgba(255,255,255,0.50); }
+    #runButton:hover:not(:disabled) { background:rgba(255,255,255,0.32); }
+    #stopButton { background:rgba(213,20,20,0.75);   border:2px solid rgba(213,20,20,0.90); }
+    #stopButton:hover { background:rgba(176,16,16,0.90); }
+    #stepButton { background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.40); }
+    #stepButton:hover:not(:disabled) { background:rgba(255,255,255,0.28); }
 
-    #runButton.running { background:#e8a000; border-color:#c88800; cursor:not-allowed; }
+    #runButton.running { background:rgba(232,160,0,0.80); border-color:rgba(200,136,0,0.90); cursor:not-allowed; }
     #runButton.running::after {
       content:''; display:block;
-      width:16px; height:16px; border-radius:50%;
-      border:3px solid rgba(255,255,255,0.3);
-      border-top-color:white;
+      width:14px; height:14px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.3); border-top-color:white;
       animation:spin 0.7s linear infinite;
     }
     #runButton.running span { display:none; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    #stageToolbar label {
+    #speedSlider { width:64px; accent-color:white; cursor:pointer; vertical-align:middle; }
+    .speed-wrap { display:flex; align-items:center; gap:3px; }
+
+    #stageHeader label {
       display:flex; align-items:center; gap:5px;
-      font-size:12px; color:#929292; cursor:pointer;
-      font-family:'Montserrat',sans-serif;
+      font-size:12px; color:rgba(255,255,255,0.85);
+      font-family:'Montserrat',sans-serif; cursor:pointer;
+    }
+    #stageHeader label input[type="checkbox"] { accent-color:white; }
+
+    #stageFrame {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      background:#f5f5f5; overflow:hidden; padding:12px;
+    }
+    #stageFrame canvas {
+      display:block;
+      border:1px solid #e0e0e0; border-radius:6px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.10);
+      background:white;
     }
 
-    #sliderArea { padding:6px 14px 10px; background:white; flex-shrink:0; border-top:1px solid #f0f0f0; }
+    #sliderArea {
+      padding:6px 14px 8px; background:white; flex-shrink:0;
+      border-top:1px solid #e8e8e8;
+      border-radius:0 0 12px 12px;
+    }
     #programTimeSlider { width:100%; accent-color:#0081A6; cursor:pointer; }
     #sliderArea output, #sliderArea span { display:none !important; }
     #stepsText { font-size:11px; color:#929292; font-family:'Montserrat',sans-serif; }
 
+    /* ── Sidebar ────────────────────────────────────────────────────── */
     #show-sidebar {
-      width:280px; flex-shrink:0; overflow-y:auto;
-      background:white; border-left:1px solid #e0e0e0;
+      width:240px; flex-shrink:0; overflow-y:auto;
+      background:white; border-radius:12px;
+      border:1px solid #c8c8c8;
+      box-shadow:0 2px 4px 1px rgba(0,0,0,0.15);
       padding:20px 16px; display:flex; flex-direction:column; gap:16px;
     }
     #show-sidebar .project-title {
-      font-size:16px; font-weight:700; font-family:'Montserrat',sans-serif; color:black;
+      font-size:15px; font-weight:700; font-family:'Montserrat',sans-serif; color:black;
     }
     #show-sidebar .project-meta {
       font-size:12px; color:#929292; margin-top:4px;
+      font-family:'Montserrat',sans-serif;
     }
     #show-sidebar .project-desc {
       font-size:13px; color:#444; line-height:1.5;
@@ -125,13 +144,16 @@
     #show-sidebar .divider {
       border:none; border-top:1px solid #f0f0f0; margin:0;
     }
+    #show-sidebar .sidebar-actions {
+      display:flex; flex-direction:column; gap:8px;
+    }
   </style>
 <% end %>
 
-<div id="show-root">
+<div id="editor-root">
 
   <%# ── Header ── %>
-  <div id="show-header">
+  <div id="editor-header">
     <%= link_to root_path do %>
       <div class="relative flex-shrink-0" style="width:26px;height:22px;">
         <img src="/images/logo-part-4.svg" alt="" class="absolute" style="left:.5px;top:0;width:25px;height:10.7px;">
@@ -142,54 +164,44 @@
 
     <h1><%= @project.title %></h1>
 
-    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
-      <% if user_signed_in? && current_user == @project.user %>
-        <%= link_to t("projects.edit"), edit_project_path(@project),
-            class: "btn-secondary", style: "font-size:12px;padding:4px 12px;",
-            data: { turbo: false } %>
-      <% end %>
-      <% if user_signed_in? && current_user != @project.user %>
-        <%= button_to t("projects.remix"), remix_project_path(@project), method: :post,
-            class: "btn-secondary", style: "font-size:12px;padding:4px 12px;" %>
-      <% end %>
-    </div>
   </div>
 
   <%# ── Main ── %>
-  <div id="show-main">
+  <div id="editor-main">
 
-    <div id="show-editor">
-      <div id="blocklyDiv">
-        <div id="blockly-zoom">
-          <button id="zoomInBtn"  title="Zoom in">+</button>
-          <button id="zoomOutBtn" title="Zoom out">−</button>
-          <button id="zoomFitBtn" title="Ajustar à tela" style="font-size:12px;">⊡</button>
-        </div>
+    <%# ── Left: Blockly (read-only) ── %>
+    <div id="leftPanel">
+      <div id="leftCard">
+        <div id="blocklyDiv"></div>
+      </div>
+    </div>
+
+    <%# ── Right: stage ── %>
+    <div id="stagePanel" class="editor-card">
+
+
+      <div id="stageHeader">
+        <button id="runButton" title="Executar (F5)"><span>▶</span></button>
+        <button id="stopButton" title="Parar execução">■</button>
+        <button id="stepButton" title="Passo">→</button>
+        <span class="speed-wrap">
+          <span style="font-size:13px;opacity:.7;">🐢</span>
+          <input type="range" id="speedSlider" min="1" max="6" step="1" value="5" title="Velocidade">
+          <span style="font-size:13px;opacity:.7;">🐇</span>
+        </span>
+        <label style="margin-left:4px;">
+          <input type="checkbox" id="isTimeVisible">
+          Mostra passos
+        </label>
       </div>
 
-      <div id="stagePanel">
-        <div id="stageFrame"></div>
+      <div id="stageFrame"></div>
 
-        <div id="stageToolbar">
-          <button id="runButton" title="Executar (F5)"><span>▶</span></button>
-          <button id="stopButton" title="Parar execução">■</button>
-          <button id="stepButton" title="Passo">→</button>
-          <span class="speed-wrap">
-            <span style="font-size:13px;">🐢</span>
-            <input type="range" id="speedSlider" min="1" max="5" step="1" value="5" title="Velocidade de execução">
-            <span style="font-size:13px;">🐇</span>
-          </span>
-          <label style="margin-left:8px;">
-            <input type="checkbox" id="isTimeVisible" style="accent-color:#0081A6;">
-            Mostra passos
-          </label>
-        </div>
-
-        <div id="sliderArea">
-          <input type="range" id="programTimeSlider" min="1" max="1" value="1">
-          <div id="stepsText"></div>
-        </div>
+      <div id="sliderArea">
+        <input type="range" id="programTimeSlider" min="1" max="1" value="1">
+        <div id="stepsText"></div>
       </div>
+
     </div>
 
     <%# ── Sidebar ── %>
@@ -219,11 +231,24 @@
 
       <% if @project.parent_project %>
         <hr class="divider">
-        <div style="font-size:12px;color:#929292;">
+        <div style="font-size:12px;color:#929292;font-family:'Montserrat',sans-serif;">
           Remix de <%= link_to @project.parent_project.title, @project.parent_project,
                           style: "color:#0081A6;" %>
         </div>
       <% end %>
+
+      <hr class="divider">
+      <div class="sidebar-actions">
+        <% if user_signed_in? && current_user == @project.user %>
+          <%= link_to t("projects.edit"), edit_project_path(@project),
+              class: "btn-secondary", style: "font-size:12px;padding:6px 12px;text-align:center;",
+              data: { turbo: false } %>
+        <% end %>
+        <% if user_signed_in? && current_user != @project.user %>
+          <%= button_to t("projects.remix"), remix_project_path(@project), method: :post,
+              class: "btn-secondary", style: "font-size:12px;padding:6px 12px;" %>
+        <% end %>
+      </div>
     </div>
 
   </div>
@@ -240,16 +265,6 @@
   } else {
     window._logoEditorReadyCallback = loadProject;
   }
-
-  document.getElementById('zoomInBtn').addEventListener('click', function() {
-    window.workspace.zoomCenter(1);
-  });
-  document.getElementById('zoomOutBtn').addEventListener('click', function() {
-    window.workspace.zoomCenter(-1);
-  });
-  document.getElementById('zoomFitBtn').addEventListener('click', function() {
-    window.workspace.zoomToFit();
-  });
 
   // Prevent Materialize from hijacking the speed slider
   var speedSlider = document.getElementById('speedSlider');
