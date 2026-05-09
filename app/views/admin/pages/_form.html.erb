@@ -1,0 +1,116 @@
+<%= form_with model: [:admin, page], local: true do |f| %>
+  <% if page.errors.any? %>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+      <% page.errors.full_messages.each do |msg| %>
+        <p style="font-size:14px;color:#b91c1c;margin:0;"><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="card-light" style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <%= f.label :title, "Título", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :title, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+      <div>
+        <%= f.label :nav_label, "Rótulo no menu", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :nav_label, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <%= f.label :slug, "Slug (URL)", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :slug, placeholder: "ex: sobre-a-plataforma", style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;font-family:monospace;" %>
+      </div>
+      <div>
+        <%= f.label :position, "Posição", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.number_field :position, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :published, style: "display:flex;align-items:center;gap:8px;cursor:pointer;" do %>
+        <%= f.check_box :published, style: "accent-color:#0081A6;width:16px;height:16px;" %>
+        <span style="font-size:14px;font-weight:600;">Publicada</span>
+      <% end %>
+    </div>
+
+    <div>
+      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Conteúdo</label>
+      <div id="tiptap-editor" style="border:1px solid #e0e0e0;border-radius:6px;min-height:400px;background:white;">
+        <div id="tiptap-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;padding:8px;border-bottom:1px solid #e0e0e0;background:#fafafa;border-radius:6px 6px 0 0;">
+          <button type="button" data-action="bold" title="Negrito" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-weight:700;font-size:13px;">B</button>
+          <button type="button" data-action="italic" title="Itálico" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-style:italic;font-size:13px;">I</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="h1" title="Título 1" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H1</button>
+          <button type="button" data-action="h2" title="Título 2" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H2</button>
+          <button type="button" data-action="h3" title="Título 3" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H3</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="bulletList" title="Lista" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">≡</button>
+          <button type="button" data-action="orderedList" title="Lista numerada" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">1.</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="blockquote" title="Citação" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">"</button>
+          <button type="button" data-action="codeBlock" title="Código" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:11px;font-family:monospace;">{}</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="horizontalRule" title="Linha" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;">—</button>
+        </div>
+        <div id="tiptap-content" style="padding:16px;min-height:350px;outline:none;" contenteditable="true"></div>
+      </div>
+      <%= f.hidden_field :content, id: "page_content_hidden" %>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <%= f.submit page.new_record? ? "Criar Página" : "Salvar Alterações",
+          style: "background:#0081A6;color:white;border:none;border-radius:6px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;" %>
+      <%= link_to "Cancelar", admin_pages_path, style: "font-size:14px;color:#929292;line-height:40px;" %>
+    </div>
+
+  </div>
+<% end %>
+
+<script>
+(function() {
+  var hiddenField = document.getElementById('page_content_hidden');
+  var contentDiv  = document.getElementById('tiptap-content');
+  var toolbar     = document.getElementById('tiptap-toolbar');
+
+  // Load initial content
+  var initial = hiddenField.value || '';
+  contentDiv.innerHTML = initial;
+
+  // Sync on every input
+  contentDiv.addEventListener('input', sync);
+  function sync() { hiddenField.value = contentDiv.innerHTML; }
+
+  // Toolbar actions
+  toolbar.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    var action = btn.dataset.action;
+    contentDiv.focus();
+    switch (action) {
+      case 'bold':         document.execCommand('bold'); break;
+      case 'italic':       document.execCommand('italic'); break;
+      case 'h1':           formatBlock('h1'); break;
+      case 'h2':           formatBlock('h2'); break;
+      case 'h3':           formatBlock('h3'); break;
+      case 'bulletList':   document.execCommand('insertUnorderedList'); break;
+      case 'orderedList':  document.execCommand('insertOrderedList'); break;
+      case 'blockquote':   formatBlock('blockquote'); break;
+      case 'codeBlock':    formatBlock('pre'); break;
+      case 'horizontalRule': document.execCommand('insertHorizontalRule'); break;
+    }
+    sync();
+  });
+
+  function formatBlock(tag) {
+    document.execCommand('formatBlock', false, '<' + tag + '>');
+  }
+
+  // Sync before form submit
+  document.querySelector('form').addEventListener('submit', sync);
+})();
+</script>
