@@ -45,6 +45,7 @@ Rails.application.routes.draw do
       end
     end
     resources :pages
+    resource :image_upload, only: [:create]
   end
 
   # API interna do editor (fase 1+)
