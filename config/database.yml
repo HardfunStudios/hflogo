@@ -62,7 +62,7 @@ production:
     <<: *default
     database: hflogo_production
     username: hflogo
-    password: <%= ENV["DATABASE_PASSWORD"] %>
+    password: <%= ENV["HFLOGO_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: hflogo_production_cache
