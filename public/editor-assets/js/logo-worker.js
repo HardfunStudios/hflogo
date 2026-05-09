@@ -72,9 +72,9 @@ function initApi(interpreter, scope) {
   // ── Drawing commands ───────────────────────────────────────────────────────
 
   drawFn('moveCT', function(s) {
-    const rad = (ts.heading - 90) * Math.PI / 180;
-    ts.x += Number(s) * Math.cos(rad);
-    ts.y += Number(s) * Math.sin(rad);
+    const hr = ts.heading * Math.PI / 180;
+    ts.x += Number(s) * Math.sin(hr);
+    ts.y += Number(s) * Math.cos(hr);
   });
 
   drawFn('turnCT', function(d) {
@@ -121,12 +121,8 @@ function initApi(interpreter, scope) {
   addFn('getturtlemodeCT',   function() { return interpreter.createPrimitive(ts.turtleMode); });
   addFn('getstateCT',        function() { return interpreter.createPrimitive(ts.state); });
 
-  addFn('getxyCT', function() {
-    const obj = interpreter.createObject(interpreter.OBJECT);
-    interpreter.setProperty(obj, 'x', interpreter.createPrimitive(ts.x));
-    interpreter.setProperty(obj, 'y', interpreter.createPrimitive(ts.y));
-    return obj;
-  });
+  addFn('getxCT', function() { return interpreter.createPrimitive(ts.x); });
+  addFn('getyCT', function() { return interpreter.createPrimitive(ts.y); });
 
   // ── UI functions ───────────────────────────────────────────────────────────
 

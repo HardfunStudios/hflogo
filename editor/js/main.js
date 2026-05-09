@@ -2,6 +2,9 @@ import * as Blockly from 'blockly';
 import { javascriptGenerator, Order } from 'blockly/javascript';
 import * as ptBR from 'blockly/msg/pt-br';
 import { FieldAngle } from '@blockly/field-angle';
+import { logoGenerator }     from './logo-generator.js';
+import { logoToBlocklyState } from './logo-to-blockly.js';
+import { mountHighlighter }   from './logo-highlight.js';
 
 Blockly.setLocale(ptBR);
 
@@ -48,51 +51,54 @@ Blockly.Msg['PROCEDURES_DEFRETURN_PROCEDURE'] = 'algo novo';
 
 // ─── Color table (mirrors microworld.js FULL_256_COLORTABLE) ─────────────────
 
-const COLOR_TABLE = {
-  0:'#000000',1:'#800000',2:'#008000',3:'#808000',4:'#000080',5:'#800080',
-  6:'#008080',7:'#c0c0c0',8:'#808080',9:'#ff0000',10:'#00ff00',11:'#ffff00',
-  12:'#0000ff',13:'#ff00ff',14:'#00ffff',15:'#ffffff',16:'#000000',17:'#00005f',
-  18:'#000087',19:'#0000af',20:'#0000d7',21:'#0000ff',22:'#005f00',23:'#005f5f',
-  24:'#005f87',25:'#005faf',26:'#005fd7',27:'#005fff',28:'#008700',29:'#00875f',
-  30:'#008787',31:'#0087af',32:'#0087d7',33:'#0087ff',34:'#00af00',35:'#00af5f',
-  36:'#00af87',37:'#00afaf',38:'#00afd7',39:'#00afff',40:'#00d700',41:'#00d75f',
-  42:'#00d787',43:'#00d7af',44:'#00d7d7',45:'#00d7ff',46:'#00ff00',47:'#00ff5f',
-  48:'#00ff87',49:'#00ffaf',50:'#00ffd7',51:'#00ffff',52:'#5f0000',53:'#5f005f',
-  54:'#5f0087',55:'#5f00af',56:'#5f00d7',57:'#5f00ff',58:'#5f5f00',59:'#5f5f5f',
-  60:'#5f5f87',61:'#5f5faf',62:'#5f5fd7',63:'#5f5fff',64:'#5f8700',65:'#5f875f',
-  66:'#5f8787',67:'#5f87af',68:'#5f87d7',69:'#5f87ff',70:'#5faf00',71:'#5faf5f',
-  72:'#5faf87',73:'#5fafaf',74:'#5fafd7',75:'#5fafff',76:'#5fd700',77:'#5fd75f',
-  78:'#5fd787',79:'#5fd7af',80:'#5fd7d7',81:'#5fd7ff',82:'#5fff00',83:'#5fff5f',
-  84:'#5fff87',85:'#5fffaf',86:'#5fffd7',87:'#5fffff',88:'#870000',89:'#87005f',
-  90:'#870087',91:'#8700af',92:'#8700d7',93:'#8700ff',94:'#875f00',95:'#875f5f',
-  96:'#875f87',97:'#875faf',98:'#875fd7',99:'#875fff',100:'#878700',101:'#87875f',
-  102:'#878787',103:'#8787af',104:'#8787d7',105:'#8787ff',106:'#87af00',107:'#87af5f',
-  108:'#87af87',109:'#87afaf',110:'#87afd7',111:'#87afff',112:'#87d700',113:'#87d75f',
-  114:'#87d787',115:'#87d7af',116:'#87d7d7',117:'#87d7ff',118:'#87ff00',119:'#87ff5f',
-  120:'#87ff87',121:'#87ffaf',122:'#87ffd7',123:'#87ffff',124:'#af0000',125:'#af005f',
-  126:'#af0087',127:'#af00af',128:'#af00d7',129:'#af00ff',130:'#af5f00',131:'#af5f5f',
-  132:'#af5f87',133:'#af5faf',134:'#af5fd7',135:'#af5fff',136:'#af8700',137:'#af875f',
-  138:'#af8787',139:'#af87af',140:'#af87d7',141:'#af87ff',142:'#afaf00',143:'#afaf5f',
-  144:'#afaf87',145:'#afafaf',146:'#afafd7',147:'#afafff',148:'#afd700',149:'#afd75f',
-  150:'#afd787',151:'#afd7af',152:'#afd7d7',153:'#afd7ff',154:'#afff00',155:'#afff5f',
-  156:'#afff87',157:'#afffaf',158:'#afffd7',159:'#afffff',160:'#d70000',161:'#d7005f',
-  162:'#d70087',163:'#d700af',164:'#d700d7',165:'#d700ff',166:'#d75f00',167:'#d75f5f',
-  168:'#d75f87',169:'#d75faf',170:'#d75fd7',171:'#d75fff',172:'#d78700',173:'#d7875f',
-  174:'#d78787',175:'#d787af',176:'#d787d7',177:'#d787ff',178:'#d7af00',179:'#d7af5f',
-  180:'#d7af87',181:'#d7afaf',182:'#d7afd7',183:'#d7afff',184:'#d7d700',185:'#d7d75f',
-  186:'#d7d787',187:'#d7d7af',188:'#d7d7d7',189:'#d7d7ff',190:'#d7ff00',191:'#d7ff5f',
-  192:'#d7ff87',193:'#d7ffaf',194:'#d7ffd7',195:'#d7ffff',196:'#ff0000',197:'#ff005f',
-  198:'#ff0087',199:'#ff00af',200:'#ff00d7',201:'#ff00ff',202:'#ff5f00',203:'#ff5f5f',
-  204:'#ff5f87',205:'#ff5faf',206:'#ff5fd7',207:'#ff5fff',208:'#ff8700',209:'#ff875f',
-  210:'#ff8787',211:'#ff87af',212:'#ff87d7',213:'#ff87ff',214:'#ffaf00',215:'#ffaf5f',
-  216:'#ffaf87',217:'#ffafaf',218:'#ffafd7',219:'#ffafff',220:'#ffd700',221:'#ffd75f',
-  222:'#ffd787',223:'#ffd7af',224:'#ffd7d7',225:'#ffd7ff',226:'#ffff00',227:'#ffff5f',
-  228:'#ffff87',229:'#ffffaf',230:'#ffffd7',231:'#ffffff',232:'#080808',233:'#121212',
-  234:'#1c1c1c',235:'#262626',236:'#303030',237:'#3a3a3a',238:'#444444',239:'#4e4e4e',
-  240:'#585858',241:'#626262',242:'#6c6c6c',243:'#767676',244:'#808080',245:'#8a8a8a',
-  246:'#949494',247:'#9e9e9e',248:'#a8a8a8',249:'#b2b2b2',250:'#bcbcbc',251:'#c6c6c6',
-  252:'#d0d0d0',253:'#dadada',254:'#e4e4e4',255:'#eeeeee',
-};
+// StarLogo/NetLogo color scale: 14 families × 10 shades (0–139)
+//   Family × 10 + 0  = darkest shade
+//   Family × 10 + 5  = pure color
+//   Family × 10 + 9  = lightest shade
+//
+//   0x: gray  | 1x: red    | 2x: orange | 3x: brown  | 4x: yellow
+//   5x: green | 6x: lime   | 7x: turq   | 8x: cyan   | 9x: sky
+//   10x: blue | 11x: violet| 12x: magenta| 13x: pink
+function _buildColorTable() {
+  const bases = [
+    [128, 128, 128], // 0x: gray
+    [220,  50,  47], // 1x: red
+    [232, 124,  18], // 2x: orange
+    [155,  93,  46], // 3x: brown
+    [225, 225,  40], // 4x: yellow
+    [ 60, 180,  50], // 5x: green
+    [130, 210,  30], // 6x: lime
+    [ 30, 200, 130], // 7x: turquoise
+    [  0, 190, 210], // 8x: cyan
+    [ 80, 150, 220], // 9x: sky
+    [ 40,  80, 220], // 10x: blue
+    [130,  40, 200], // 11x: violet
+    [200,  30, 180], // 12x: magenta
+    [230,  90, 160], // 13x: pink
+  ];
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  const hex2 = v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0');
+  const rgb2hex = (r, g, b) => `#${hex2(r)}${hex2(g)}${hex2(b)}`;
+
+  const t = {};
+  for (let f = 0; f < bases.length; f++) {
+    const [r, g, b] = bases[f];
+    for (let o = 0; o < 10; o++) {
+      const idx = f * 10 + o;
+      if (o < 5) {
+        const factor = o / 5;
+        t[idx] = rgb2hex(lerp(15, r, factor), lerp(15, g, factor), lerp(15, b, factor));
+      } else if (o === 5) {
+        t[idx] = rgb2hex(r, g, b);
+      } else {
+        const factor = (o - 5) / 5;
+        t[idx] = rgb2hex(lerp(r, 240, factor), lerp(g, 240, factor), lerp(b, 240, factor));
+      }
+    }
+  }
+  return t;
+}
+const COLOR_TABLE = _buildColorTable();
 
 // Find the closest index in COLOR_TABLE for a given hex color
 function hexToColorIndex(hex) {
@@ -308,13 +314,56 @@ Blockly.fieldRegistry.register('field_color_swatch', FieldColorSwatch);
 
 // ─── Block definitions ────────────────────────────────────────────────────────
 
-const hue_category_pen = 230;
+const COLOR_TURTLE   = '#0081A6';
+const COLOR_CONTROL  = '#8B5CF6';
+const COLOR_NUMBERS  = '#D97706';
+const COLOR_PEN      = '#2ECC71';
+const COLOR_SCREEN   = '#00607e';
+const COLOR_START    = '#16A34A';
+const COLOR_STOP     = '#D51414';
+
+const hue_category_pen = COLOR_PEN;
+
+// Override colors of built-in Blockly blocks to match our palette
+[
+  'controls_repeat_ext', 'controls_if', 'controls_whileUntil',
+  'controls_for', 'controls_forEach', 'controls_flow_statements',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour(COLOR_CONTROL); };
+});
+
+[
+  'math_number', 'math_arithmetic', 'math_single', 'math_trig',
+  'math_change', 'math_modulo', 'math_random_int', 'math_random_float',
+  'math_constrain', 'math_number_property',
+  'logic_compare', 'logic_operation', 'logic_negate',
+  'logic_boolean', 'logic_null', 'logic_ternary',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour(COLOR_NUMBERS); };
+});
+
+[
+  'procedures_defnoreturn', 'procedures_defreturn',
+  'procedures_callnoreturn', 'procedures_callreturn',
+  'procedures_ifreturn',
+].forEach(type => {
+  const proto = Blockly.Blocks[type];
+  if (!proto) return;
+  const orig = proto.init;
+  proto.init = function () { orig.call(this); this.setColour('#F5C518'); };
+});
 
 Blockly.Blocks['controls_start'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.GREEN_FLAG);
     this.setNextStatement(true);
-    this.setColour(120);
+    this.setColour(COLOR_START);
   },
 };
 javascriptGenerator.forBlock['controls_start'] = () => '';
@@ -324,7 +373,7 @@ Blockly.Blocks['controls_stop'] = {
     this.appendDummyInput().appendField('pare');
     this.setPreviousStatement(true);
     this.setNextStatement(false);
-    this.setColour(120);
+    this.setColour(COLOR_STOP);
     this.setTooltip('Para a execução do escopo atual. Dentro de uma função, sai da função. No programa principal, encerra a execução.');
   },
 };
@@ -335,7 +384,7 @@ Blockly.Blocks['turtle_forward'] = {
     this.appendValueInput('steps').setCheck('Number').appendField(Turtle_Msg.FORWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_forward'] = (block, gen) => {
@@ -348,7 +397,7 @@ Blockly.Blocks['turtle_back'] = {
     this.appendValueInput('steps').setCheck('Number').appendField(Turtle_Msg.BACKWARD);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_back'] = (block, gen) => {
@@ -356,31 +405,43 @@ javascriptGenerator.forBlock['turtle_back'] = (block, gen) => {
   return `moveCT(-${steps});\n`;
 };
 
-Blockly.Blocks['turtle_right'] = {
+// Angle value block: FieldAngle so the user can type or use the protractor
+Blockly.Blocks['turtle_angle'] = {
   init() {
     this.appendDummyInput()
-      .appendField(Turtle_Msg.RIGHT)
-      .appendField(new FieldAngle('90'), 'degrees');
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(210);
+      .appendField(new FieldAngle('90'), 'angle');
+    this.setOutput(true, 'Number');
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_right'] = (block) =>
-  `turnCT(${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_angle'] = (block) =>
+  [block.getFieldValue('angle'), Order.ATOMIC];
+
+Blockly.Blocks['turtle_right'] = {
+  init() {
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.RIGHT);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(COLOR_TURTLE);
+  },
+};
+javascriptGenerator.forBlock['turtle_right'] = (block, gen) =>
+  `turnCT(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'});\n`;
 
 Blockly.Blocks['turtle_left'] = {
   init() {
-    this.appendDummyInput()
-      .appendField(Turtle_Msg.LEFT)
-      .appendField(new FieldAngle('90'), 'degrees');
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.LEFT);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_left'] = (block) =>
-  `turnCT(-${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_left'] = (block, gen) =>
+  `turnCT(-(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'}));\n`;
 
 Blockly.Blocks['turtle_setpos'] = {
   init() {
@@ -390,7 +451,7 @@ Blockly.Blocks['turtle_setpos'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setpos'] = (block, gen) => {
@@ -406,7 +467,7 @@ Blockly.Blocks['turtle_setposx'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setposx'] = (block, gen) => {
@@ -421,7 +482,7 @@ Blockly.Blocks['turtle_setposy'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_setposy'] = (block, gen) => {
@@ -431,24 +492,24 @@ javascriptGenerator.forBlock['turtle_setposy'] = (block, gen) => {
 
 Blockly.Blocks['turtle_setheading'] = {
   init() {
-    this.appendDummyInput()
-      .appendField(Turtle_Msg.SET_HEADING)
-      .appendField(new FieldAngle('90'), 'degrees');
+    this.appendValueInput('degrees')
+      .setCheck('Number')
+      .appendField(Turtle_Msg.SET_HEADING);
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_setheading'] = (block) =>
-  `setheadingCT(${block.getFieldValue('degrees')});\n`;
+javascriptGenerator.forBlock['turtle_setheading'] = (block, gen) =>
+  `setheadingCT(${gen.valueToCode(block, 'degrees', Order.ATOMIC) || '0'});\n`;
 
 Blockly.Blocks['turtle_home'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.HOME);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_home'] = () => 'homeCT();\n';
@@ -458,7 +519,7 @@ Blockly.Blocks['turtle_show'] = {
     this.appendDummyInput().appendField(Turtle_Msg.SHOW_TURTLE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_show'] = () => 'showCT();\n';
@@ -468,7 +529,7 @@ Blockly.Blocks['turtle_hide'] = {
     this.appendDummyInput().appendField(Turtle_Msg.HIDE_TURTLE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_hide'] = () => 'hideCT();\n';
@@ -478,7 +539,7 @@ Blockly.Blocks['screen_clean'] = {
     this.appendDummyInput().appendField(Turtle_Msg.CLEAN);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_clean'] = () => 'clearCT();\n';
@@ -488,7 +549,7 @@ Blockly.Blocks['screen_clearscreen'] = {
     this.appendDummyInput().appendField(Turtle_Msg.CLEAR_SCREEN);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_clearscreen'] = () => 'clearscreenCT();\n';
@@ -498,7 +559,7 @@ Blockly.Blocks['screen_wrap'] = {
     this.appendDummyInput().appendField(Turtle_Msg.WRAP);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_wrap'] = () => 'setturtlemodeCT("wrap");\n';
@@ -508,7 +569,7 @@ Blockly.Blocks['screen_fence'] = {
     this.appendDummyInput().appendField(Turtle_Msg.FENCE);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_fence'] = () => 'setturtlemodeCT("fence");\n';
@@ -518,27 +579,27 @@ Blockly.Blocks['screen_window'] = {
     this.appendDummyInput().appendField(Turtle_Msg.WINDOW);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(COLOR_SCREEN);
   },
 };
 javascriptGenerator.forBlock['screen_window'] = () => 'setturtlemodeCT("window");\n';
 
 Blockly.Blocks['turtle_arc'] = {
   init() {
-    this.appendDummyInput()
+    this.appendValueInput('angle')
+      .setCheck('Number')
       .appendField(Turtle_Msg.ARC)
-      .appendField(Turtle_Msg.ANGLE)
-      .appendField(new FieldAngle('90'), 'angle');
+      .appendField(Turtle_Msg.ANGLE);
     this.appendValueInput('radius').setCheck('Number').appendField('radius');
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_arc'] = (block, gen) => {
-  const angle = block.getFieldValue('angle');
-  const radius = gen.valueToCode(block, 'radius', Order.ATOMIC);
+  const angle = gen.valueToCode(block, 'angle', Order.ATOMIC) || '90';
+  const radius = gen.valueToCode(block, 'radius', Order.ATOMIC) || '100';
   return `arcCT(${angle},${radius});\n`;
 };
 
@@ -546,25 +607,25 @@ Blockly.Blocks['turtle_xcor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.X_COORDINATE);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_xcor'] = () => ['getxyCT()[0]', Order.ATOMIC];
+javascriptGenerator.forBlock['turtle_xcor'] = () => ['getxCT()', Order.ATOMIC];
 
 Blockly.Blocks['turtle_ycor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.Y_COORDINATE);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
-javascriptGenerator.forBlock['turtle_ycor'] = () => ['getxyCT()[1]', Order.ATOMIC];
+javascriptGenerator.forBlock['turtle_ycor'] = () => ['getyCT()', Order.ATOMIC];
 
 Blockly.Blocks['turtle_heading'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.HEADING);
     this.setOutput(true, 'Number');
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_heading'] = () => ['getheadingCT()', Order.ATOMIC];
@@ -577,7 +638,7 @@ Blockly.Blocks['turtle_towards'] = {
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
-    this.setColour(210);
+    this.setColour(COLOR_TURTLE);
   },
 };
 javascriptGenerator.forBlock['turtle_towards'] = (block, gen) => {
@@ -613,10 +674,10 @@ Blockly.Blocks['pen_colornumber'] = {
   init() {
     this.appendDummyInput()
         .appendField(new FieldColorSwatch(COLOR_TABLE[0]), 'SWATCH')
-        .appendField(new Blockly.FieldNumber(0, 0, 255, 1), 'NUM');
+        .appendField(new Blockly.FieldNumber(0, 0, 139, 1), 'NUM');
     this.setColour(hue_category_pen);
     this.setOutput(true, 'Number');
-    this.setTooltip('Clique no swatch para escolher a cor, ou no número para digitar (0–255).');
+    this.setTooltip('Clique no swatch para escolher a cor, ou no número para digitar (0–139).');
   },
   onchange(e) {
     if (e.type !== Blockly.Events.BLOCK_CHANGE || e.blockId !== this.id) return;
@@ -626,7 +687,7 @@ Blockly.Blocks['pen_colornumber'] = {
         const idx = hexToColorIndex(e.newValue);
         this.getField('NUM').setValue(idx);
       } else if (e.name === 'NUM') {
-        const hex = COLOR_TABLE[Math.max(0, Math.min(255, parseInt(e.newValue) || 0))];
+        const hex = COLOR_TABLE[Math.max(0, Math.min(139, parseInt(e.newValue) || 0))];
         this.getField('SWATCH').setValue(hex);
       }
     } finally {
@@ -684,7 +745,7 @@ javascriptGenerator.forBlock['pen_ispendown?'] = () => ['ispendownCT()', Order.A
 Blockly.Blocks['pen_pencolor'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.GET_PENCOLOR);
-    this.setOutput(true, 'Boolean');
+    this.setOutput(true, 'Number');
     this.setColour(hue_category_pen);
   },
 };
@@ -707,49 +768,52 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Tartaruga',
+      colour: COLOR_TURTLE,
       contents: [
         { kind: 'block', type: 'turtle_forward', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
         { kind: 'block', type: 'turtle_back', inputs: { steps: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
-        { kind: 'block', type: 'turtle_right' },
-        { kind: 'block', type: 'turtle_left' },
+        { kind: 'block', type: 'turtle_right', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
+        { kind: 'block', type: 'turtle_left',  inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_home' },
-        { kind: 'block', type: 'turtle_arc', inputs: { radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
-        { kind: 'block', type: 'turtle_setpos' },
-        { kind: 'block', type: 'turtle_setposx' },
+        { kind: 'block', type: 'turtle_arc', inputs: { angle: { shadow: { type: 'math_number', fields: { NUM: 360 } } }, radius: { shadow: { type: 'math_number', fields: { NUM: 100 } } } } },
+        { kind: 'block', type: 'turtle_setpos', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'turtle_setposx', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_xcor' },
-        { kind: 'block', type: 'turtle_setposy' },
+        { kind: 'block', type: 'turtle_setposy', inputs: { y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'turtle_ycor' },
-        { kind: 'block', type: 'turtle_setheading' },
+        { kind: 'block', type: 'turtle_setheading', inputs: { degrees: { shadow: { type: 'turtle_angle', fields: { angle: 90 } } } } },
         { kind: 'block', type: 'turtle_heading' },
         { kind: 'block', type: 'turtle_show' },
         { kind: 'block', type: 'turtle_hide' },
-        { kind: 'block', type: 'turtle_towards' },
+        { kind: 'block', type: 'turtle_towards', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
       ],
     },
     {
       kind: 'category',
       name: 'Controle',
+      colour: COLOR_CONTROL,
       contents: [
         { kind: 'block', type: 'controls_start' },
         { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'controls_if' },
-        { kind: 'block', type: 'controls_if', extraState: { hasElse: true } },
+        { kind: 'block', type: 'controls_if', inputs: { IF0: { shadow: { type: 'logic_boolean' } } } },
+        { kind: 'block', type: 'controls_if', extraState: { hasElse: true }, inputs: { IF0: { shadow: { type: 'logic_boolean' } } } },
         { kind: 'block', type: 'controls_stop' },
       ],
     },
     {
       kind: 'category',
       name: 'Números',
+      colour: COLOR_NUMBERS,
       contents: [
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic' },
-        { kind: 'block', type: 'math_single' },
-        { kind: 'block', type: 'math_trig' },
-        { kind: 'block', type: 'logic_compare' },
-        { kind: 'block', type: 'logic_operation' },
-        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 10 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
+        { kind: 'block', type: 'math_single', inputs: { NUM: { shadow: { type: 'math_number', fields: { NUM: 9 } } } } },
+        { kind: 'block', type: 'math_trig', inputs: { NUM: { shadow: { type: 'math_number', fields: { NUM: 45 } } } } },
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'logic_operation', inputs: { A: { shadow: { type: 'logic_boolean' } }, B: { shadow: { type: 'logic_boolean' } } } },
+        { kind: 'block', type: 'logic_negate', inputs: { BOOL: { shadow: { type: 'logic_boolean' } } } },
         { kind: 'block', type: 'math_change', inputs: { DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-        { kind: 'block', type: 'math_modulo' },
+        { kind: 'block', type: 'math_modulo', inputs: { DIVIDEND: { shadow: { type: 'math_number', fields: { NUM: 10 } } }, DIVISOR: { shadow: { type: 'math_number', fields: { NUM: 3 } } } } },
         {
           kind: 'block',
           type: 'math_random_int',
@@ -763,8 +827,9 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Caneta',
+      colour: COLOR_PEN,
       contents: [
-        { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'pen_colornumber', fields: { NUM: 9, SWATCH: COLOR_TABLE[9] } } } } },
+        { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'pen_colornumber', fields: { NUM: 15, SWATCH: COLOR_TABLE[15] } } } } },
         { kind: 'block', type: 'pen_colornumber' },
         { kind: 'block', type: 'pen_setpensize', inputs: { size: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
         { kind: 'block', type: 'pen_ispendown?' },
@@ -778,15 +843,77 @@ const toolbox = {
     {
       kind: 'category',
       name: 'Tela',
+      colour: COLOR_SCREEN,
       contents: [
         { kind: 'block', type: 'screen_clean' },
         { kind: 'block', type: 'screen_clearscreen' },
       ],
     },
-    { kind: 'category', name: 'Variáveis', custom: 'VARIABLE' },
-    { kind: 'category', name: 'Ensinar', custom: 'PROCEDURE' },
+    { kind: 'category', name: 'Variáveis', colour: '#9E6B00', custom: 'VARIABLE' },
+    { kind: 'category', name: 'Ensinar', colour: '#F5C518', custom: 'PROCEDURE' },
   ],
 };
+
+// ─── Tab state ────────────────────────────────────────────────────────────────
+
+let _activeTab = 'blocos'; // 'blocos' | 'logo'
+let _running   = false;
+let _hadError  = false;
+
+function _setRunning(val) {
+  _running = val;
+  ['tabBlocos', 'tabLogo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = val;
+  });
+}
+
+function _shouldHighlight() {
+  return parseInt(document.getElementById('speedSlider')?.value ?? '5') < 6;
+}
+
+// Inject __hl__ "base64(L{line}) before each executable line for Logo-mode stepping
+function _injectLineMarkers(code) {
+  const enc = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return code.split('\n').flatMap((line, i) => {
+    const t = line.trim();
+    if (!t || t.startsWith(';') || t === '[' || t === ']' || t === 'fim') return [line];
+    return [`__hl__ "${enc('L' + (i + 1))}`, line];
+  }).join('\n');
+}
+
+const _LOGO_LINE_HEIGHT = 13 * 1.6; // must match CSS font-size × line-height
+const _LOGO_PADDING_TOP = 16;
+
+function _highlightLogoLine(lineNum) {
+  const ta    = document.getElementById('logoCodeEditor');
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
+  if (!ta || !hl) return;
+  // Auto-scroll to keep line visible
+  const taH = ta.clientHeight;
+  const yRaw = _LOGO_PADDING_TOP + (lineNum - 1) * _LOGO_LINE_HEIGHT;
+  if (yRaw - ta.scrollTop < _LOGO_PADDING_TOP ||
+      yRaw - ta.scrollTop + _LOGO_LINE_HEIGHT > taH - _LOGO_PADDING_TOP) {
+    ta.scrollTop = yRaw - taH / 2;
+  }
+  const y = yRaw - ta.scrollTop;
+  hl.style.top    = y + 'px';
+  hl.style.height = _LOGO_LINE_HEIGHT + 'px';
+  hl.style.opacity = '1';
+  if (arrow) {
+    arrow.style.top    = y + 'px';
+    arrow.style.height = _LOGO_LINE_HEIGHT + 'px';
+    arrow.style.opacity = '1';
+  }
+}
+
+function _clearLogoHighlight() {
+  const hl    = document.getElementById('logoLineHighlight');
+  const arrow = document.getElementById('logoLineArrow');
+  if (hl)    hl.style.opacity    = '0';
+  if (arrow) arrow.style.opacity = '0';
+}
 
 // ─── LP code execution ────────────────────────────────────────────────────────
 
@@ -797,16 +924,35 @@ function lpHighlighBlockTime(time) {
   window.workspace.highlightBlock(block_id);
 }
 
+// With __hl__ markers — only for the worker (block highlighting)
 function generateCode() {
-  javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-  javascriptGenerator.addReservedWords('highlightBlock');
-  return javascriptGenerator.workspaceToCode(window.workspace);
+  logoGenerator.STATEMENT_PREFIX = '';
+  logoGenerator._noHighlight     = false;
+  return logoGenerator.workspaceToCode(window.workspace);
 }
+
+// Clean Logo — for display in the text editor
+function generateDisplayCode() {
+  logoGenerator.STATEMENT_PREFIX = '';
+  logoGenerator._noHighlight     = true;
+  return logoGenerator.workspaceToCode(window.workspace);
+}
+
+// Code to send to the worker: always instrumented so time slider records steps
+function _getLogoCode() {
+  if (_activeTab === 'logo') {
+    const raw = document.getElementById('logoCodeEditor')?.value ?? '';
+    return _injectLineMarkers(raw);
+  }
+  return generateCode();
+}
+
+function _getLogoTextarea() { return document.getElementById('logoCodeEditor'); }
 
 function getExecutionDelay() {
   const slider = document.getElementById('speedSlider');
   if (!slider) return 0;
-  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0 };
+  const map = { 1: 500, 2: 375, 3: 250, 4: 125, 5: 0, 6: 0 };
   return map[parseInt(slider.value)] ?? 0;
 }
 
@@ -843,11 +989,13 @@ function _applyCommand(name, args) {
 
 function _startWorker(code) {
   if (_worker) { _worker.terminate(); _worker = null; }
+  _hadError = false;
+  _setRunning(true);
 
   time_block_mapping = [];
   window.workspace.highlightBlock(null);
 
-  _worker = new Worker('/editor-assets/js/logo-worker.js');
+  _worker = new Worker('/editor-assets/js/logo-worker-v2.js');
 
   _worker.onmessage = function(e) {
     const msg = e.data;
@@ -858,14 +1006,27 @@ function _startWorker(code) {
     }
 
     if (msg.type === 'highlight') {
+      // Always record for time slider regardless of speed
       window.currentworld.render();
       time_block_mapping.push(msg.blockId);
-      window.workspace.highlightBlock(msg.blockId);
-      const delay = getExecutionDelay();
-      if (delay > 0) {
-        setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+
+      if (_shouldHighlight()) {
+        // Visual highlight: block or Logo line
+        if (_activeTab === 'logo' && msg.blockId.startsWith('L')) {
+          _highlightLogoLine(parseInt(msg.blockId.slice(1)));
+        } else {
+          _clearLogoHighlight();
+          window.workspace.highlightBlock(msg.blockId);
+        }
+        const delay = getExecutionDelay();
+        if (delay > 0) {
+          setTimeout(() => { if (_worker) _worker.postMessage({ type: 'ack' }); }, delay);
+        } else {
+          requestAnimationFrame(() => { if (_worker) _worker.postMessage({ type: 'ack' }); });
+        }
       } else {
-        _worker.postMessage({ type: 'ack' });
+        // Speed 6: no visual update, ack immediately
+        if (_worker) _worker.postMessage({ type: 'ack' });
       }
       return;
     }
@@ -875,14 +1036,21 @@ function _startWorker(code) {
       return;
     }
 
+    if (msg.type === 'error') {
+      _hadError = true;
+      console.error('[Logo] runtime error:', msg.message);
+      return;
+    }
+
     if (msg.type === 'done') {
       window.workspace.highlightBlock(null);
+      _clearLogoHighlight();
       _worker.terminate();
       _worker = null;
-      // Flush any commands after the last highlight into a final step
-      window.currentworld.flushFinalStep();
+      window.currentworld.render();
       const btn = document.getElementById('runButton');
-      _finishExecution(btn);
+      _finishExecution(btn, { stopped: msg.stopped, hadError: _hadError });
+      _setRunning(false);
     }
   };
 
@@ -891,6 +1059,9 @@ function _startWorker(code) {
     const btn = document.getElementById('runButton');
     btn?.classList.remove('running');
     btn && (btn.disabled = false);
+    _clearLogoHighlight();
+    _hadError = true;
+    _setRunning(false);
     if (_worker) { _worker.terminate(); _worker = null; }
   };
 
@@ -991,21 +1162,24 @@ function setCurrentStepLabel(current) {
   if (el) el.textContent = 'passo ' + current + ' de ' + _totalSteps + ' passos';
 }
 
-function _finishExecution(btn) {
+function _finishExecution(btn, { stopped = false, hadError = false } = {}) {
   const totalSteps = window.currentworld.getTotalTime();
   setStepsLabel(totalSteps);
 
   const slider = document.getElementById('programTimeSlider');
   if (slider) {
-    slider.max = totalSteps;
-    slider.min = 1;
-    slider.step = 1;
-    slider.value = totalSteps;
+    slider.max   = Math.max(1, totalSteps);
+    slider.min   = 1;
+    slider.step  = 1;
+    slider.value = Math.max(1, totalSteps);
     slider.disabled = totalSteps === 0;
   }
-  setTimeout(() => {
-    if (window._onThumbnailCallback) window._onThumbnailCallback();
-  }, 100);
+  // Only update thumbnail after a clean, uninterrupted execution
+  if (!stopped && !hadError) {
+    setTimeout(() => {
+      if (window._onThumbnailCallback) window._onThumbnailCallback();
+    }, 100);
+  }
   btn?.classList.remove('running');
   btn && (btn.disabled = false);
 }
@@ -1021,8 +1195,8 @@ function executeCode() {
       window.currentworld.renderAtEachCommand = true;
       window.currentworld.reset();
       window.currentworld.setTimeVisibleMode(isTimeVisible());
-      const code = generateCode();
-      console.log('[Logo] starting worker, code length:', code.length);
+      const code = _getLogoCode();
+      console.log('[Logo] código gerado:\n' + code);
       _startWorker(code);
     } catch(e) {
       console.error('executeCode error:', e);
@@ -1138,8 +1312,8 @@ function _initLogoEditor() {
     slider.addEventListener('input', slideTime);
   }
 
-  document.getElementById('isTimeVisible')?.addEventListener('click', () => {
-    window.currentworld.setTimeVisibleMode(isTimeVisible());
+  document.getElementById('isTimeVisible')?.addEventListener('change', () => {
+    if (window.currentworld) window.currentworld.setTimeVisibleMode(isTimeVisible());
   });
 
   document.getElementById('save_button')?.addEventListener('click', save);
@@ -1153,8 +1327,8 @@ function _initLogoEditor() {
     media: '/blockly/media/',
     scrollbars: true,
     zoom: readOnly
-      ? { controls: false, wheel: true, startScale: 0.65 }
-      : { controls: false, wheel: false, startScale: 1.0 },
+      ? { controls: true, wheel: true, startScale: 0.65 }
+      : { controls: true, wheel: true, startScale: 1.0 },
   });
 
   setTimeout(() => window.workspace.resize(), 0);
@@ -1174,11 +1348,88 @@ function _initLogoEditor() {
     stageSize,
     stageSize
   );
+  window.currentworld.setTimeVisibleMode(isTimeVisible());
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  const tabBlocos     = document.getElementById('tabBlocos');
+  const tabLogo       = document.getElementById('tabLogo');
+  const blocklyDiv    = document.getElementById('blocklyDiv');
+  const logoTextPanel = document.getElementById('logoTextPanel');
+  const logoCodeEl    = _getLogoTextarea();
+  if (logoCodeEl) mountHighlighter(logoCodeEl);
+
+  function _switchToLogo() {
+    if (_activeTab === 'logo') return;
+    const code = generateDisplayCode();
+    if (logoCodeEl) { logoCodeEl.value = code; logoCodeEl.dispatchEvent(new Event('input')); }
+    _activeTab = 'logo';
+    tabLogo.classList.add('active');
+    tabBlocos.classList.remove('active');
+    blocklyDiv.style.display    = 'none';
+    logoTextPanel.classList.add('active');
+  }
+
+  const syntaxErrorEl = document.getElementById('logoSyntaxError');
+
+  function _showSyntaxError(msg) {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.textContent = '⚠ ' + msg;
+    syntaxErrorEl.title = msg;
+    syntaxErrorEl.classList.add('visible');
+  }
+
+  function _clearSyntaxError() {
+    if (!syntaxErrorEl) return;
+    syntaxErrorEl.classList.remove('visible');
+  }
+
+  function _switchToBlocos() {
+    if (_activeTab === 'blocos') return;
+    const code = logoCodeEl?.value ?? '';
+    try {
+      const state = logoToBlocklyState(code);
+      window.workspace.clear();
+      Blockly.Events.disable();
+      try {
+        Blockly.serialization.workspaces.load(state, window.workspace, { recordUndo: false });
+      } finally {
+        Blockly.Events.enable();
+      }
+      window.workspace.render();
+    } catch (e) {
+      _showSyntaxError(e.message);
+      return;
+    }
+    _clearSyntaxError();
+    _activeTab = 'blocos';
+    tabBlocos.classList.add('active');
+    tabLogo.classList.remove('active');
+    blocklyDiv.style.display = '';
+    logoTextPanel.classList.remove('active');
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  }
+
+  logoCodeEl?.addEventListener('input', _clearSyntaxError);
+
+  tabLogo?.addEventListener('click', _switchToLogo);
+  tabBlocos?.addEventListener('click', _switchToBlocos);
+
+  // Autosave ao editar o código Logo diretamente
+  logoCodeEl?.addEventListener('input', () => {
+    if (window._onChangedCallback) {
+      window._onChangedCallback(window.LogoEditor.getProjectState());
+    }
+  });
 
   // API para o Rails (editor_controller.js)
   window.LogoEditor = {
     getProjectState() {
-      return Blockly.serialization.workspaces.save(window.workspace);
+      const state = Blockly.serialization.workspaces.save(window.workspace);
+      state.logoCode     = logoCodeEl?.value ?? '';
+      state.activeTab    = _activeTab;
+      return state;
     },
     loadProjectState(state) {
       try {
@@ -1191,6 +1442,13 @@ function _initLogoEditor() {
           Blockly.Events.enable();
         }
         window.workspace.render();
+        // Restaura aba ativa primeiro (_switchToLogo regenera o textarea dos blocos)
+        if (obj.activeTab === 'logo') _switchToLogo();
+        // Depois sobrescreve com o código Logo salvo (tem precedência sobre blocos)
+        if (logoCodeEl && obj.logoCode != null) {
+          logoCodeEl.value = obj.logoCode;
+          logoCodeEl.dispatchEvent(new Event('input'));
+        }
       } catch (e) {
         console.error('LogoEditor.loadProjectState:', e, e.stack);
       }
@@ -1209,11 +1467,9 @@ function _initLogoEditor() {
 
   // Dispara onChanged a cada alteração no workspace
   window.workspace.addChangeListener((e) => {
-    if (window._onChangedCallback &&
-        e.type !== Blockly.Events.UI &&
-        e.type !== Blockly.Events.VIEWPORT_CHANGE) {
-      window._onChangedCallback(window.LogoEditor.getProjectState());
-    }
+    if (!window._onChangedCallback) return;
+    if (e.isUiEvent) return;
+    window._onChangedCallback(window.LogoEditor.getProjectState());
   });
 
   // Notifica quem já registrou callback antes da inicialização

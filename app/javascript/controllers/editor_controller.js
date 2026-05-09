@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const AUTOSAVE_DELAY = 30_000  // 30 segundos
+const AUTOSAVE_DELAY = 2_000  // 2 segundos
 
 export default class extends Controller {
   static targets = ["titleInput", "saveStatus", "saveVersionBtn", "publishBtn"]
@@ -14,7 +14,7 @@ export default class extends Controller {
   }
 
   connect() {
-    if (window._logoEditorInitialized) {
+    if (window.LogoEditor) {
       this._initEditor()
     } else {
       window._logoEditorReadyCallback = () => this._initEditor()

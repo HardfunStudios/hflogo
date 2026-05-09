@@ -28,6 +28,15 @@ function Microworld(canvasParentSelector,width, height) {
   width = Number(width);
   height = Number(height);
 
+  // ── Logical coordinate system ─────────────────────────────────────────────────
+  // Turtle state (self.x, self.y) is stored in logical coords: -500..+500, Y-up.
+  // All canvas draw calls convert via lx2cx / ly2cy.
+  var WORLD_HALF = 500;                                // logical half-extent
+
+  function getScale() { return Math.min(width, height) / (WORLD_HALF * 2); }
+  function lx2cx(lx) { return  lx * getScale() + width  / 2; }
+  function ly2cy(ly) { return -ly * getScale() + height / 2; }  // Y-flip
+
   canvasElement = document.createElement("CANVAS");
   canvasElement.id = "microworldCavnas";
   canvasElement.width = width;
@@ -49,14 +58,14 @@ function Microworld(canvasParentSelector,width, height) {
 
 
   //enables the make time visible mode
-  var makeTimeVisibleMode = true;
+  var makeTimeVisibleMode = false;
 
   // ── Replay-based time tracking (replaces canvas stack) ──────────────────────
   // commandLog stores {name, args} for every turtle command executed.
   // stepLog[i] = index into commandLog after step i completes.
   // To go to step N: replay commandLog[0..stepLog[N]-1] from scratch.
   var commandLog = [];
-  var stepLog = [];   // stepLog[i] = commandLog length after step i
+  var stepLog = [];   // stepLog[i] = {cmdCount, x, y} after step i
   var replayStep = -1; // which step is currently displayed (-1 = live)
 
   // Checkpoints: every CHECKPOINT_INTERVAL steps we store an ImageData snapshot
@@ -118,24 +127,27 @@ function Microworld(canvasParentSelector,width, height) {
 	}
 
   function moveto(x, y) {
+    // All coordinates here are logical (±WORLD_HALF, Y-up).
+    // _go converts to canvas pixels for actual drawing.
     function _go(x1, y1, x2, y2) {
       if (_skipDrawing) return;
+      var cx1 = lx2cx(x1), cy1 = ly2cy(y1);
+      var cx2 = lx2cx(x2), cy2 = ly2cy(y2);
       if (self.filling) {
-        penCanvas_ctx.lineTo(x1, y1);
-        penCanvas_ctx.lineTo(x2, y2);
+        penCanvas_ctx.lineTo(cx1, cy1);
+        penCanvas_ctx.lineTo(cx2, cy2);
       } else if (self.down) {
         penCanvas_ctx.beginPath();
-        penCanvas_ctx.moveTo(x1, y1);
-        penCanvas_ctx.lineTo(x2, y2);
+        penCanvas_ctx.moveTo(cx1, cy1);
+        penCanvas_ctx.lineTo(cx2, cy2);
         penCanvas_ctx.stroke();
       }
     }
 
     var ix, iy, wx, wy, fx, fy, less;
+    var B = WORLD_HALF;
 
     while (true) {
-      // TODO: What happens if we switch modes and turtle is outside bounds?
-
       switch (self.turtlemode) {
         case 'window':
           _go(self.x, self.y, x, y);
@@ -148,57 +160,50 @@ function Microworld(canvasParentSelector,width, height) {
         case 'wrap':
         case 'fence':
 
-          // fraction before intersecting
           fx = 1;
           fy = 1;
 
-          if (x < 0) {
-            fx = (self.x - 0) / (self.x - x);
-          } else if (x >= width) {
-            fx = (self.x - width) / (self.x - x);
+          if (x < -B) {
+            fx = (self.x + B) / (self.x - x);
+          } else if (x > B) {
+            fx = (self.x - B) / (self.x - x);
           }
 
-          if (y < 0) {
-            fy = (self.y - 0) / (self.y - y);
-          } else if (y >= height) {
-            fy = (self.y - height) / (self.y - y);
+          if (y < -B) {
+            fy = (self.y + B) / (self.y - y);
+          } else if (y > B) {
+            fy = (self.y - B) / (self.y - y);
           }
 
-          // intersection point (draw current to here)
           ix = x;
           iy = y;
-
-          // endpoint after wrapping (next "here")
           wx = x;
           wy = y;
 
           if (fx < 1 && fx <= fy) {
-            less = (x < 0);
-            ix = less ? 0 : width;
+            less = (x < -B);
+            ix = less ? -B : B;
             iy = self.y - fx * (self.y - y);
-            x += less ? width : -width;
-            wx = less ? width : 0;
+            x += less ? B * 2 : -B * 2;
+            wx = less ? B : -B;
             wy = iy;
           } else if (fy < 1 && fy <= fx) {
-            less = (y < 0);
+            less = (y < -B);
             ix = self.x - fy * (self.x - x);
-            iy = less ? 0 : height;
-            y += less ? height : -height;
+            iy = less ? -B : B;
+            y += less ? B * 2 : -B * 2;
             wx = ix;
-            wy = less ? height : 0;
+            wy = less ? B : -B;
           }
 
           _go(self.x, self.y, ix, iy);
 
-
           if (self.turtlemode === 'fence') {
-            // FENCE - stop on collision
             self.x = ix;
             self.y = iy;
             if(self.renderAtEachCommand && !_replaying) self.drawTurtle();
             return;
           } else {
-            // WRAP - keep going
             self.x = wx;
             self.y = wy;
             if (fx === 1 && fy === 1) {
@@ -210,7 +215,6 @@ function Microworld(canvasParentSelector,width, height) {
           break;
       }
     }
-
   }
 
   this.move = function(distance) {
@@ -226,8 +230,9 @@ function Microworld(canvasParentSelector,width, height) {
       distance = EPSILON;
     }
 
+    // Logical Y-up: no sign flip on Y
     x = this.x + distance * Math.cos(this.r);
-    y = this.y - distance * Math.sin(this.r);
+    y = this.y + distance * Math.sin(this.r);
     moveto(x, y);
 
     if (point) {
@@ -266,29 +271,13 @@ function Microworld(canvasParentSelector,width, height) {
   // };
   this.colorAlias = null;
 
-  var STANDARD_COLORS = {
-    0: "black", 1: "blue", 2: "lime", 3: "cyan",
-    4: "red", 5: "magenta", 6: "yellow", 7: "white",
-    8: "brown", 9: "tan", 10: "green", 11: "aquamarine",
-    12: "salmon", 13: "purple", 14: "orange", 15: "gray"
-  };
-
-
-
-  //TODO: change the parsecolor to understando colors from 0 to 256 and also rgb hex colors
   function parseColor(color) {
     color = String(color);
-    if (STANDARD_COLORS.hasOwnProperty(color)) {
-      return STANDARD_COLORS[color];
-    }
-    // if (self.colorAlias)
-    //   return self.colorAlias(color) || color;
-
-    if(!isNaN(parseInt(color))) {
-      var new_color = color % 256;
+    if (!isNaN(parseInt(color))) {
+      var new_color = ((parseInt(color) % 140) + 140) % 140;
       return FULL_256_COLORTABLE[new_color];
     }
-    return color;
+    return color; // hex string or CSS color name passed directly
   }
 
 
@@ -318,20 +307,15 @@ function Microworld(canvasParentSelector,width, height) {
   this.getfontsize = function() { return this.fontsize; };
 
   this.setposition = function(x, y) {
-    x = (x === undefined) ? this.x : x + (width / 2);
-    y = (y === undefined) ? this.y : -y + (height / 2);
-
+    // Logical coords passed directly — no pixel conversion.
+    x = (x === undefined) ? this.x : Number(x);
+    y = (y === undefined) ? this.y : Number(y);
     moveto(x, y);
-
   };
 
   this.towards = function(x, y) {
-    x = x + (width / 2);
-    y = -y + (height / 2);
-
-    return 90 - rad2deg(Math.atan2(this.y - y, x - this.x));
-
-
+    // Logical Y-up: atan2(dy, dx), heading = 90 - math_angle.
+    return 90 - rad2deg(Math.atan2(Number(y) - this.y, Number(x) - this.x));
   };
 
   this.setheading = function(angle) {
@@ -347,15 +331,15 @@ function Microworld(canvasParentSelector,width, height) {
     replayStep = -1;
 
     // Reset turtle state to defaults
-    self.x = width / 2;
-    self.y = height / 2;
+    self.x = 0;
+    self.y = 0;
     self.r = Math.PI / 2;
     self.down = true;
     self.color = 0;
     self.width = 1;
     self.fontsize = 14;
     self.penmode = 'paint';
-    self.turtlemode = 'wrap';
+    self.turtlemode = 'window';
     if (currentTurtle) currentTurtle.visible = true;
 
     // Reinitialize pen canvas context cleanly
@@ -394,10 +378,8 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.home = function() {
-    moveto(width / 2, height / 2);
-    this.r = deg2rad(90);
-
-
+    moveto(0, 0);          // logical origin
+    this.r = deg2rad(90);  // heading 0 = north
   };
 
   this.showturtle = function() {
@@ -422,13 +404,13 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.getxy = function() {
-    return [this.x - (width / 2), -this.y + (height / 2)];
+    return [this.x, this.y];  // logical coords directly
   };
 
   this.drawtext = function(text) {
     if (_skipDrawing) return;
     penCanvas_ctx.save();
-    penCanvas_ctx.translate(this.x, this.y);
+    penCanvas_ctx.translate(lx2cx(this.x), ly2cy(this.y));
     penCanvas_ctx.rotate(-this.r);
     penCanvas_ctx.fillText(text, 0, 0);
     penCanvas_ctx.restore();
@@ -473,20 +455,21 @@ function Microworld(canvasParentSelector,width, height) {
   this.arc = function(angle, radius) {
     if (_skipDrawing) return;
     var self = this;
+    var cx = lx2cx(this.x), cy = ly2cy(this.y), sr = radius * getScale();
     if (this.turtlemode == 'wrap') {
-      [self.x, self.x + width, this.x - width].forEach(function(x) {
-        [self.y, self.y + height, this.y - height].forEach(function(y) {
-          if (!this.filling)
+      [cx, cx + width, cx - width].forEach(function(x) {
+        [cy, cy + height, cy - height].forEach(function(y) {
+          if (!self.filling)
             penCanvas_ctx.beginPath();
-          penCanvas_ctx.arc(x, y, radius, -self.r, -self.r + deg2rad(angle), false);
-          if (!this.filling)
+          penCanvas_ctx.arc(x, y, sr, -self.r, -self.r + deg2rad(angle), false);
+          if (!self.filling)
             penCanvas_ctx.stroke();
         });
       });
     } else {
       if (!this.filling)
         penCanvas_ctx.beginPath();
-      penCanvas_ctx.arc(this.x, this.y, radius, -this.r, -this.r + deg2rad(angle), false);
+      penCanvas_ctx.arc(cx, cy, sr, -this.r, -this.r + deg2rad(angle), false);
       if (!this.filling)
         penCanvas_ctx.stroke();
     }
@@ -538,7 +521,7 @@ function Microworld(canvasParentSelector,width, height) {
     var turtle = currentTurtle;
 
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(lx2cx(this.x), ly2cy(this.y));
 
     if(turtle.rotationStyle == "HEADING") {
       ctx.rotate(Math.PI/2 - this.r);
@@ -556,9 +539,9 @@ function Microworld(canvasParentSelector,width, height) {
   }
 
   // ── Render: called once per step during execution ────────────────────────────
-  // Records a step boundary and updates the display. No DOM canvas created.
+  // Always records a step boundary (for the time slider) and redraws.
 	this.render = function() {
-    stepLog.push(commandLog.length);
+    stepLog.push({ cmdCount: commandLog.length, x: self.x, y: self.y });
 
     // Save checkpoint every CHECKPOINT_INTERVAL steps
     if (stepLog.length % CHECKPOINT_INTERVAL === 0) {
@@ -596,7 +579,7 @@ function Microworld(canvasParentSelector,width, height) {
     // Find the most recent checkpoint whose command count is > 0 and <= endCmdIndex
     for (var k = checkpoints.length - 1; k >= 0; k--) {
       var cp = checkpoints[k];
-      var cpCmds = stepLog[cp.stepIndex];
+      var cpCmds = stepLog[cp.stepIndex].cmdCount;
       if (cpCmds > 0 && cpCmds <= endCmdIndex) {
         penCanvas_ctx.putImageData(cp.imageData, 0, 0);
         startCmd = cpCmds;
@@ -621,15 +604,15 @@ function Microworld(canvasParentSelector,width, height) {
 
   function _replayState(endCmdIndex, startCmd) {
     // Reset turtle to initial state before replaying
-    self.x = width / 2;
-    self.y = height / 2;
+    self.x = 0;
+    self.y = 0;
     self.r = Math.PI / 2;
     self.down = true;
     self.color = 0;
     self.width = 1;
     self.fontsize = 14;
     self.penmode = 'paint';
-    self.turtlemode = 'wrap';
+    self.turtlemode = 'window';
     if (currentTurtle) currentTurtle.visible = true;
     penCanvas_ctx.strokeStyle = parseColor(self.color);
     penCanvas_ctx.fillStyle = parseColor(self.color);
@@ -677,6 +660,25 @@ function Microworld(canvasParentSelector,width, height) {
     renderCanvas_ctx.clearRect(0, 0, renderCanvas.width, renderCanvas.height);
     renderCanvas_ctx.globalAlpha = 1;
     renderCanvas_ctx.drawImage(penCanvas, 0, 0);
+
+    if (makeTimeVisibleMode && stepLog.length > 1 && currentTurtle && currentTurtle.turtleImage) {
+      // Draw ghost turtle at every recorded step position
+      var n = stepLog.length;
+      var img = currentTurtle.turtleImage;
+      var dx = -(img.width / 2);
+      var dy = -(img.height / 2);
+      for (var i = 0; i < n; i++) {
+        var entry = stepLog[i];
+        var alpha = 0.15 + 0.55 * (i / (n - 1));
+        renderCanvas_ctx.globalAlpha = alpha;
+        renderCanvas_ctx.save();
+        renderCanvas_ctx.translate(lx2cx(entry.x), ly2cy(entry.y));
+        renderCanvas_ctx.drawImage(img, dx, dy);
+        renderCanvas_ctx.restore();
+      }
+      renderCanvas_ctx.globalAlpha = 1;
+    }
+
     renderCanvas_ctx.globalAlpha = 1;
     renderCanvas_ctx.drawImage(turtleCanvas, 0, 0);
   }
@@ -690,7 +692,7 @@ function Microworld(canvasParentSelector,width, height) {
     stepIndex = Math.max(0, Math.min(stepIndex, stepLog.length - 1));
     replayStep = stepIndex;
 
-    var endCmd = stepLog[stepIndex] || 0;
+    var endCmd = stepLog[stepIndex] ? stepLog[stepIndex].cmdCount : 0;
 
     // Clear turtle canvas
     turtleCanvas_ctx.clearRect(0, 0, width, height);
@@ -701,8 +703,8 @@ function Microworld(canvasParentSelector,width, height) {
     updateRenderCanvas();
   };
 
-  this.x = width / 2;
-  this.y = height / 2;
+  this.x = 0;
+  this.y = 0;
   this.r = Math.PI / 2;
 
   this.bgcolor = '#ffffff';
@@ -710,7 +712,7 @@ function Microworld(canvasParentSelector,width, height) {
   this.width = 1;
   this.penmode = 'paint';
   this.fontsize = 14;
-  this.turtlemode = 'wrap';
+  this.turtlemode = 'window';
   this.visible = true;
   this.down = true;
 
@@ -748,9 +750,9 @@ function Microworld(canvasParentSelector,width, height) {
 
   // Capture any commands after the last highlight into a final step
   this.flushFinalStep = function() {
-    var lastLogged = stepLog.length > 0 ? stepLog[stepLog.length - 1] : 0;
+    var lastLogged = stepLog.length > 0 ? stepLog[stepLog.length - 1].cmdCount : 0;
     if (commandLog.length > lastLogged) {
-      stepLog.push(commandLog.length);
+      stepLog.push({ cmdCount: commandLog.length, x: self.x, y: self.y });
     }
   };
 
@@ -765,7 +767,7 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.penCanvasSetup = function(canvas) {
-    var canvas_ctx = canvas.getContext('2d');
+    var canvas_ctx = canvas.getContext('2d', { willReadFrequently: true });
     canvas_ctx.lineCap = 'round';
 
     canvas_ctx.strokeStyle = parseColor(this.color);
@@ -784,262 +786,31 @@ function Microworld(canvasParentSelector,width, height) {
   init();
   this.render();
 
-  var FULL_256_COLORTABLE = {
-                0: '#000000',
-                1: '#800000',
-                2: '#008000',
-                3: '#808000',
-                4: '#000080',
-                5: '#800080',
-                6: '#008080',
-                7: '#c0c0c0',
-                8: '#808080',
-                9: '#ff0000',
-                10: '#00ff00',
-                11: '#ffff00',
-                12: '#0000ff',
-                13: '#ff00ff',
-                14: '#00ffff',
-                15: '#ffffff',
-                16: '#000000',
-                17: '#00005f',
-                18: '#000087',
-                19: '#0000af',
-                20: '#0000d7',
-                21: '#0000ff',
-                22: '#005f00',
-                23: '#005f5f',
-                24: '#005f87',
-                25: '#005faf',
-                26: '#005fd7',
-                27: '#005fff',
-                28: '#008700',
-                29: '#00875f',
-                30: '#008787',
-                31: '#0087af',
-                32: '#0087d7',
-                33: '#0087ff',
-                34: '#00af00',
-                35: '#00af5f',
-                36: '#00af87',
-                37: '#00afaf',
-                38: '#00afd7',
-                39: '#00afff',
-                40: '#00d700',
-                41: '#00d75f',
-                42: '#00d787',
-                43: '#00d7af',
-                44: '#00d7d7',
-                45: '#00d7ff',
-                46: '#00ff00',
-                47: '#00ff5f',
-                48: '#00ff87',
-                49: '#00ffaf',
-                50: '#00ffd7',
-                51: '#00ffff',
-                52: '#5f0000',
-                53: '#5f005f',
-                54: '#5f0087',
-                55: '#5f00af',
-                56: '#5f00d7',
-                57: '#5f00ff',
-                58: '#5f5f00',
-                59: '#5f5f5f',
-                60: '#5f5f87',
-                61: '#5f5faf',
-                62: '#5f5fd7',
-                63: '#5f5fff',
-                64: '#5f8700',
-                65: '#5f875f',
-                66: '#5f8787',
-                67: '#5f87af',
-                68: '#5f87d7',
-                69: '#5f87ff',
-                70: '#5faf00',
-                71: '#5faf5f',
-                72: '#5faf87',
-                73: '#5fafaf',
-                74: '#5fafd7',
-                75: '#5fafff',
-                76: '#5fd700',
-                77: '#5fd75f',
-                78: '#5fd787',
-                79: '#5fd7af',
-                80: '#5fd7d7',
-                81: '#5fd7ff',
-                82: '#5fff00',
-                83: '#5fff5f',
-                84: '#5fff87',
-                85: '#5fffaf',
-                86: '#5fffd7',
-                87: '#5fffff',
-                88: '#870000',
-                89: '#87005f',
-                90: '#870087',
-                91: '#8700af',
-                92: '#8700d7',
-                93: '#8700ff',
-                94: '#875f00',
-                95: '#875f5f',
-                96: '#875f87',
-                97: '#875faf',
-                98: '#875fd7',
-                99: '#875fff',
-                100: '#878700',
-                101: '#87875f',
-                102: '#878787',
-                103: '#8787af',
-                104: '#8787d7',
-                105: '#8787ff',
-                106: '#87af00',
-                107: '#87af5f',
-                108: '#87af87',
-                109: '#87afaf',
-                110: '#87afd7',
-                111: '#87afff',
-                112: '#87d700',
-                113: '#87d75f',
-                114: '#87d787',
-                115: '#87d7af',
-                116: '#87d7d7',
-                117: '#87d7ff',
-                118: '#87ff00',
-                119: '#87ff5f',
-                120: '#87ff87',
-                121: '#87ffaf',
-                122: '#87ffd7',
-                123: '#87ffff',
-                124: '#af0000',
-                125: '#af005f',
-                126: '#af0087',
-                127: '#af00af',
-                128: '#af00d7',
-                129: '#af00ff',
-                130: '#af5f00',
-                131: '#af5f5f',
-                132: '#af5f87',
-                133: '#af5faf',
-                134: '#af5fd7',
-                135: '#af5fff',
-                136: '#af8700',
-                137: '#af875f',
-                138: '#af8787',
-                139: '#af87af',
-                140: '#af87d7',
-                141: '#af87ff',
-                142: '#afaf00',
-                143: '#afaf5f',
-                144: '#afaf87',
-                145: '#afafaf',
-                146: '#afafd7',
-                147: '#afafff',
-                148: '#afd700',
-                149: '#afd75f',
-                150: '#afd787',
-                151: '#afd7af',
-                152: '#afd7d7',
-                153: '#afd7ff',
-                154: '#afff00',
-                155: '#afff5f',
-                156: '#afff87',
-                157: '#afffaf',
-                158: '#afffd7',
-                159: '#afffff',
-                160: '#d70000',
-                161: '#d7005f',
-                162: '#d70087',
-                163: '#d700af',
-                164: '#d700d7',
-                165: '#d700ff',
-                166: '#d75f00',
-                167: '#d75f5f',
-                168: '#d75f87',
-                169: '#d75faf',
-                170: '#d75fd7',
-                171: '#d75fff',
-                172: '#d78700',
-                173: '#d7875f',
-                174: '#d78787',
-                175: '#d787af',
-                176: '#d787d7',
-                177: '#d787ff',
-                178: '#d7af00',
-                179: '#d7af5f',
-                180: '#d7af87',
-                181: '#d7afaf',
-                182: '#d7afd7',
-                183: '#d7afff',
-                184: '#d7d700',
-                185: '#d7d75f',
-                186: '#d7d787',
-                187: '#d7d7af',
-                188: '#d7d7d7',
-                189: '#d7d7ff',
-                190: '#d7ff00',
-                191: '#d7ff5f',
-                192: '#d7ff87',
-                193: '#d7ffaf',
-                194: '#d7ffd7',
-                195: '#d7ffff',
-                196: '#ff0000',
-                197: '#ff005f',
-                198: '#ff0087',
-                199: '#ff00af',
-                200: '#ff00d7',
-                201: '#ff00ff',
-                202: '#ff5f00',
-                203: '#ff5f5f',
-                204: '#ff5f87',
-                205: '#ff5faf',
-                206: '#ff5fd7',
-                207: '#ff5fff',
-                208: '#ff8700',
-                209: '#ff875f',
-                210: '#ff8787',
-                211: '#ff87af',
-                212: '#ff87d7',
-                213: '#ff87ff',
-                214: '#ffaf00',
-                215: '#ffaf5f',
-                216: '#ffaf87',
-                217: '#ffafaf',
-                218: '#ffafd7',
-                219: '#ffafff',
-                220: '#ffd700',
-                221: '#ffd75f',
-                222: '#ffd787',
-                223: '#ffd7af',
-                224: '#ffd7d7',
-                225: '#ffd7ff',
-                226: '#ffff00',
-                227: '#ffff5f',
-                228: '#ffff87',
-                229: '#ffffaf',
-                230: '#ffffd7',
-                231: '#ffffff',
-                232: '#080808',
-                233: '#121212',
-                234: '#1c1c1c',
-                235: '#262626',
-                236: '#303030',
-                237: '#3a3a3a',
-                238: '#444444',
-                239: '#4e4e4e',
-                240: '#585858',
-                241: '#606060',
-                242: '#666666',
-                243: '#767676',
-                244: '#808080',
-                245: '#8a8a8a',
-                246: '#949494',
-                247: '#9e9e9e',
-                248: '#a8a8a8',
-                249: '#b2b2b2',
-                250: '#bcbcbc',
-                251: '#c6c6c6',
-                252: '#d0d0d0',
-                253: '#dadada',
-                254: '#e4e4e4',
-                255: '#eeeeee',
-  }
+  var FULL_256_COLORTABLE = (function() {
+    var bases = [
+      [128,128,128],[220,50,47],[232,124,18],[155,93,46],[225,225,40],
+      [60,180,50],[130,210,30],[30,200,130],[0,190,210],[80,150,220],
+      [40,80,220],[130,40,200],[200,30,180],[230,90,160]
+    ];
+    function lerp(a,b,t){ return Math.round(a+(b-a)*t); }
+    function hex2(v){ return Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0'); }
+    var t = {};
+    for (var f = 0; f < bases.length; f++) {
+      var r=bases[f][0], g=bases[f][1], b=bases[f][2];
+      for (var o = 0; o < 10; o++) {
+        var idx = f*10+o, cr, cg, cb;
+        if (o < 5) {
+          var factor = o/5;
+          cr=lerp(15,r,factor); cg=lerp(15,g,factor); cb=lerp(15,b,factor);
+        } else if (o === 5) {
+          cr=r; cg=g; cb=b;
+        } else {
+          var factor = (o-5)/5;
+          cr=lerp(r,240,factor); cg=lerp(g,240,factor); cb=lerp(b,240,factor);
+        }
+        t[idx] = '#'+hex2(cr)+hex2(cg)+hex2(cb);
+      }
+    }
+    return t;
+  })();
 }

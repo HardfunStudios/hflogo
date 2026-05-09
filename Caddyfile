@@ -1,0 +1,26 @@
+{
+    email hassan.oliveira@hardfun.com.br
+}
+
+{$DOMAIN_NAME} {
+    encode gzip zstd
+
+    @health path /up
+    handle @health {
+        reverse_proxy app:80
+    }
+
+    handle {
+        reverse_proxy app:80 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

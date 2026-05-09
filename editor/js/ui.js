@@ -141,6 +141,28 @@ function initUI() {
 
   workspace.addChangeListener(lpParseCode);
 
+  // Shadow number blocks inherit the color of their parent block
+  workspace.addChangeListener(function(e) {
+    if (e.type !== Blockly.Events.BLOCK_MOVE &&
+        e.type !== Blockly.Events.BLOCK_CREATE) return;
+    var block = workspace.getBlockById(e.blockId);
+    if (!block) return;
+    var numberTypes = [
+      'math_number', 'math_arithmetic', 'math_single', 'math_trig',
+      'math_change', 'math_modulo', 'math_random_int', 'math_random_float',
+      'math_constrain', 'math_number_property',
+      'logic_compare', 'logic_operation', 'logic_negate',
+      'logic_boolean', 'logic_null', 'logic_ternary',
+    ];
+    if (!numberTypes.includes(block.type)) return;
+    var parent = block.getParent();
+    if (block.isShadow() && parent) {
+      block.setColour(parent.getColour());
+    } else if (!block.isShadow()) {
+      block.setColour(COLOR_NUMBERS);
+    }
+  });
+
   setTimeout(function() { Blockly.svgResize(workspace); }, 0);
 
   // hideChaff() with no argument checks flyout.autoClose and calls

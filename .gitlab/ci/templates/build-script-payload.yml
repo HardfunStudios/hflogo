@@ -1,0 +1,114 @@
+# Local CI/CD component: assemble a self-contained shell payload from
+# (a) plain `KEY=VALUE` env exports, (b) base64-encoded file exports
+# (`ENV_NAME=path/to/file`), and (c) the body of a script in the repo.
+#
+# The output is published as a CI artifact so a downstream job (typically
+# ssm-run-command) can read it back. Useful whenever a remote target needs
+# to receive a script + a few small files in a single shell invocation.
+#
+# Inputs accept newline-separated entries via YAML block scalars. CI/CD
+# variables (e.g. ${CI_COMMIT_TAG}) inside those values are expanded by the
+# runner shell, so callers can interpolate predefined variables directly.
+
+spec:
+  inputs:
+    job_name:
+      type: string
+      default: "build-script-payload"
+      description: "Name of the resulting CI job."
+    stage:
+      type: string
+      default: "build"
+      description: "Pipeline stage."
+    needs:
+      type: array
+      default: []
+      description: "Jobs that must complete before this one (typically the image build)."
+    image:
+      type: string
+      default: "alpine:3.20"
+      description: "Runner image."
+    tags:
+      type: array
+      default:
+        - "docker-linux"
+      description: "Runner tags."
+    script_path:
+      type: string
+      description: "Path of the script in the repo whose body becomes the payload tail."
+    output_path:
+      type: string
+      default: "deploy-artifact/payload.sh"
+      description: "Where the assembled payload is written; also the artifact path."
+    artifact_expire_in:
+      type: string
+      default: "1 day"
+      description: "How long the resulting artifact is retained."
+    env_exports:
+      type: string
+      default: ""
+      description: "Newline-separated KEY=VALUE entries; each line is prepended as `export KEY=VALUE`."
+    b64_file_exports:
+      type: string
+      default: ""
+      description: "Newline-separated ENV_NAME=PATH entries; PATH is base64-encoded and prepended as `export ENV_NAME=<b64>`."
+    execute_on_fork:
+      type: boolean
+      default: false
+      description: "Allow the job to run when the project is a fork."
+
+---
+
+"$[[ inputs.job_name ]]":
+  stage: $[[ inputs.stage ]]
+  needs: $[[ inputs.needs ]]
+  image: $[[ inputs.image ]]
+  tags: $[[ inputs.tags ]]
+  interruptible: false
+  variables:
+    GIT_STRATEGY: fetch
+  before_script:
+    - |
+      if [ "$[[ inputs.execute_on_fork ]]" = "false" ] && [ "${HDFN_LOCAL_MAIN_PROJECT_ID:-}" ] && [ "${CI_PROJECT_ID}" -ne "${HDFN_LOCAL_MAIN_PROJECT_ID}" ]; then
+        echo "Executando em fork, abortando."
+        exit 0
+      fi
+  script:
+    - apk add --no-cache coreutils bash >/dev/null
+    - |
+      set -euo pipefail
+
+      OUTPUT="$[[ inputs.output_path ]]"
+      SCRIPT_PATH="$[[ inputs.script_path ]]"
+
+      [ -f "$SCRIPT_PATH" ] || { echo "ERR: script not found at $SCRIPT_PATH"; exit 1; }
+
+      mkdir -p "$(dirname "$OUTPUT")"
+      : > "$OUTPUT"
+
+      # Plain env exports.
+      while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        printf 'export %s\n' "$line" >> "$OUTPUT"
+      done <<EOF
+      $[[ inputs.env_exports ]]
+      EOF
+
+      # base64-encoded file exports.
+      while IFS='=' read -r name path; do
+        [ -z "$name" ] && continue
+        [ -n "$path" ] || { echo "ERR: missing PATH for $name in b64_file_exports"; exit 1; }
+        [ -f "$path" ] || { echo "ERR: file not found: $path (referenced as $name)"; exit 1; }
+        b64="$(base64 -w0 "$path")"
+        printf 'export %s=%s\n' "$name" "$b64" >> "$OUTPUT"
+      done <<EOF
+      $[[ inputs.b64_file_exports ]]
+      EOF
+
+      cat "$SCRIPT_PATH" >> "$OUTPUT"
+      chmod 0644 "$OUTPUT"
+      echo "✔ Payload written: $OUTPUT ($(wc -l <"$OUTPUT") lines, $(wc -c <"$OUTPUT") bytes)"
+  artifacts:
+    paths:
+      - $[[ inputs.output_path ]]
+    expire_in: $[[ inputs.artifact_expire_in ]]
