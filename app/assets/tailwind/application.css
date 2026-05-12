@@ -20,6 +20,11 @@
   }
 }
 
+/* Outside @layer — not subject to cascade layers, always applied */
+html {
+  overflow-y: auto;
+}
+
 @layer components {
   .btn-primary {
     display: inline-flex;
