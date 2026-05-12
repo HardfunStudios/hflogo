@@ -34,6 +34,7 @@
 /node_modules/
 /app/assets/builds/*
 !/app/assets/builds/.keep
+!/app/assets/builds/logo-editor.js
 /public/assets
 
 # Ignore CI service files.
