@@ -8,11 +8,12 @@ const ts = {
   x: 0, y: 0, heading: 0,
   penDown: true, color: 0, width: 1,
   visible: true, turtleMode: 'window',
+  shade: 50,
 };
 
 function resetState() {
   Object.assign(ts, { x: 0, y: 0, heading: 0, penDown: true, color: 0,
-    width: 1, visible: true, turtleMode: 'window' });
+    width: 1, visible: true, turtleMode: 'window', shade: 50 });
 }
 
 // ── Command dispatch — maps Logo command names to CT calls + state updates ────
@@ -100,6 +101,10 @@ function dispatch(name, args) {
     case 'window':
       ts.turtleMode = 'window';
       self.postMessage({ type: 'cmd', name: 'setturtlemodeCT', args: ['window'] }); break;
+    case 'mudatom':
+      ts.shade = Math.max(0, Math.min(99, Number(args[0])));
+      self.postMessage({ type: 'cmd', name: 'setshadeCT', args: [ts.shade] });
+      break;
     default:
       console.warn('[logo-worker] comando desconhecido:', name);
   }
@@ -117,6 +122,7 @@ function queryState(key) {
     case 'getcolor':   return ts.color;
     case 'getwidth':   return ts.width;
     case 'ispendown':  return ts.penDown;
+    case 'getshade':   return ts.shade;
     default:           return 0;
   }
 }
@@ -160,7 +166,8 @@ function runLogo(source) {
   }
 
   const ev = new Evaluator();
-  ev._query = queryState;
+  ev._query    = queryState;
+  ev._dispatch = dispatch;
   _gen = ev.run(ast);
 
   driveGenerator();
