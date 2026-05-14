@@ -34,13 +34,13 @@ const TOKENS = [
   { re: /\b(parafrente|pf|paratras|pt|viradireita|vd|viraesquerda|ve|vaipara|vaipara_x|vaipara_y|mudadirecao|mudadireção|casa|mostra|esconde|arco|aponta)\b/gi, cls: 'hl-turtle' },
 
   // Pen commands
-  { re: /\b(mudacor|mudatamanho|levantacaneta|lc|abaixacaneta|ac|preenche)\b/gi, cls: 'hl-pen' },
+  { re: /\b(mudacor|mudatamanho|mudatom|levantacaneta|lc|abaixacaneta|ac|preenche)\b/gi, cls: 'hl-pen' },
 
   // Screen commands
   { re: /\b(limpa|limpatela|wrap|fence|window)\b/gi,        cls: 'hl-screen' },
 
   // Math / query functions
-  { re: /\b(inteiroentre|aleatorioentree|aleatorio_entre|coordenadax|xcor|coordenaday|ycor|direcao|direção|heading|abs|raizq|seno|cosseno|tangente|ln|log|exp)\b/gi, cls: 'hl-number' },
+  { re: /\b(inteiroentre|aleat[oó]rio(entre)?|aleatorioentree|aleatorio_entre|coordenadax|xcor|coordenaday|ycor|dire[cç][aã]o|heading|tamanhocaneta|corcaneta|tomcaneta|distancia|direcao_ate|abs|int|arredonda|raizq|seno|cosseno|tangente|arcoseno|arcocosseno|arcotangente|ln|log|exp|soma|produto|resto|pot[eê]ncia|diferen[cç]a|m[aá]ximo|m[ií]nimo)\b/gi, cls: 'hl-number' },
 
   // Arithmetic operators
   { re: /[+\-*/^%=<>]/g,                                    cls: 'hl-operator' },

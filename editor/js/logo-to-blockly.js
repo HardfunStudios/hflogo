@@ -120,6 +120,7 @@ function cmdToBlock(node) {
     case 'aponta':       return { type: 'turtle_towards',    id: uid(), inputs: { x: vi(a[0]), y: vi(a[1]) } };
     case 'mudacor':      return { type: 'pen_setpencolor',   id: uid(), inputs: { color: vi(a[0]) } };
     case 'mudatamanho':  return { type: 'pen_setpensize',    id: uid(), inputs: { size:  vi(a[0]) } };
+    case 'mudatom':      return { type: 'pen_setshade',      id: uid(), inputs: { shade: vi(a[0]) } };
     default: {
       // User-defined procedure call — must be defined in the same code
       const params = _procParams[node.name];
@@ -173,9 +174,21 @@ function makeToBlock(node) {
   };
 }
 
+function hasOutput(stmts) {
+  if (!stmts) return false;
+  for (const s of stmts) {
+    if (s.type === 'Output') return true;
+    if (s.body  && hasOutput(s.body))  return true;
+    if (s.then  && hasOutput(s.then))  return true;
+    if (s.else  && hasOutput(s.else))  return true;
+  }
+  return false;
+}
+
 function procDefToBlock(node) {
-  const b = { type: 'procedures_defnoreturn', id: uid(),
-    fields: { NAME: node.name }, inputs: {} };
+  const returnsValue = hasOutput(node.body);
+  const blockType = returnsValue ? 'procedures_defreturn' : 'procedures_defnoreturn';
+  const b = { type: blockType, id: uid(), fields: { NAME: node.name }, inputs: {} };
   if (node.params && node.params.length > 0) {
     b.extraState = { params: node.params.map(p => ({ name: p, id: uid() })) };
   }
@@ -187,8 +200,10 @@ function procDefToBlock(node) {
 function outputToBlock(node) {
   return {
     type: 'procedures_ifreturn', id: uid(),
-    fields: { CONDITION: 'TRUE' },
-    inputs: { VALUE: vi(node.value) },
+    inputs: {
+      CONDITION: { block: { type: 'logic_boolean', id: uid(), fields: { BOOL: 'TRUE' } } },
+      VALUE: vi(node.value),
+    },
   };
 }
 
@@ -204,10 +219,11 @@ function exprToBlock(node) {
       const id = ensureVar(node.name);
       return { type: 'variables_get', id: uid(), fields: { VAR: { id, name: node.name, type: '' } } };
     }
-    case 'BinOp':    return binOpToBlock(node);
-    case 'UnOp':     return unOpToBlock(node);
-    case 'FuncCall': return funcCallToBlock(node);
-    default:         return numBlock(0);
+    case 'BinOp':       return binOpToBlock(node);
+    case 'UnOp':        return unOpToBlock(node);
+    case 'FuncCall':    return funcCallToBlock(node);
+    case 'ListLiteral': return node.items.length === 1 ? exprToBlock(node.items[0]) : numBlock(0);
+    default:            return numBlock(0);
   }
 }
 
@@ -247,6 +263,11 @@ function funcCallToBlock(node) {
     case 'coordenadax': case 'xcor': return { type: 'turtle_xcor',    id: uid() };
     case 'coordenaday': case 'ycor': return { type: 'turtle_ycor',    id: uid() };
     case 'direcao':     case 'heading': return { type: 'turtle_heading', id: uid() };
+    case 'tamanhocaneta': return { type: 'pen_pensize',       id: uid() };
+    case 'corcaneta':     return { type: 'pen_pencolor',      id: uid() };
+    case 'tomcaneta':     return { type: 'pen_getshade',      id: uid() };
+    case 'distancia':     return { type: 'turtle_distance',   id: uid(), inputs: { x: vi(a[0]), y: vi(a[1]) } };
+    case 'direcao_ate':   return { type: 'turtle_direction_to', id: uid(), inputs: { x: vi(a[0]), y: vi(a[1]) } };
     default: {
       const params = _procParams[node.name];
       if (params === undefined) {

@@ -215,14 +215,20 @@ export class Evaluator {
   _evalFuncCall(node, env) {
     const args = node.args.map(a => this._evalSync(a, env));
     if (this._procs[node.name]) {
-      // sync call for expressions — run generator to completion
+      // Drive generator to completion; the return value of _callProc comes
+      // back as the generator's done.value, not as a yielded event.
       const gen = this._callProc(node.name, args, env);
-      let last;
-      for (const event of gen) {
-        // swallow any emitted events (side-effects in expression context — unusual)
-        last = event;
+      let result;
+      while (true) {
+        const { value, done } = gen.next();
+        if (done) { result = value; break; }
+        // Forward cmd events so turtle state stays consistent when a procedure
+        // is called as an expression (e.g. faça "x (junco :x))
+        if (value && value.type === 'cmd' && this._dispatch) {
+          this._dispatch(value.name, value.args || []);
+        }
       }
-      return last;
+      return result;
     }
     return this._evalBuiltin(node.name, args);
   }
@@ -270,6 +276,21 @@ export class Evaluator {
       case 'corcaneta':                     return this._query('getcolor');
       case 'tamanhocaneta':                 return this._query('getwidth');
       case 'canetalevantada?':              return this._query('ispendown');
+      case 'tomcaneta':                     return this._query('getshade');
+      case 'distancia': {
+        const tx = this._query('getx');
+        const ty = this._query('gety');
+        return Math.hypot(Number(a0) - tx, Number(a1) - ty);
+      }
+      case 'direcao_ate': {
+        const tx = this._query('getx');
+        const ty = this._query('gety');
+        const dx = Number(a0) - tx;
+        const dy = Number(a1) - ty;
+        if (dx === 0 && dy === 0) return this._query('getheading');
+        const deg = Math.atan2(dx, dy) * 180 / Math.PI;
+        return ((deg % 360) + 360) % 360;
+      }
       default:
         throw new ReferenceError(`função desconhecida: "${name}"`);
     }
