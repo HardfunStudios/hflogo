@@ -271,11 +271,21 @@ function Microworld(canvasParentSelector,width, height) {
   // };
   this.colorAlias = null;
 
+  function applyShadeToIndex(colorIndex, shade) {
+    var normalized = ((parseInt(colorIndex) % 140) + 140) % 140;
+    var family = Math.floor(normalized / 10);
+    var offset = Math.round(shade / 99 * 9);
+    return family * 10 + offset;
+  }
+
   function parseColor(color) {
     color = String(color);
     if (!isNaN(parseInt(color))) {
-      var new_color = ((parseInt(color) % 140) + 140) % 140;
-      return FULL_256_COLORTABLE[new_color];
+      var colorIdx = ((parseInt(color) % 140) + 140) % 140;
+      var shadedIdx = (self.shade !== undefined && self.shade !== 50)
+        ? applyShadeToIndex(colorIdx, self.shade)
+        : colorIdx;
+      return FULL_256_COLORTABLE[shadedIdx];
     }
     return color; // hex string or CSS color name passed directly
   }
@@ -289,6 +299,9 @@ function Microworld(canvasParentSelector,width, height) {
   };
 
   this.getcolor = function() { return this.color; };
+
+  this.setshade = function(n) { self.shade = Math.max(0, Math.min(99, Number(n))); };
+  this.getshade = function() { return self.shade !== undefined ? self.shade : 50; };
 
   this.setwidth = function(width) {
     this.width = width;
@@ -340,6 +353,7 @@ function Microworld(canvasParentSelector,width, height) {
     self.fontsize = 14;
     self.penmode = 'paint';
     self.turtlemode = 'window';
+    self.shade = 50;
     if (currentTurtle) currentTurtle.visible = true;
 
     // Reinitialize pen canvas context cleanly
@@ -613,6 +627,7 @@ function Microworld(canvasParentSelector,width, height) {
     self.fontsize = 14;
     self.penmode = 'paint';
     self.turtlemode = 'window';
+    self.shade = 50;
     if (currentTurtle) currentTurtle.visible = true;
     penCanvas_ctx.strokeStyle = parseColor(self.color);
     penCanvas_ctx.fillStyle = parseColor(self.color);
@@ -652,6 +667,7 @@ function Microworld(canvasParentSelector,width, height) {
       case 'clearCT':         self.clear(); break;
       case 'arcCT':           self.arc(a[0], a[1]); break;
       case 'drawtextCT':      self.drawtext(a[0]); break;
+      case 'setshadeCT':      self.setshade(a[0]); break;
     }
   }
 
@@ -715,6 +731,7 @@ function Microworld(canvasParentSelector,width, height) {
   this.turtlemode = 'window';
   this.visible = true;
   this.down = true;
+  this.shade = 50;
 
   function init() {
 		turtleCanvas = document.createElement("CANVAS");

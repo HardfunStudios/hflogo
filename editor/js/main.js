@@ -17,8 +17,8 @@ const Turtle_Msg = {
   LEFT: 'vira esquerda',
   RIGHT: 'vira direita',
   SET_POS: 'vai para posição',
-  SET_POSX: 'vai para posição x',
-  SET_POSY: 'vai para posição y',
+  SET_POSX: 'vai para x',
+  SET_POSY: 'vai para y',
   SET_HEADING: 'muda direção',
   HOME: 'vai para casa',
   SHOW_TURTLE: 'mostra tartaruga',
@@ -146,167 +146,62 @@ class FieldColorSwatch extends Blockly.Field {
     const div = Blockly.DropDownDiv.getContentDiv();
     div.innerHTML = '';
 
-    const W = 220, H = 150, SH = 16, PAD = 10;
+    const CELL = 20, GAP = 2, COLS = 14, ROWS = 10;
     const container = document.createElement('div');
-    Object.assign(container.style, { padding: PAD+'px', userSelect: 'none', width: W+'px' });
-
-    // ── Spectrum canvas (saturation x, brightness y) ─────────────────────────
-    const spectrum = document.createElement('canvas');
-    spectrum.width = W; spectrum.height = H;
-    Object.assign(spectrum.style, { display:'block', borderRadius:'4px', cursor:'crosshair' });
-
-    // ── Hue slider ────────────────────────────────────────────────────────────
-    const hueCanvas = document.createElement('canvas');
-    hueCanvas.width = W; hueCanvas.height = SH;
-    Object.assign(hueCanvas.style, { display:'block', borderRadius:'3px', cursor:'crosshair', marginTop:'8px' });
-
-    // ── Preview row ───────────────────────────────────────────────────────────
-    const previewRow = document.createElement('div');
-    Object.assign(previewRow.style, { display:'flex', alignItems:'center', gap:'8px', marginTop:'8px' });
-
-    const preview = document.createElement('div');
-    Object.assign(preview.style, { width:'32px', height:'32px', borderRadius:'4px', border:'1px solid rgba(0,0,0,0.3)', flexShrink:'0' });
-
-    const idxLabel = document.createElement('div');
-    Object.assign(idxLabel.style, { fontSize:'13px', fontFamily:'monospace', fontWeight:'bold', color:'#fff' });
-
-    const hexInput = document.createElement('input');
-    hexInput.type = 'text';
-    hexInput.maxLength = 7;
-    Object.assign(hexInput.style, {
-      fontSize:'12px', fontFamily:'monospace', color:'#fff',
-      background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)',
-      borderRadius:'3px', padding:'2px 5px', width:'72px', outline:'none',
+    Object.assign(container.style, {
+      padding: '6px',
+      display: 'grid',
+      gridTemplateColumns: `repeat(${COLS}, ${CELL}px)`,
+      gap: GAP + 'px',
     });
 
-    const labelCol = document.createElement('div');
-    Object.assign(labelCol.style, { display:'flex', flexDirection:'column', gap:'4px' });
-    labelCol.append(idxLabel, hexInput);
-    previewRow.append(preview, labelCol);
-    container.append(spectrum, hueCanvas, previewRow);
-    div.appendChild(container);
+    const currentHex = this.getValue();
+    let currentIdx = -1;
+    for (let i = 0; i < COLOR_TABLE.length; i++) {
+      if (COLOR_TABLE[i] && COLOR_TABLE[i].toLowerCase() === currentHex.toLowerCase()) { currentIdx = i; break; }
+    }
 
-    // ── State ─────────────────────────────────────────────────────────────────
-    // Parse current hex → HSV
-    const hexToHsv = (hex) => {
-      const r = parseInt(hex.slice(1,3),16)/255;
-      const g = parseInt(hex.slice(3,5),16)/255;
-      const b = parseInt(hex.slice(5,7),16)/255;
-      const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
-      let h = 0;
-      if (d) {
-        if (max===r) h = ((g-b)/d+6)%6;
-        else if (max===g) h = (b-r)/d+2;
-        else h = (r-g)/d+4;
-        h /= 6;
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        // row 0 = lightest (offset 9), row 9 = darkest (offset 0)
+        const offset = ROWS - 1 - row;
+        const idx = col * 10 + offset;
+        if (!COLOR_TABLE[idx]) continue;
+        const hex = COLOR_TABLE[idx];
+        const cell = document.createElement('div');
+        Object.assign(cell.style, {
+          width: CELL + 'px',
+          height: CELL + 'px',
+          background: hex,
+          cursor: 'pointer',
+          borderRadius: '3px',
+          border: idx === currentIdx
+            ? '2px solid #fff'
+            : '1px solid rgba(0,0,0,0.25)',
+          boxSizing: 'border-box',
+          outline: idx === currentIdx ? '1px solid #333' : 'none',
+        });
+        cell.title = String(idx);
+        cell.addEventListener('mouseenter', () => {
+          if (idx !== currentIdx) cell.style.transform = 'scale(1.2)';
+        });
+        cell.addEventListener('mouseleave', () => {
+          cell.style.transform = '';
+        });
+        cell.addEventListener('click', () => {
+          this.setValue(hex);
+          Blockly.DropDownDiv.hideWithoutAnimation();
+        });
+        container.appendChild(cell);
       }
-      return { h, s: max ? d/max : 0, v: max };
-    };
+    }
 
-    const hsvToHex = (h,s,v) => {
-      const f = (n) => { const k=(n+h*6)%6; return v-v*s*Math.max(0,Math.min(k,4-k,1)); };
-      const to = x => Math.round(x*255).toString(16).padStart(2,'0');
-      return '#'+to(f(5))+to(f(3))+to(f(1));
-    };
-
-    let { h, s, v } = hexToHsv(this.getValue());
-    let draggingSpectrum = false, draggingHue = false;
-
-    // ── Draw functions ────────────────────────────────────────────────────────
-    const drawSpectrum = () => {
-      const ctx = spectrum.getContext('2d');
-      // White → hue gradient (left to right = saturation)
-      const hg = ctx.createLinearGradient(0,0,W,0);
-      hg.addColorStop(0, '#fff');
-      hg.addColorStop(1, hsvToHex(h,1,1));
-      ctx.fillStyle = hg; ctx.fillRect(0,0,W,H);
-      // Transparent → black (top to bottom = brightness)
-      const vg = ctx.createLinearGradient(0,0,0,H);
-      vg.addColorStop(0, 'transparent');
-      vg.addColorStop(1, '#000');
-      ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
-      // Cursor
-      const cx = s*W, cy = (1-v)*H;
-      ctx.beginPath(); ctx.arc(cx,cy,6,0,2*Math.PI);
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx,cy,7,0,2*Math.PI);
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
-    };
-
-    const drawHue = () => {
-      const ctx = hueCanvas.getContext('2d');
-      const g = ctx.createLinearGradient(0,0,W,0);
-      for (let i=0;i<=12;i++) g.addColorStop(i/12, `hsl(${i/12*360},100%,50%)`);
-      ctx.fillStyle = g; ctx.fillRect(0,0,W,SH);
-      // Cursor
-      const cx = h*W;
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(cx-2, 0, 4, SH);
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth=1;
-      ctx.strokeRect(cx-2, 0, 4, SH);
-    };
-
-    const updatePreview = () => {
-      const hex = hsvToHex(h,s,v);
-      const idx = hexToColorIndex(hex);
-      preview.style.background = hex;
-      idxLabel.textContent = 'índice: ' + idx;
-      if (document.activeElement !== hexInput) hexInput.value = hex;
-    };
-
-    hexInput.addEventListener('input', () => {
-      const val = hexInput.value.trim();
-      if (!/^#[0-9a-f]{6}$/i.test(val)) return;
-      const hsv = hexToHsv(val);
-      h = hsv.h; s = hsv.s; v = hsv.v;
-      update();
-      this.setValue(val);
-    });
-    hexInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') hexInput.blur();
-      e.stopPropagation(); // prevent Blockly from stealing keys
-    });
-    hexInput.addEventListener('mousedown', (e) => e.stopPropagation());
-
-    const update = () => { drawSpectrum(); drawHue(); updatePreview(); };
-    update();
-
-    // ── Spectrum interaction ──────────────────────────────────────────────────
-    const onSpectrumMove = (e) => {
-      const r = spectrum.getBoundingClientRect();
-      s = Math.max(0, Math.min(1, (e.clientX - r.left) / W));
-      v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / H));
-      update();
-      this.setValue(hsvToHex(h,s,v));
-    };
-    spectrum.addEventListener('mousedown', (e) => { draggingSpectrum=true; onSpectrumMove(e); });
-
-    // ── Hue interaction ───────────────────────────────────────────────────────
-    const onHueMove = (e) => {
-      const r = hueCanvas.getBoundingClientRect();
-      h = Math.max(0, Math.min(1, (e.clientX - r.left) / W));
-      update();
-      this.setValue(hsvToHex(h,s,v));
-    };
-    hueCanvas.addEventListener('mousedown', (e) => { draggingHue=true; onHueMove(e); });
-
-    // Global mousemove/mouseup
-    const onMove = (e) => {
-      if (draggingSpectrum) onSpectrumMove(e);
-      if (draggingHue) onHueMove(e);
-    };
-    const onUp = () => { draggingSpectrum=false; draggingHue=false; };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-
+    div.appendChild(container);
     Blockly.DropDownDiv.setColour(
-      this.sourceBlock_.style.colourPrimary,
-      this.sourceBlock_.style.colourTertiary,
+      this.sourceBlock_?.style?.colourPrimary || '#555',
+      this.sourceBlock_?.style?.colourTertiary || '#333',
     );
-    Blockly.DropDownDiv.showPositionedByField(this, () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    });
+    Blockly.DropDownDiv.showPositionedByField(this, () => {});
   }
 }
 
@@ -322,7 +217,8 @@ const COLOR_SCREEN   = '#00607e';
 const COLOR_START    = '#16A34A';
 const COLOR_STOP     = '#D51414';
 
-const hue_category_pen = COLOR_PEN;
+const hue_category_pen    = COLOR_PEN;
+const hue_category_turtle = COLOR_TURTLE;
 
 // Override colors of built-in Blockly blocks to match our palette
 [
@@ -462,8 +358,7 @@ javascriptGenerator.forBlock['turtle_setpos'] = (block, gen) => {
 
 Blockly.Blocks['turtle_setposx'] = {
   init() {
-    this.appendDummyInput().appendField(Turtle_Msg.SET_POSX);
-    this.appendValueInput('x').setCheck('Number').appendField('x');
+    this.appendValueInput('x').setCheck('Number').appendField(Turtle_Msg.SET_POSX);
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
@@ -477,8 +372,7 @@ javascriptGenerator.forBlock['turtle_setposx'] = (block, gen) => {
 
 Blockly.Blocks['turtle_setposy'] = {
   init() {
-    this.appendDummyInput().appendField(Turtle_Msg.SET_POSY);
-    this.appendValueInput('y').setCheck('Number').appendField('y');
+    this.appendValueInput('y').setCheck('Number').appendField(Turtle_Msg.SET_POSY);
     this.setPreviousStatement(true);
     this.setInputsInline(true);
     this.setNextStatement(true);
@@ -590,7 +484,7 @@ Blockly.Blocks['turtle_arc'] = {
       .setCheck('Number')
       .appendField(Turtle_Msg.ARC)
       .appendField(Turtle_Msg.ANGLE);
-    this.appendValueInput('radius').setCheck('Number').appendField('radius');
+    this.appendValueInput('radius').setCheck('Number').appendField('raio');
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -645,6 +539,38 @@ javascriptGenerator.forBlock['turtle_towards'] = (block, gen) => {
   const x = gen.valueToCode(block, 'x', Order.ATOMIC);
   const y = gen.valueToCode(block, 'y', Order.ATOMIC);
   return `towardsCT(${x},${y});\n`;
+};
+
+Blockly.Blocks['turtle_distance'] = {
+  init() {
+    this.appendDummyInput().appendField('distância até');
+    this.appendValueInput('x').setCheck('Number').appendField('x');
+    this.appendValueInput('y').setCheck('Number').appendField('y');
+    this.setOutput(true, 'Number');
+    this.setInputsInline(true);
+    this.setColour(hue_category_turtle);
+  },
+};
+javascriptGenerator.forBlock['turtle_distance'] = (block, gen) => {
+  const x = gen.valueToCode(block, 'x', Order.ATOMIC) || '0';
+  const y = gen.valueToCode(block, 'y', Order.ATOMIC) || '0';
+  return [`distanceCT(${x},${y})`, Order.ATOMIC];
+};
+
+Blockly.Blocks['turtle_direction_to'] = {
+  init() {
+    this.appendDummyInput().appendField('direção até');
+    this.appendValueInput('x').setCheck('Number').appendField('x');
+    this.appendValueInput('y').setCheck('Number').appendField('y');
+    this.setOutput(true, 'Number');
+    this.setInputsInline(true);
+    this.setColour(hue_category_turtle);
+  },
+};
+javascriptGenerator.forBlock['turtle_direction_to'] = (block, gen) => {
+  const x = gen.valueToCode(block, 'x', Order.ATOMIC) || '0';
+  const y = gen.valueToCode(block, 'y', Order.ATOMIC) || '0';
+  return [`towardsValueCT(${x},${y})`, Order.ATOMIC];
 };
 
 Blockly.Blocks['pen_fill'] = {
@@ -754,11 +680,33 @@ javascriptGenerator.forBlock['pen_pencolor'] = () => ['getcolorCT()', Order.ATOM
 Blockly.Blocks['pen_pensize'] = {
   init() {
     this.appendDummyInput().appendField(Turtle_Msg.GET_PENSIZE);
-    this.setOutput(true, 'Boolean');
+    this.setOutput(true, 'Number');
     this.setColour(hue_category_pen);
   },
 };
 javascriptGenerator.forBlock['pen_pensize'] = () => ['getwidthCT()', Order.ATOMIC];
+
+Blockly.Blocks['pen_setshade'] = {
+  init() {
+    this.appendValueInput('shade').setCheck('Number').appendField(Turtle_Msg.SET_SHADE || 'muda tom para');
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(hue_category_pen);
+  },
+};
+javascriptGenerator.forBlock['pen_setshade'] = (block, gen) => {
+  const shade = gen.valueToCode(block, 'shade', Order.ATOMIC) || '50';
+  return `setshadeCT(${shade});\n`;
+};
+
+Blockly.Blocks['pen_getshade'] = {
+  init() {
+    this.appendDummyInput().appendField(Turtle_Msg.GET_SHADE || 'tom atual');
+    this.setOutput(true, 'Number');
+    this.setColour(hue_category_pen);
+  },
+};
+javascriptGenerator.forBlock['pen_getshade'] = () => ['getshadeCT()', Order.ATOMIC];
 
 // ─── Toolbox definition ───────────────────────────────────────────────────────
 
@@ -786,6 +734,8 @@ const toolbox = {
         { kind: 'block', type: 'turtle_show' },
         { kind: 'block', type: 'turtle_hide' },
         { kind: 'block', type: 'turtle_towards', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'turtle_distance', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'turtle_direction_to', inputs: { x: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
       ],
     },
     {
@@ -831,6 +781,8 @@ const toolbox = {
       contents: [
         { kind: 'block', type: 'pen_setpencolor', inputs: { color: { shadow: { type: 'pen_colornumber', fields: { NUM: 15, SWATCH: COLOR_TABLE[15] } } } } },
         { kind: 'block', type: 'pen_colornumber' },
+        { kind: 'block', type: 'pen_setshade', inputs: { shade: { shadow: { type: 'math_number', fields: { NUM: 50 } } } } },
+        { kind: 'block', type: 'pen_getshade' },
         { kind: 'block', type: 'pen_setpensize', inputs: { size: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
         { kind: 'block', type: 'pen_ispendown?' },
         { kind: 'block', type: 'pen_setpenup' },
@@ -958,6 +910,37 @@ function getExecutionDelay() {
 
 // ── Worker management ─────────────────────────────────────────────────────────
 
+function _getOrCreateErrorBanner() {
+  let banner = document.getElementById('errorBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'errorBanner';
+    banner.style.cssText = 'display:none;background:#c62828;color:#fff;font-size:13px;padding:6px 12px 6px 12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;position:fixed;bottom:0;left:0;right:0;z-index:9999;display:none;align-items:flex-start;gap:8px;';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText = 'margin-left:auto;background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:0 0 0 8px;line-height:1;flex-shrink:0;';
+    closeBtn.addEventListener('click', _clearError);
+    banner._msgSpan = document.createElement('span');
+    banner._msgSpan.style.flex = '1';
+    banner.appendChild(banner._msgSpan);
+    banner.appendChild(closeBtn);
+    document.body.appendChild(banner);
+  }
+  return banner;
+}
+
+function _showError(msg) {
+  const banner = _getOrCreateErrorBanner();
+  const msgEl = banner._msgSpan ?? document.getElementById('errorBannerMsg') ?? banner;
+  msgEl.textContent = '⚠ ' + msg;
+  banner.style.display = 'flex';
+}
+
+function _clearError() {
+  const banner = document.getElementById('errorBanner');
+  if (banner) banner.style.display = 'none';
+}
+
 let _worker = null;
 
 function _applyCommand(name, args) {
@@ -984,6 +967,7 @@ function _applyCommand(name, args) {
     case 'towardsCT':       towardsCT(args[0], args[1]); break;
     case 'drawtextCT':      drawtextCT(args[0], args[1]); break;
     case 'arcCT':           arcCT(args[0], args[1]); break;
+    case 'setshadeCT':      setshadeCT(args[0]); break;
   }
 }
 
@@ -1039,6 +1023,7 @@ function _startWorker(code) {
     if (msg.type === 'error') {
       _hadError = true;
       console.error('[Logo] runtime error:', msg.message);
+      _showError(msg.message);
       return;
     }
 
@@ -1056,6 +1041,7 @@ function _startWorker(code) {
 
   _worker.onerror = function(e) {
     console.error('Worker error:', e.message, e.filename, e.lineno);
+    _showError(`Erro interno: ${e.message}`);
     const btn = document.getElementById('runButton');
     btn?.classList.remove('running');
     btn && (btn.disabled = false);
@@ -1191,6 +1177,7 @@ function executeCode() {
   btn && (btn.disabled = true);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
+    _clearError();
     try {
       window.currentworld.renderAtEachCommand = true;
       window.currentworld.reset();
@@ -1200,6 +1187,7 @@ function executeCode() {
       _startWorker(code);
     } catch(e) {
       console.error('executeCode error:', e);
+      _showError(e.message ?? String(e));
       btn?.classList.remove('running');
       btn && (btn.disabled = false);
     }
@@ -1372,15 +1360,17 @@ function _initLogoEditor() {
   const syntaxErrorEl = document.getElementById('logoSyntaxError');
 
   function _showSyntaxError(msg) {
-    if (!syntaxErrorEl) return;
-    syntaxErrorEl.textContent = '⚠ ' + msg;
-    syntaxErrorEl.title = msg;
-    syntaxErrorEl.classList.add('visible');
+    _showError(msg);
+    if (syntaxErrorEl) {
+      syntaxErrorEl.textContent = '⚠ ' + msg;
+      syntaxErrorEl.title = msg;
+      syntaxErrorEl.classList.add('visible');
+    }
   }
 
   function _clearSyntaxError() {
-    if (!syntaxErrorEl) return;
-    syntaxErrorEl.classList.remove('visible');
+    _clearError();
+    if (syntaxErrorEl) syntaxErrorEl.classList.remove('visible');
   }
 
   function _switchToBlocos() {
