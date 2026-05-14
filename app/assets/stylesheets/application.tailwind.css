@@ -173,3 +173,8 @@
     white-space: nowrap;
   }
 }
+
+/* Outside @layer — always included, overrides preflight */
+html {
+  overflow-y: auto;
+}

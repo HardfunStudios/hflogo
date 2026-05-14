@@ -24,6 +24,10 @@ Rails.application.routes.draw do
   get "/explore", to: "explore#index", as: :explore
   get "/feed",    to: "feed#index",    as: :feed
 
+  # Sobre (fase 3+)
+  get "/about",      to: "about#index", as: :about
+  get "/about/:slug", to: "about#show",  as: :about_page
+
   # Admin (fase 3+)
   namespace :admin do
     root to: "dashboard#index"
@@ -40,6 +44,8 @@ Rails.application.routes.draw do
         post :unfeature
       end
     end
+    resources :pages
+    resource :image_upload, only: [:create]
   end
 
   # API interna do editor (fase 1+)
