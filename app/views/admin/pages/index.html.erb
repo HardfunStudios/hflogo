@@ -34,6 +34,7 @@
             <%= link_to "Editar", edit_admin_page_path(page), style: "font-size:13px;color:#0081A6;" %>
             <%= button_to "Apagar", admin_page_path(page), method: :delete,
                 data: { turbo_confirm: "Tem certeza? Esta ação não pode ser desfeita." },
+                form: { style: "display:contents;" },
                 style: "font-size:13px;color:#D51414;background:transparent;border:none;cursor:pointer;padding:0;" %>
           </td>
         </tr>

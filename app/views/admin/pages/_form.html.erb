@@ -88,6 +88,8 @@
           #tiptap-content blockquote { border-left: 3px solid #e0e0e0; padding-left: 1em; color: #666; margin: 0.5em 0; }
           #tiptap-content pre { background: #f5f5f5; border-radius: 4px; padding: 12px; font-family: monospace; font-size: 13px; }
           #tiptap-content a { color: #0081A6; text-decoration: underline; cursor: pointer; }
+          #tiptap-content img { cursor: pointer; outline: 2px solid transparent; transition: outline-color .15s; }
+          #tiptap-content img:hover { outline-color: #0081A6; }
           #tiptap-content table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
           #tiptap-content th, #tiptap-content td { border: 1px solid #e0e0e0; padding: 6px 10px; text-align: left; }
           #tiptap-content thead tr { background: #f5f5f5; font-weight: 600; }
@@ -299,6 +301,174 @@
   });
 
   window.addEventListener('scroll', hideDeleteRowBtn, true);
+
+  // ── Image alignment popover ────────────────────────────────────────────────
+  var imgPopover = document.createElement('div');
+  imgPopover.style.cssText = 'display:none;position:fixed;z-index:300;background:white;border:1px solid #e0e0e0;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);padding:6px 8px;display:none;gap:4px;align-items:center;';
+  imgPopover.innerHTML = [
+    { action:'img-float-left',   title:'Flutuar à esquerda (texto contorna)', icon:'◧' },
+    { action:'img-center',       title:'Centralizar (sem contorno)',           icon:'▣' },
+    { action:'img-float-right',  title:'Flutuar à direita (texto contorna)',   icon:'◨' },
+    { action:'img-inline',       title:'Sem alinhamento (inline)',             icon:'▤' },
+  ].map(function(b) {
+    return '<button type="button" data-img-action="' + b.action + '" title="' + b.title + '" style="width:30px;height:28px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:15px;line-height:1;">' + b.icon + '</button>';
+  }).join('') + '<div style="width:1px;background:#e0e0e0;margin:0 2px;"></div><button type="button" data-img-action="img-delete" title="Excluir imagem" style="width:30px;height:28px;border:1px solid #fca5a5;border-radius:4px;background:#fff0f0;cursor:pointer;font-size:13px;color:#c0392b;line-height:1;">✕</button>';
+  document.body.appendChild(imgPopover);
+
+  var _activeImg = null;
+
+  function showImgPopover(img) {
+    _activeImg = img;
+    imgPopover.style.display = 'flex';
+    positionImgPopover();
+    refreshImgPopoverState();
+    showResizeHandles(img);
+  }
+
+  function positionImgPopover() {
+    if (!_activeImg) return;
+    var rect = _activeImg.getBoundingClientRect();
+    var top  = Math.round(rect.top - 42);
+    if (top < 8) top = Math.round(rect.bottom + 6);
+    imgPopover.style.top  = top + 'px';
+    imgPopover.style.left = Math.round(rect.left) + 'px';
+  }
+
+  function hideImgPopover() {
+    imgPopover.style.display = 'none';
+    hideResizeHandles();
+    _activeImg = null;
+  }
+
+  var IMG_PRESETS = {
+    'img-float-left':  { float:'left',  display:'inline', margin:'0 1em 0.5em 0' },
+    'img-center':      { float:'none',  display:'block',  margin:'0.5em auto' },
+    'img-float-right': { float:'right', display:'inline', margin:'0 0 0.5em 1em' },
+    'img-inline':      { float:'none',  display:'inline', margin:'0' },
+  };
+
+  function refreshImgPopoverState() {
+    if (!_activeImg) return;
+    var f = _activeImg.style.float || 'none';
+    var d = _activeImg.style.display || 'inline';
+    imgPopover.querySelectorAll('button[data-img-action]').forEach(function(btn) {
+      var a = btn.dataset.imgAction;
+      var preset = IMG_PRESETS[a];
+      if (!preset) { btn.style.background = 'white'; return; }
+      var match = preset.float === f && preset.display === d;
+      btn.style.background = match ? '#e8f4f8' : 'white';
+      btn.style.borderColor = match ? '#0081A6' : '#e0e0e0';
+    });
+  }
+
+  imgPopover.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  imgPopover.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-img-action]');
+    if (!btn || !_activeImg) return;
+    var a = btn.dataset.imgAction;
+    if (a === 'img-delete') {
+      _activeImg.parentNode.removeChild(_activeImg);
+      hideImgPopover();
+      sync();
+      return;
+    }
+    var preset = IMG_PRESETS[a];
+    if (!preset) return;
+    _activeImg.style.float   = preset.float;
+    _activeImg.style.display = preset.display;
+    _activeImg.style.margin  = preset.margin;
+    refreshImgPopoverState();
+    sync();
+  });
+
+  contentDiv.addEventListener('click', function(e) {
+    if (e.target.nodeName === 'IMG') { showImgPopover(e.target); return; }
+    hideImgPopover();
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    if (_activeImg && !imgPopover.contains(e.target) && !resizeOverlay.contains(e.target) && e.target !== _activeImg) hideImgPopover();
+  });
+
+  window.addEventListener('scroll', function() { hideImgPopover(); }, true);
+
+  // ── Image resize handles ───────────────────────────────────────────────────
+  var resizeOverlay = document.createElement('div');
+  resizeOverlay.style.cssText = 'display:none;position:fixed;z-index:250;pointer-events:none;box-sizing:border-box;border:2px solid #0081A6;border-radius:2px;';
+  var HANDLE_POSITIONS = {
+    nw: { top:'-5px', left:'-5px',   cursor:'nw-resize' },
+    ne: { top:'-5px', right:'-5px',  cursor:'ne-resize' },
+    sw: { bottom:'-5px', left:'-5px',  cursor:'sw-resize' },
+    se: { bottom:'-5px', right:'-5px', cursor:'se-resize' },
+  };
+  var _handleEls = {};
+  Object.keys(HANDLE_POSITIONS).forEach(function(pos) {
+    var h = document.createElement('div');
+    var p = HANDLE_POSITIONS[pos];
+    h.dataset.handle = pos;
+    h.style.cssText = 'position:absolute;width:10px;height:10px;background:#0081A6;border:2px solid white;border-radius:2px;pointer-events:all;box-sizing:border-box;cursor:' + p.cursor + ';';
+    if (p.top)    h.style.top    = p.top;
+    if (p.bottom) h.style.bottom = p.bottom;
+    if (p.left)   h.style.left   = p.left;
+    if (p.right)  h.style.right  = p.right;
+    resizeOverlay.appendChild(h);
+    _handleEls[pos] = h;
+  });
+  document.body.appendChild(resizeOverlay);
+
+  var _resizeDrag = null;
+
+  function showResizeHandles(img) {
+    resizeOverlay.style.display = 'block';
+    positionResizeOverlay(img);
+  }
+
+  function hideResizeHandles() {
+    resizeOverlay.style.display = 'none';
+  }
+
+  function positionResizeOverlay(img) {
+    var target = img || _activeImg;
+    if (!target) return;
+    var rect = target.getBoundingClientRect();
+    resizeOverlay.style.top    = Math.round(rect.top)    + 'px';
+    resizeOverlay.style.left   = Math.round(rect.left)   + 'px';
+    resizeOverlay.style.width  = Math.round(rect.width)  + 'px';
+    resizeOverlay.style.height = Math.round(rect.height) + 'px';
+  }
+
+  resizeOverlay.addEventListener('mousedown', function(e) {
+    var h = e.target.closest('[data-handle]');
+    if (!h || !_activeImg) return;
+    e.preventDefault();
+    var rect = _activeImg.getBoundingClientRect();
+    _resizeDrag = {
+      handle:      h.dataset.handle,
+      startX:      e.clientX,
+      startW:      rect.width,
+      aspectRatio: rect.width / rect.height,
+    };
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!_resizeDrag || !_activeImg) return;
+    var dx = e.clientX - _resizeDrag.startX;
+    var newW = (_resizeDrag.handle === 'se' || _resizeDrag.handle === 'ne')
+      ? _resizeDrag.startW + dx
+      : _resizeDrag.startW - dx;
+    newW = Math.max(40, Math.round(newW));
+    var newH = Math.round(newW / _resizeDrag.aspectRatio);
+    _activeImg.style.width  = newW + 'px';
+    _activeImg.style.height = newH + 'px';
+    positionResizeOverlay();
+    positionImgPopover();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!_resizeDrag) return;
+    _resizeDrag = null;
+    sync();
+  });
 
   // ── Toolbar actions ────────────────────────────────────────────────────────
   toolbar.addEventListener('click', function(e) {
