@@ -4,6 +4,8 @@ class ApplicationController < ActionController::Base
   before_action :set_locale
   before_action :configure_permitted_parameters, if: :devise_controller?
 
+  helper_method :pending_ga_events
+
   rescue_from Pundit::NotAuthorizedError, with: :handle_unauthorized
 
   allow_browser versions: :modern
@@ -44,5 +46,13 @@ class ApplicationController < ActionController::Base
       format.html { redirect_to root_path, alert: t("errors.not_authorized") }
       format.json { render json: { error: "Not authorized" }, status: :forbidden }
     end
+  end
+
+  def track_ga_event(name, **params)
+    session[:pending_ga_events] = (session[:pending_ga_events] || []) + [{ name: name, params: params }]
+  end
+
+  def pending_ga_events
+    session.delete(:pending_ga_events) || []
   end
 end
