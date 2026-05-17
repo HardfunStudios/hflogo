@@ -3,7 +3,8 @@ Rails.application.routes.draw do
 
   # Autenticação
   devise_for :users, controllers: {
-    omniauth_callbacks: "users/omniauth_callbacks"
+    omniauth_callbacks: "users/omniauth_callbacks",
+    registrations: "users/registrations"
   }
 
   # Idioma
@@ -35,7 +36,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "dashboard#index"
     resources :reports, only: [ :index, :show, :update ]
-    resources :users, only: [ :index, :show, :update ] do
+    resources :users, only: [ :index, :show, :update, :destroy ] do
       member do
         post :ban
         post :unban
