@@ -5,6 +5,8 @@ class User < ApplicationRecord
          :rememberable, :validatable, :confirmable, :trackable,
          :omniauthable, omniauth_providers: [ :google_oauth2 ]
 
+  before_create :skip_confirmation_if_mail_unconfigured
+
   enum :role, { user: 0, moderator: 1, admin: 2 }
 
   validates :username, presence: true, uniqueness: { case_sensitive: false },
@@ -34,6 +36,10 @@ class User < ApplicationRecord
   end
 
   private
+
+  def skip_confirmation_if_mail_unconfigured
+    skip_confirmation! if ActionMailer::Base.delivery_method == :test
+  end
 
   def must_be_at_least_13
     if date_of_birth > 13.years.ago.to_date
