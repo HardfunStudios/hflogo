@@ -70,7 +70,11 @@ This also creates the default admin user (see section 6).
 
 ## 4. Google OAuth configuration
 
-Social login uses **Google OAuth 2.0**. To set it up:
+Social login uses **Google OAuth 2.0** via the `omniauth-google-oauth2` gem.
+
+> **Optional:** if `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are not set, the "Continuar com Google" button is still rendered but the OAuth flow will fail with an error. Email/password signup and login continue to work normally.
+
+### 4.1 Create OAuth credentials
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a project (or select an existing one)
@@ -90,7 +94,22 @@ GOOGLE_CLIENT_ID=xxxxxxxxxxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxx
 ```
 
-> **Note:** enable the **Google People API** in the console so that profile access works correctly.
+> **Note:** enable the **Google People API** in the console so that profile access (name, avatar) works correctly.
+
+### 4.2 How it works
+
+- The "Continuar com Google" button submits a **POST** request to `/users/auth/google_oauth2`. This is required by the `omniauth-rails_csrf_protection` gem (GET requests to that path are rejected with 404).
+- On callback, `User.from_omniauth` finds or creates the user by `provider` + `uid`. New users are automatically confirmed (no email verification step).
+- The user's `display_name` and `avatar_url` are populated from the Google profile.
+
+### 4.3 Troubleshooting
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `No route matches [GET] "/users/auth/google_oauth2"` | Button sending GET instead of POST | Ensure the view uses `button_to`, not `link_to` |
+| `redirect_uri_mismatch` from Google | Callback URL not registered | Add the exact callback URL in the Google Cloud Console |
+| `invalid_client` from Google | Wrong or missing credentials | Double-check `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` |
+| User created but not signed in | `confirmed_at` not set | `from_omniauth` sets `confirmed_at: Time.current` — check the migration ran |
 
 ---
 
