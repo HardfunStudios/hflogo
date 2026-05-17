@@ -1,5 +1,5 @@
 class Admin::UsersController < Admin::BaseController
-  before_action :set_user, only: %i[show update ban unban]
+  before_action :set_user, only: %i[show update ban unban destroy]
 
   def index
     @users = User.order(created_at: :desc)
@@ -34,6 +34,15 @@ class Admin::UsersController < Admin::BaseController
   def unban
     @user.update!(banned_at: nil, banned_reason: nil)
     redirect_to admin_user_path(@user), notice: "Ban removido."
+  end
+
+  def destroy
+    if @user.projects.any?
+      redirect_to admin_user_path(@user), alert: "Não é possível apagar um usuário com projetos. Apague os projetos primeiro."
+      return
+    end
+    @user.destroy!
+    redirect_to admin_users_path, notice: "Usuário #{@user.display} apagado."
   end
 
   private

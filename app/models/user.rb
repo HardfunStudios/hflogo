@@ -27,6 +27,19 @@ class User < ApplicationRecord
     end
   end
 
+  def self.complete_omniauth(auth, date_of_birth, username = nil)
+    find_or_initialize_by(provider: auth[:provider], uid: auth[:uid]).tap do |user|
+      user.email         = auth.dig(:info, :email)
+      user.password      = Devise.friendly_token[0, 20]
+      user.display_name  = auth.dig(:info, :name)
+      user.avatar_url    = auth.dig(:info, :image)
+      user.confirmed_at  = Time.current
+      user.username      = username.presence || generate_username(auth.dig(:info, :email).to_s)
+      user.date_of_birth = date_of_birth
+      user.save
+    end
+  end
+
   def banned?
     banned_at.present?
   end
