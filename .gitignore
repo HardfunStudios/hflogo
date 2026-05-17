@@ -33,3 +33,7 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Local Docker image artifacts produced by the manual bootstrap deploy.
+/hflogo-app-*.tar.gz
+
+/.claude/

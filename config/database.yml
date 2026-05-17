@@ -60,6 +60,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    host: <%= ENV["DATABASE_HOST"] %>
     database: hflogo_production
     username: hflogo
     password: <%= ENV["HFLOGO_DATABASE_PASSWORD"] %>

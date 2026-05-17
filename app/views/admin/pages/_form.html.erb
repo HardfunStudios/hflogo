@@ -1,0 +1,706 @@
+<%= form_with model: [:admin, page], local: true do |f| %>
+  <% if page.errors.any? %>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+      <% page.errors.full_messages.each do |msg| %>
+        <p style="font-size:14px;color:#b91c1c;margin:0;"><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="card-light" style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <%= f.label :title, "Título", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :title, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+      <div>
+        <%= f.label :nav_label, "Rótulo no menu", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :nav_label, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <%= f.label :slug, "Slug (URL)", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.text_field :slug, placeholder: "ex: sobre-a-plataforma", style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;font-family:monospace;" %>
+      </div>
+      <div>
+        <%= f.label :position, "Posição", style: "display:block;font-size:13px;font-weight:600;margin-bottom:6px;" %>
+        <%= f.number_field :position, style: "width:100%;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;font-size:14px;" %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :published, style: "display:flex;align-items:center;gap:8px;cursor:pointer;" do %>
+        <%= f.check_box :published, style: "accent-color:#0081A6;width:16px;height:16px;" %>
+        <span style="font-size:14px;font-weight:600;">Publicada</span>
+      <% end %>
+    </div>
+
+    <div>
+      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Conteúdo</label>
+      <div id="tiptap-editor" style="border:1px solid #e0e0e0;border-radius:6px;min-height:400px;background:white;">
+        <div id="tiptap-toolbar" style="display:flex;gap:4px;flex-wrap:wrap;padding:8px;border-bottom:1px solid #e0e0e0;background:#fafafa;border-radius:6px 6px 0 0;">
+          <button type="button" data-action="bold" title="Negrito" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-weight:700;font-size:13px;">B</button>
+          <button type="button" data-action="italic" title="Itálico" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-style:italic;font-size:13px;">I</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="normal" title="Texto normal" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;">¶</button>
+          <button type="button" data-action="h1" title="Título 1" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H1</button>
+          <button type="button" data-action="h2" title="Título 2" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H2</button>
+          <button type="button" data-action="h3" title="Título 3" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;font-weight:600;">H3</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="bulletList" title="Lista não numerada" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">•≡</button>
+          <button type="button" data-action="orderedList" title="Lista numerada" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">1.</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="blockquote" title="Citação" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:13px;">"</button>
+          <button type="button" data-action="codeBlock" title="Código" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:11px;font-family:monospace;">{}</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="horizontalRule" title="Linha" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;">—</button>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <div style="position:relative;display:inline-block;">
+            <button type="button" data-action="link" id="rte-link-btn" title="Inserir link" style="padding:0 8px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:12px;">🔗</button>
+            <div id="rte-link-popover" style="display:none;position:absolute;top:36px;left:0;z-index:100;background:white;border:1px solid #e0e0e0;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);padding:10px;min-width:280px;">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#444;">URL do link</div>
+              <div style="display:flex;gap:6px;">
+                <input id="rte-link-url" type="url" placeholder="https://..." style="flex:1;border:1px solid #e0e0e0;border-radius:4px;padding:4px 8px;font-size:13px;outline:none;">
+                <button type="button" id="rte-link-apply" style="padding:0 12px;height:30px;background:#0081A6;color:white;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">OK</button>
+                <button type="button" id="rte-link-remove" style="padding:0 8px;height:30px;background:white;color:#929292;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+          </div>
+          <div style="width:1px;background:#e0e0e0;margin:0 4px;"></div>
+          <button type="button" data-action="image" title="Inserir imagem" style="width:30px;height:30px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:14px;">🖼</button>
+          <input type="file" id="rte-image-input" accept="image/*" style="display:none;">
+          <span id="rte-upload-status" style="font-size:12px;color:#929292;align-self:center;display:none;">Enviando…</span>
+        </div>
+        <div id="tiptap-content" style="padding:16px;min-height:350px;outline:none;" contenteditable="true">
+        </div>
+        <style>
+          #tiptap-content { font-weight: 400; }
+          #tiptap-content p { font-weight: 400; margin: 0.4em 0; }
+          #tiptap-content ul { list-style-type: disc; padding-left: 1.5em; margin: 0.5em 0; }
+          #tiptap-content ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.5em 0; }
+          #tiptap-content li { margin: 0.25em 0; }
+          #tiptap-content h1 { font-size: 1.8em; font-weight: 700; margin: 0.5em 0; }
+          #tiptap-content h2 { font-size: 1.4em; font-weight: 700; margin: 0.5em 0; }
+          #tiptap-content h3 { font-size: 1.2em; font-weight: 600; margin: 0.5em 0; }
+          #tiptap-content blockquote { border-left: 3px solid #e0e0e0; padding-left: 1em; color: #666; margin: 0.5em 0; }
+          #tiptap-content pre { background: #f5f5f5; border-radius: 4px; padding: 12px; font-family: monospace; font-size: 13px; }
+          #tiptap-content a { color: #0081A6; text-decoration: underline; cursor: pointer; }
+          #tiptap-content img { cursor: pointer; outline: 2px solid transparent; transition: outline-color .15s; }
+          #tiptap-content img:hover { outline-color: #0081A6; }
+          #tiptap-content table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+          #tiptap-content th, #tiptap-content td { border: 1px solid #e0e0e0; padding: 6px 10px; text-align: left; }
+          #tiptap-content thead tr { background: #f5f5f5; font-weight: 600; }
+        </style>
+      </div>
+      <%= f.hidden_field :content, id: "page_content_hidden" %>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <%= f.submit page.new_record? ? "Criar Página" : "Salvar Alterações",
+          style: "background:#0081A6;color:white;border:none;border-radius:6px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;" %>
+      <%= link_to "Cancelar", admin_pages_path, style: "font-size:14px;color:#929292;line-height:40px;" %>
+    </div>
+
+  </div>
+<% end %>
+
+<meta name="turbo-cache-control" content="no-cache">
+<script>
+(function() {
+  var hiddenField  = document.getElementById('page_content_hidden');
+  if (!hiddenField) return; // guard: only run when form is present
+  var contentDiv   = document.getElementById('tiptap-content');
+  var toolbar      = document.getElementById('tiptap-toolbar');
+  var imageInput   = document.getElementById('rte-image-input');
+  var uploadStatus  = document.getElementById('rte-upload-status');
+  var linkBtn       = document.getElementById('rte-link-btn');
+  var linkPopover   = document.getElementById('rte-link-popover');
+  var linkUrlInput  = document.getElementById('rte-link-url');
+  var linkApply     = document.getElementById('rte-link-apply');
+  var linkRemove    = document.getElementById('rte-link-remove');
+  var savedRange    = null;
+
+  // Load initial content
+  contentDiv.innerHTML = hiddenField.value || '';
+
+  // Sync on every input
+  contentDiv.addEventListener('input', sync);
+  function sync() { hiddenField.value = contentDiv.innerHTML; }
+
+  // ── Toolbar button active-state feedback ───────────────────────────────────
+  var ACTIVE_STYLE = 'background:#e8f4f8;border-color:#0081A6;color:#0081A6;';
+  var BLOCK_BTN_MAP = { H1: 'h1', H2: 'h2', H3: 'h3', BLOCKQUOTE: 'blockquote', PRE: 'codeBlock' };
+
+  function updateToolbarState() {
+    toolbar.querySelectorAll('button[data-action]').forEach(function(btn) {
+      var action = btn.dataset.action;
+      var active = false;
+      if (action === 'bold')   active = document.queryCommandState('bold');
+      if (action === 'italic') active = document.queryCommandState('italic');
+      if (action === 'link')   active = !!getAnchorNode();
+      if (['h1','h2','h3','blockquote','codeBlock'].includes(action)) {
+        var block = getBlockNode();
+        if (block) active = BLOCK_BTN_MAP[block.nodeName] === action;
+      }
+      btn.style.cssText = btn.getAttribute('data-base-style') + (active ? ACTIVE_STYLE : '');
+    });
+  }
+
+  // Store base styles so we can restore them when toggling active off
+  toolbar.querySelectorAll('button[data-action]').forEach(function(btn) {
+    btn.setAttribute('data-base-style', btn.style.cssText);
+  });
+
+  contentDiv.addEventListener('keyup',   updateToolbarState);
+  contentDiv.addEventListener('mouseup', updateToolbarState);
+  contentDiv.addEventListener('focus',   updateToolbarState);
+
+  function getAnchorNode() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== contentDiv) {
+      if (node.nodeName === 'A') return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function getBlockNode() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== contentDiv) {
+      if (/^(H[1-6]|BLOCKQUOTE|PRE)$/.test(node.nodeName)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  // ── Prevent toolbar buttons from stealing focus ────────────────────────────
+  toolbar.addEventListener('mousedown', function(e) {
+    if (e.target.closest('button[data-action]')) e.preventDefault();
+  });
+
+  // ── Link popover ───────────────────────────────────────────────────────────
+  function openLinkPopover() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+    var anchor = getAnchorNode();
+    linkUrlInput.value = anchor ? anchor.href : 'https://';
+    linkPopover.style.display = 'block';
+    linkUrlInput.focus();
+    linkUrlInput.select();
+  }
+
+  function closeLinkPopover() {
+    linkPopover.style.display = 'none';
+    savedRange = null;
+  }
+
+  linkApply.addEventListener('click', function() {
+    var url = linkUrlInput.value.trim();
+    if (!url || url === 'https://') { closeLinkPopover(); return; }
+    restoreSelectionAndFocus();
+    document.execCommand('createLink', false, url);
+    // Make link open in new tab
+    var anchor = getAnchorNode();
+    if (anchor) { anchor.target = '_blank'; anchor.rel = 'noopener'; }
+    closeLinkPopover();
+    sync();
+    updateToolbarState();
+  });
+
+  linkRemove.addEventListener('click', function() {
+    restoreSelectionAndFocus();
+    document.execCommand('unlink');
+    closeLinkPopover();
+    sync();
+    updateToolbarState();
+  });
+
+  linkUrlInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') linkApply.click();
+    if (e.key === 'Escape') closeLinkPopover();
+  });
+
+  // Close popover when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!linkPopover.contains(e.target) && e.target !== linkBtn) closeLinkPopover();
+  });
+
+  function restoreSelectionAndFocus() {
+    contentDiv.focus();
+    if (!savedRange) return;
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+
+  // ── Table row deletion ─────────────────────────────────────────────────────
+  var deleteRowBtn = document.createElement('button');
+  deleteRowBtn.type = 'button';
+  deleteRowBtn.title = 'Excluir linha';
+  deleteRowBtn.textContent = '✕ linha';
+  deleteRowBtn.style.cssText = 'display:none;position:fixed;z-index:200;padding:2px 7px;background:#fff0f0;color:#c0392b;border:1px solid #e0a0a0;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer;line-height:1.6;white-space:nowrap;';
+  document.body.appendChild(deleteRowBtn);
+
+  var _deleteTargetTr = null;
+
+  function getTrFromSelection() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== contentDiv) {
+      if (node.nodeName === 'TR') return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function positionDeleteRowBtn(tr) {
+    _deleteTargetTr = tr;
+    var rect = tr.getBoundingClientRect();
+    deleteRowBtn.style.top  = Math.round(rect.top + rect.height / 2 - 11) + 'px';
+    deleteRowBtn.style.left = Math.round(rect.right + 6) + 'px';
+    deleteRowBtn.style.display = 'block';
+  }
+
+  function hideDeleteRowBtn() {
+    deleteRowBtn.style.display = 'none';
+    _deleteTargetTr = null;
+  }
+
+  function refreshDeleteRowBtn() {
+    var tr = getTrFromSelection();
+    if (tr) positionDeleteRowBtn(tr); else hideDeleteRowBtn();
+  }
+
+  contentDiv.addEventListener('mouseup', refreshDeleteRowBtn);
+  contentDiv.addEventListener('keyup',   refreshDeleteRowBtn);
+
+  deleteRowBtn.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  deleteRowBtn.addEventListener('click', function() {
+    if (!_deleteTargetTr) return;
+    var section = _deleteTargetTr.parentNode;
+    var table   = section ? section.closest('table') : null;
+    _deleteTargetTr.parentNode.removeChild(_deleteTargetTr);
+    if (section && section.rows.length === 0) section.parentNode.removeChild(section);
+    if (table   && table.rows.length   === 0) table.parentNode.removeChild(table);
+    hideDeleteRowBtn();
+    sync();
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    if (!contentDiv.contains(e.target) && e.target !== deleteRowBtn) hideDeleteRowBtn();
+  });
+
+  window.addEventListener('scroll', hideDeleteRowBtn, true);
+
+  // ── Image alignment popover ────────────────────────────────────────────────
+  var imgPopover = document.createElement('div');
+  imgPopover.style.cssText = 'display:none;position:fixed;z-index:300;background:white;border:1px solid #e0e0e0;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);padding:6px 8px;display:none;gap:4px;align-items:center;';
+  imgPopover.innerHTML = [
+    { action:'img-float-left',   title:'Flutuar à esquerda (texto contorna)', icon:'◧' },
+    { action:'img-center',       title:'Centralizar (sem contorno)',           icon:'▣' },
+    { action:'img-float-right',  title:'Flutuar à direita (texto contorna)',   icon:'◨' },
+    { action:'img-inline',       title:'Sem alinhamento (inline)',             icon:'▤' },
+  ].map(function(b) {
+    return '<button type="button" data-img-action="' + b.action + '" title="' + b.title + '" style="width:30px;height:28px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:15px;line-height:1;">' + b.icon + '</button>';
+  }).join('') + '<div style="width:1px;background:#e0e0e0;margin:0 2px;"></div><button type="button" data-img-action="img-delete" title="Excluir imagem" style="width:30px;height:28px;border:1px solid #fca5a5;border-radius:4px;background:#fff0f0;cursor:pointer;font-size:13px;color:#c0392b;line-height:1;">✕</button>';
+  document.body.appendChild(imgPopover);
+
+  var _activeImg = null;
+
+  function showImgPopover(img) {
+    _activeImg = img;
+    imgPopover.style.display = 'flex';
+    positionImgPopover();
+    refreshImgPopoverState();
+    showResizeHandles(img);
+  }
+
+  function positionImgPopover() {
+    if (!_activeImg) return;
+    var rect = _activeImg.getBoundingClientRect();
+    var top  = Math.round(rect.top - 42);
+    if (top < 8) top = Math.round(rect.bottom + 6);
+    imgPopover.style.top  = top + 'px';
+    imgPopover.style.left = Math.round(rect.left) + 'px';
+  }
+
+  function hideImgPopover() {
+    imgPopover.style.display = 'none';
+    hideResizeHandles();
+    _activeImg = null;
+  }
+
+  var IMG_PRESETS = {
+    'img-float-left':  { float:'left',  display:'inline', margin:'0 1em 0.5em 0' },
+    'img-center':      { float:'none',  display:'block',  margin:'0.5em auto' },
+    'img-float-right': { float:'right', display:'inline', margin:'0 0 0.5em 1em' },
+    'img-inline':      { float:'none',  display:'inline', margin:'0' },
+  };
+
+  function refreshImgPopoverState() {
+    if (!_activeImg) return;
+    var f = _activeImg.style.float || 'none';
+    var d = _activeImg.style.display || 'inline';
+    imgPopover.querySelectorAll('button[data-img-action]').forEach(function(btn) {
+      var a = btn.dataset.imgAction;
+      var preset = IMG_PRESETS[a];
+      if (!preset) { btn.style.background = 'white'; return; }
+      var match = preset.float === f && preset.display === d;
+      btn.style.background = match ? '#e8f4f8' : 'white';
+      btn.style.borderColor = match ? '#0081A6' : '#e0e0e0';
+    });
+  }
+
+  imgPopover.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  imgPopover.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-img-action]');
+    if (!btn || !_activeImg) return;
+    var a = btn.dataset.imgAction;
+    if (a === 'img-delete') {
+      _activeImg.parentNode.removeChild(_activeImg);
+      hideImgPopover();
+      sync();
+      return;
+    }
+    var preset = IMG_PRESETS[a];
+    if (!preset) return;
+    _activeImg.style.float   = preset.float;
+    _activeImg.style.display = preset.display;
+    _activeImg.style.margin  = preset.margin;
+    refreshImgPopoverState();
+    sync();
+  });
+
+  contentDiv.addEventListener('click', function(e) {
+    if (e.target.nodeName === 'IMG') { showImgPopover(e.target); return; }
+    hideImgPopover();
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    if (_activeImg && !imgPopover.contains(e.target) && !resizeOverlay.contains(e.target) && e.target !== _activeImg) hideImgPopover();
+  });
+
+  window.addEventListener('scroll', function() { hideImgPopover(); }, true);
+
+  // ── Image resize handles ───────────────────────────────────────────────────
+  var resizeOverlay = document.createElement('div');
+  resizeOverlay.style.cssText = 'display:none;position:fixed;z-index:250;pointer-events:none;box-sizing:border-box;border:2px solid #0081A6;border-radius:2px;';
+  var HANDLE_POSITIONS = {
+    nw: { top:'-5px', left:'-5px',   cursor:'nw-resize' },
+    ne: { top:'-5px', right:'-5px',  cursor:'ne-resize' },
+    sw: { bottom:'-5px', left:'-5px',  cursor:'sw-resize' },
+    se: { bottom:'-5px', right:'-5px', cursor:'se-resize' },
+  };
+  var _handleEls = {};
+  Object.keys(HANDLE_POSITIONS).forEach(function(pos) {
+    var h = document.createElement('div');
+    var p = HANDLE_POSITIONS[pos];
+    h.dataset.handle = pos;
+    h.style.cssText = 'position:absolute;width:10px;height:10px;background:#0081A6;border:2px solid white;border-radius:2px;pointer-events:all;box-sizing:border-box;cursor:' + p.cursor + ';';
+    if (p.top)    h.style.top    = p.top;
+    if (p.bottom) h.style.bottom = p.bottom;
+    if (p.left)   h.style.left   = p.left;
+    if (p.right)  h.style.right  = p.right;
+    resizeOverlay.appendChild(h);
+    _handleEls[pos] = h;
+  });
+  document.body.appendChild(resizeOverlay);
+
+  var _resizeDrag = null;
+
+  function showResizeHandles(img) {
+    resizeOverlay.style.display = 'block';
+    positionResizeOverlay(img);
+  }
+
+  function hideResizeHandles() {
+    resizeOverlay.style.display = 'none';
+  }
+
+  function positionResizeOverlay(img) {
+    var target = img || _activeImg;
+    if (!target) return;
+    var rect = target.getBoundingClientRect();
+    resizeOverlay.style.top    = Math.round(rect.top)    + 'px';
+    resizeOverlay.style.left   = Math.round(rect.left)   + 'px';
+    resizeOverlay.style.width  = Math.round(rect.width)  + 'px';
+    resizeOverlay.style.height = Math.round(rect.height) + 'px';
+  }
+
+  resizeOverlay.addEventListener('mousedown', function(e) {
+    var h = e.target.closest('[data-handle]');
+    if (!h || !_activeImg) return;
+    e.preventDefault();
+    var rect = _activeImg.getBoundingClientRect();
+    _resizeDrag = {
+      handle:      h.dataset.handle,
+      startX:      e.clientX,
+      startW:      rect.width,
+      aspectRatio: rect.width / rect.height,
+    };
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!_resizeDrag || !_activeImg) return;
+    var dx = e.clientX - _resizeDrag.startX;
+    var newW = (_resizeDrag.handle === 'se' || _resizeDrag.handle === 'ne')
+      ? _resizeDrag.startW + dx
+      : _resizeDrag.startW - dx;
+    newW = Math.max(40, Math.round(newW));
+    var newH = Math.round(newW / _resizeDrag.aspectRatio);
+    _activeImg.style.width  = newW + 'px';
+    _activeImg.style.height = newH + 'px';
+    positionResizeOverlay();
+    positionImgPopover();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!_resizeDrag) return;
+    _resizeDrag = null;
+    sync();
+  });
+
+  // ── Toolbar actions ────────────────────────────────────────────────────────
+  toolbar.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    var action = btn.dataset.action;
+
+    if (action === 'image') { imageInput.click(); return; }
+    if (action === 'link')  { openLinkPopover(); return; }
+
+    contentDiv.focus();
+
+    switch (action) {
+      case 'bold':           document.execCommand('bold'); break;
+      case 'italic':         document.execCommand('italic'); break;
+      case 'normal':         document.execCommand('formatBlock', false, 'p'); break;
+      case 'h1':             document.execCommand('formatBlock', false, 'h1'); break;
+      case 'h2':             document.execCommand('formatBlock', false, 'h2'); break;
+      case 'h3':             document.execCommand('formatBlock', false, 'h3'); break;
+      case 'bulletList':     document.execCommand('insertUnorderedList'); break;
+      case 'orderedList':    document.execCommand('insertOrderedList'); break;
+      case 'blockquote':     document.execCommand('formatBlock', false, 'blockquote'); break;
+      case 'codeBlock':      document.execCommand('formatBlock', false, 'pre'); break;
+      case 'horizontalRule': document.execCommand('insertHorizontalRule'); break;
+    }
+    sync();
+    updateToolbarState();
+  });
+
+  // Image upload
+  imageInput.addEventListener('change', function() {
+    var file = imageInput.files[0];
+    if (!file) return;
+
+    var fd = new FormData();
+    fd.append('file', file);
+
+    uploadStatus.style.display = 'inline';
+    var btn = toolbar.querySelector('[data-action="image"]');
+    btn.disabled = true;
+
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    fetch('<%= admin_image_upload_path %>', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrfToken },
+      body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) { alert('Erro: ' + data.error); return; }
+      contentDiv.focus();
+      var img = document.createElement('img');
+      img.src = data.url;
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '4px';
+      img.style.margin = '8px 0';
+      var sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        var range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        contentDiv.appendChild(img);
+      }
+      sync();
+    })
+    .catch(function(err) { alert('Falha no upload: ' + err); })
+    .finally(function() {
+      uploadStatus.style.display = 'none';
+      btn.disabled = false;
+      imageInput.value = '';
+    });
+  });
+
+  // Markdown paste → HTML conversion
+  contentDiv.addEventListener('paste', function(e) {
+    var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    if (!text || !looksLikeMarkdown(text)) return;
+    e.preventDefault();
+    var html = markdownToHtml(text);
+    // Use DOM insertion instead of execCommand('insertHTML') to avoid
+    // inheriting the browser's current bold/italic execCommand state.
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      var range = sel.getRangeAt(0);
+      range.deleteContents();
+      var tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      var frag = document.createDocumentFragment();
+      var last;
+      while (tmp.firstChild) { last = tmp.firstChild; frag.appendChild(last); }
+      range.insertNode(frag);
+      if (last) {
+        range = range.cloneRange();
+        range.setStartAfter(last);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    } else {
+      contentDiv.innerHTML += html;
+    }
+    sync();
+  });
+
+  function looksLikeMarkdown(text) {
+    return /^#{1,6}\s|^\s*[-*]\s|\*\*|__|\[.+\]\(.+\)|^>\s|^```|^---|^\|.+\|/.test(text);
+  }
+
+  function markdownToHtml(md) {
+    var lines = md.split('\n');
+    var html = '';
+    var i = 0;
+
+    while (i < lines.length) {
+      var line = lines[i];
+
+      // Fenced code block
+      if (/^```/.test(line)) {
+        var code = '';
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) { code += escHtml(lines[i]) + '\n'; i++; }
+        html += '<pre>' + code.trimEnd() + '</pre>';
+        i++;
+        continue;
+      }
+
+      // Headings
+      var hm = line.match(/^(#{1,6})\s+(.*)/);
+      if (hm) { html += '<h' + hm[1].length + '>' + inlineMarkdown(hm[2]) + '</h' + hm[1].length + '>'; i++; continue; }
+
+      // Horizontal rule
+      if (/^(\*{3,}|-{3,}|_{3,})\s*$/.test(line)) { html += '<hr>'; i++; continue; }
+
+      // Blockquote
+      if (/^>\s?/.test(line)) {
+        var bq = '';
+        while (i < lines.length && /^>\s?/.test(lines[i])) { bq += inlineMarkdown(lines[i].replace(/^>\s?/, '')) + '<br>'; i++; } // already per-line
+        html += '<blockquote>' + bq.replace(/<br>$/, '') + '</blockquote>';
+        continue;
+      }
+
+      // Unordered list
+      if (/^\s*[-*+]\s/.test(line)) {
+        html += '<ul>';
+        while (i < lines.length && /^\s*[-*+]\s/.test(lines[i])) {
+          html += '<li>' + inlineMarkdown(lines[i].replace(/^\s*[-*+]\s/, '')) + '</li>';
+          i++;
+        }
+        html += '</ul>';
+        continue;
+      }
+
+      // Table: line starts with |
+      if (/^\|/.test(line)) {
+        var rows = [];
+        while (i < lines.length && /^\|/.test(lines[i])) {
+          rows.push(lines[i]);
+          i++;
+        }
+        // rows[1] is the separator (|---|---|) — skip it when building cells
+        var sepIdx = rows.findIndex(function(r) { return /^\|[\s\-:|]+\|/.test(r); });
+        function parseCells(row) {
+          return row.replace(/^\||\|$/g, '').split('|').map(function(c) { return c.trim(); });
+        }
+        var thead = '', tbody = '';
+        rows.forEach(function(row, idx) {
+          if (idx === sepIdx) return;
+          var tag = (sepIdx > 0 && idx < sepIdx) ? 'th' : 'td';
+          var cells = parseCells(row).map(function(c) {
+            return '<' + tag + ' style="border:1px solid #e0e0e0;padding:6px 10px;text-align:left;">' + inlineMarkdown(c) + '</' + tag + '>';
+          }).join('');
+          var row_html = '<tr>' + cells + '</tr>';
+          if (tag === 'th') thead += row_html; else tbody += row_html;
+        });
+        html += '<table style="border-collapse:collapse;width:100%;margin:0.5em 0;">'
+          + (thead ? '<thead>' + thead + '</thead>' : '')
+          + (tbody ? '<tbody>' + tbody + '</tbody>' : '')
+          + '</table>';
+        continue;
+      }
+
+      // Ordered list
+      if (/^\s*\d+\.\s/.test(line)) {
+        html += '<ol>';
+        while (i < lines.length && /^\s*\d+\.\s/.test(lines[i])) {
+          html += '<li>' + inlineMarkdown(lines[i].replace(/^\s*\d+\.\s/, '')) + '</li>';
+          i++;
+        }
+        html += '</ol>';
+        continue;
+      }
+
+      // Blank line
+      if (/^\s*$/.test(line)) { i++; continue; }
+
+      // Paragraph: accumulate until blank line or block element.
+      // Apply inlineMarkdown per source line to prevent cross-line regex matches
+      // (e.g. a lone * on one line matching a * on the next, bolding everything).
+      var paraHtml = '';
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^#{1,6}\s/.test(lines[i]) && !/^>/.test(lines[i]) && !/^\s*[-*+]\s/.test(lines[i]) && !/^\s*\d+\.\s/.test(lines[i]) && !/^```/.test(lines[i]) && !/^(\*{3,}|-{3,}|_{3,})\s*$/.test(lines[i]) && !/^\|/.test(lines[i])) {
+        paraHtml += (paraHtml ? ' ' : '') + inlineMarkdown(lines[i]);
+        i++;
+      }
+      if (paraHtml) html += '<p>' + paraHtml + '</p>';
+      else i++; // safety: skip unrecognised line to avoid infinite loop
+    }
+
+    return html;
+  }
+
+  function inlineMarkdown(text) {
+    return escHtml(text)
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+      .replace(/__(.+?)__/g,         '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,         '<em>$1</em>')
+      .replace(/_(.+?)_/g,           '<em>$1</em>')
+      .replace(/`(.+?)`/g,           '<code>$1</code>')
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Sync before form submit
+  document.querySelector('form').addEventListener('submit', sync);
+})();
+</script>

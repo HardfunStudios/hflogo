@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" style="overflow-y:auto;">
   <head>
     <title>Admin — <%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <meta name="turbo-cache-control" content="no-cache">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
@@ -24,6 +25,7 @@
           ["Dashboard", admin_root_path, "dashboard"],
           ["Usuários",  admin_users_path,   "users"],
           ["Projetos",  admin_projects_path, "projects"],
+          ["Páginas",   admin_pages_path,   "pages"],
         ].each do |label, path, ctrl| %>
           <%= link_to label, path,
               style: "display:block;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:#{controller_name == ctrl ? '600' : '400'};color:#{controller_name == ctrl ? '#0081A6' : '#000'};text-decoration:none;background:#{controller_name == ctrl ? 'rgba(0,129,166,0.08)' : 'transparent'};transition:background .15s;",

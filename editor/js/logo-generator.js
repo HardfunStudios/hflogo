@@ -172,6 +172,18 @@ logoGenerator.forBlock['turtle_towards'] = (block, gen) => {
   return `${statementCode(block, gen)}aponta ${x} ${y}\n`;
 };
 
+logoGenerator.forBlock['turtle_distance'] = (block, gen) => {
+  const x = valueCode(block, 'x', gen, '0');
+  const y = valueCode(block, 'y', gen, '0');
+  return [`distancia ${x} ${y}`, Order.ATOMIC];
+};
+
+logoGenerator.forBlock['turtle_direction_to'] = (block, gen) => {
+  const x = valueCode(block, 'x', gen, '0');
+  const y = valueCode(block, 'y', gen, '0');
+  return [`direcao_ate ${x} ${y}`, Order.ATOMIC];
+};
+
 // ── Pen ───────────────────────────────────────────────────────────────────────
 
 logoGenerator.forBlock['pen_setpencolor'] = (block, gen) =>
@@ -190,6 +202,11 @@ logoGenerator.forBlock['pen_fill']       = (block, gen) => `${statementCode(bloc
 logoGenerator.forBlock['pen_ispendown?'] = () => ['canetalevantada?', Order.ATOMIC];
 logoGenerator.forBlock['pen_pencolor']   = () => ['corcaneta',        Order.ATOMIC];
 logoGenerator.forBlock['pen_pensize']    = () => ['tamanhocaneta',    Order.ATOMIC];
+
+logoGenerator.forBlock['pen_setshade'] = (block, gen) =>
+  `${statementCode(block, gen)}mudatom ${valueCode(block, 'shade', gen, '50')}\n`;
+
+logoGenerator.forBlock['pen_getshade'] = () => ['tomcaneta', Order.ATOMIC];
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 

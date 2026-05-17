@@ -190,3 +190,20 @@ function getstateCT() {
 function setstateCT(state) {
   return currentworld.setstate(state);
 }
+
+function distanceCT(x, y) {
+  var pos = currentworld.getxy();
+  return Math.hypot(Number(x) - pos[0], Number(y) - pos[1]);
+}
+
+function towardsValueCT(x, y) {
+  return currentworld.towards(Number(x), Number(y));
+}
+
+function setshadeCT(n) {
+  currentworld.setshade(n);
+}
+
+function getshadeCT() {
+  return currentworld.getshade();
+}

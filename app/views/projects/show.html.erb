@@ -195,6 +195,11 @@
         </label>
       </div>
 
+      <div id="errorBanner" style="display:none;background:#c62828;color:#fff;font-size:13px;padding:6px 12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;align-items:flex-start;gap:8px;">
+        <span id="errorBannerMsg" style="flex:1;"></span>
+        <button onclick="document.getElementById('errorBanner').style.display='none'" style="margin-left:auto;background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:0 0 0 8px;line-height:1;flex-shrink:0;">✕</button>
+      </div>
+
       <div id="stageFrame"></div>
 
       <div id="sliderArea">

@@ -1,0 +1,49 @@
+<% content_for :page_title, "Páginas" %>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+  <div></div>
+  <%= link_to "Nova Página", new_admin_page_path, class: "btn-primary", style: "font-size:14px;padding:8px 18px;" %>
+</div>
+
+<div class="card-light" style="padding:0;overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #e5e5e5;background:#fafafa;">
+        <th style="padding:10px 16px;text-align:left;font-size:13px;color:#929292;font-weight:500;">#</th>
+        <th style="padding:10px 16px;text-align:left;font-size:13px;color:#929292;font-weight:500;">Título</th>
+        <th style="padding:10px 16px;text-align:left;font-size:13px;color:#929292;font-weight:500;">Slug</th>
+        <th style="padding:10px 16px;text-align:left;font-size:13px;color:#929292;font-weight:500;">Publicada</th>
+        <th style="padding:10px 16px;text-align:left;font-size:13px;color:#929292;font-weight:500;">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @pages.each do |page| %>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:10px 16px;font-size:13px;color:#929292;"><%= page.position %></td>
+          <td style="padding:10px 16px;font-size:14px;font-weight:600;"><%= page.title %></td>
+          <td style="padding:10px 16px;font-size:13px;color:#929292;font-family:monospace;"><%= page.slug %></td>
+          <td style="padding:10px 16px;">
+            <% if page.published? %>
+              <span style="font-size:12px;background:#d4f7d4;color:#1a7a1a;border-radius:4px;padding:2px 8px;">sim</span>
+            <% else %>
+              <span style="font-size:12px;background:#f5f5f5;color:#929292;border-radius:4px;padding:2px 8px;">não</span>
+            <% end %>
+          </td>
+          <td style="padding:10px 16px;display:flex;gap:8px;">
+            <%= link_to "Ver", about_page_path(page.slug), target: "_blank", style: "font-size:13px;color:#0081A6;" %>
+            <%= link_to "Editar", edit_admin_page_path(page), style: "font-size:13px;color:#0081A6;" %>
+            <%= button_to "Apagar", admin_page_path(page), method: :delete,
+                data: { turbo_confirm: "Tem certeza? Esta ação não pode ser desfeita." },
+                form: { style: "display:contents;" },
+                style: "font-size:13px;color:#D51414;background:transparent;border:none;cursor:pointer;padding:0;" %>
+          </td>
+        </tr>
+      <% end %>
+      <% if @pages.empty? %>
+        <tr>
+          <td colspan="5" style="padding:32px;text-align:center;color:#929292;font-size:14px;">Nenhuma página criada ainda.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
