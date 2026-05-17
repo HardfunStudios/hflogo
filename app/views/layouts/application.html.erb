@@ -8,6 +8,18 @@
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <% if (ga4_id = SiteSetting.ga4_measurement_id) %>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=<%= ga4_id %>"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= ga4_id %>', { send_page_view: false });
+        document.addEventListener('turbo:load', function() {
+          gtag('event', 'page_view', { page_location: window.location.href, page_title: document.title });
+        });
+      </script>
+    <% end %>
     <%= yield :head %>
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,5 +36,18 @@
       <%= render "layouts/flash" %>
       <%= yield %>
     </main>
+
+    <% if SiteSetting.ga4_measurement_id && content_for?(:ga_inline) %>
+      <script><%= yield :ga_inline %></script>
+    <% end %>
+    <% if SiteSetting.ga4_measurement_id && (queued_ga_events = pending_ga_events).any? %>
+      <script>
+        document.addEventListener('turbo:load', function() {
+          <% queued_ga_events.each do |ev| %>
+            gtag('event', '<%= ev[:name] %>', <%= ev[:params].to_json.html_safe %>);
+          <% end %>
+        }, { once: true });
+      </script>
+    <% end %>
   </body>
 </html>
