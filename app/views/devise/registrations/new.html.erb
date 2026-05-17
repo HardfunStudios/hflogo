@@ -1,4 +1,7 @@
 <% google_signup = session["devise.google_data"].present? %>
+<% content_for :ga_inline do %>
+  if (typeof gtag !== 'undefined') gtag('event', 'sign_up_start', { method: '<%= google_signup ? "google" : "email" %>' });
+<% end %>
 
 <div class="flex items-center justify-center px-4 py-10" style="min-height:calc(100vh - 104px);background:#f8f8f8;">
   <div style="width:100%;max-width:400px;">

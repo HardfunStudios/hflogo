@@ -12,6 +12,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
       if @user.persisted?
         session.delete("devise.google_data")
+        track_ga_event(:sign_up, method: "google")
         set_flash_message(:notice, :success, kind: "Google") if is_navigational_format?
         sign_in_and_redirect @user, event: :authentication
       else
@@ -23,6 +24,16 @@ class Users::RegistrationsController < Devise::RegistrationsController
     else
       super
     end
+  end
+
+  def after_sign_up_path_for(resource)
+    track_ga_event(:sign_up, method: "email")
+    super
+  end
+
+  def after_inactive_sign_up_path_for(resource)
+    track_ga_event(:sign_up, method: "email")
+    super
   end
 
   private

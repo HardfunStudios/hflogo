@@ -389,6 +389,40 @@
     });
   }
 
+  // ── GA4 events ────────────────────────────────────────────────────────────
+  function hfGa(name, params) {
+    if (typeof gtag !== 'undefined') gtag('event', name, params || {});
+  }
+
+  // program_execute — dispara 1x por clique no Run
+  var runBtn = document.getElementById('runButton');
+  if (runBtn) {
+    runBtn.addEventListener('click', function() {
+      hfGa('program_execute');
+      _sliderTrackedThisRun = false; // reseta o flag do slider a cada execução
+    });
+  }
+
+  // logo_code_view — dispara quando o tab Logo é ativado
+  var tabLogo = document.getElementById('tabLogo');
+  if (tabLogo) {
+    tabLogo.addEventListener('click', function() {
+      hfGa('logo_code_view');
+    });
+  }
+
+  // speed_slider_use — dispara 1x por execução, não a cada mudança
+  var _sliderTrackedThisRun = false;
+  var programTimeSlider = document.getElementById('programTimeSlider');
+  if (programTimeSlider) {
+    programTimeSlider.addEventListener('input', function() {
+      if (!_sliderTrackedThisRun) {
+        hfGa('speed_slider_use');
+        _sliderTrackedThisRun = true;
+      }
+    });
+  }
+
   // ── Logo line numbers ──────────────────────────────────────────────────────
   var logoCodeEditor  = document.getElementById('logoCodeEditor');
   var logoLineNumbers = document.getElementById('logoLineNumbers');
