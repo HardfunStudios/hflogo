@@ -11,7 +11,7 @@
 <div class="max-w-7xl mx-auto px-4 py-4">
   <div class="flex items-center gap-3 mb-4">
     <%= link_to "← #{@project.title}", @project, class: "text-hf-blue hover:underline text-sm" %>
-    <span class="text-gray-400 text-sm">· Visualizando código (somente leitura)</span>
+    <span class="text-gray-400 text-sm">· <%= t("projects.readonly_notice") %></span>
   </div>
 
   <div class="card p-0 overflow-hidden">

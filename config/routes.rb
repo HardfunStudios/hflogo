@@ -6,6 +6,9 @@ Rails.application.routes.draw do
     omniauth_callbacks: "users/omniauth_callbacks"
   }
 
+  # Idioma
+  post "/locale", to: "locales#update", as: :set_locale
+
   # Perfis públicos
   get "/u/:username", to: "users#show", as: :user_profile
 

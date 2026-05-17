@@ -2,8 +2,8 @@
   <div style="width:100%;max-width:400px;">
 
     <div class="text-center mb-6">
-      <h1 style="font-size:24px;font-weight:700;color:#000;margin:0 0 4px;">Nova senha</h1>
-      <p style="font-size:14px;color:#929292;margin:0;">Escolha uma senha segura para sua conta</p>
+      <h1 style="font-size:24px;font-weight:700;color:#000;margin:0 0 4px;"><%= t("devise.passwords.edit.title") %></h1>
+      <p style="font-size:14px;color:#929292;margin:0;"><%= t("devise.passwords.edit.subtitle") %></p>
     </div>
 
     <div class="card-light p-6">
@@ -24,9 +24,9 @@
         <div class="flex flex-col gap-3">
 
           <div>
-            <%= f.label :password, "Nova senha", class: "form-label" %>
+            <%= f.label :password, t("devise.passwords.edit.new_password_label"), class: "form-label" %>
             <% if @minimum_password_length %>
-              <p style="margin:-2px 0 4px;font-size:11px;color:#929292;">Mínimo <%= @minimum_password_length %> caracteres</p>
+              <p style="margin:-2px 0 4px;font-size:11px;color:#929292;"><%= t("devise.passwords.edit.password_help", count: @minimum_password_length) %></p>
             <% end %>
             <%= f.password_field :password,
                 autocomplete: "new-password",
@@ -35,7 +35,7 @@
           </div>
 
           <div>
-            <%= f.label :password_confirmation, "Confirmar nova senha", class: "form-label" %>
+            <%= f.label :password_confirmation, t("devise.passwords.edit.password_confirmation_label"), class: "form-label" %>
             <%= f.password_field :password_confirmation,
                 autocomplete: "new-password",
                 placeholder: "••••••••",
@@ -45,7 +45,7 @@
         </div>
 
         <div class="mt-4">
-          <%= f.submit "Redefinir senha", class: "btn-primary w-full", style: "justify-content:center;" %>
+          <%= f.submit t("devise.passwords.edit.submit"), class: "btn-primary w-full", style: "justify-content:center;" %>
         </div>
 
       <% end %>
