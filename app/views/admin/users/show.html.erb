@@ -60,6 +60,19 @@
         <% end %>
       <% end %>
     </div>
+    <div class="card-light" style="padding:20px;">
+      <h3 style="font-size:14px;font-weight:600;color:#000;margin-bottom:10px;">Apagar usuário</h3>
+      <% if @projects.any? %>
+        <p style="font-size:12px;color:#929292;margin-bottom:10px;">
+          Usuário possui <%= @projects.count %> <%= @projects.count == 1 ? "projeto" : "projetos" %>. Apague os projetos antes de remover o usuário.
+        </p>
+        <button disabled style="width:100%;padding:8px;border-radius:6px;background:#f5f5f5;color:#c0c0c0;border:2px solid #e5e5e5;font-size:14px;font-weight:700;cursor:not-allowed;font-family:'Montserrat',sans-serif;">Apagar usuário</button>
+      <% else %>
+        <%= button_to "Apagar usuário", admin_user_path(@user), method: :delete,
+            data: { confirm: "Apagar #{@user.display}? Esta ação não pode ser desfeita." },
+            style: "width:100%;padding:8px;border-radius:6px;background:rgba(213,20,20,0.08);color:#D51414;border:2px solid #D51414;font-size:14px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;" %>
+      <% end %>
+    </div>
   </div>
 
   <%# Projects %>
