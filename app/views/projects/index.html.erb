@@ -5,20 +5,20 @@
   <%# Cabeçalho %>
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 style="font-size:24px;font-weight:700;color:#000;">Meus Projetos</h1>
+      <h1 style="font-size:24px;font-weight:700;color:#000;"><%= t("projects.my_projects_title") %></h1>
       <p style="font-size:14px;color:#929292;margin-top:4px;">
-        <%= @projects.count %> <%= @projects.count == 1 ? "projeto" : "projetos" %>
+        <%= t("projects.count", count: @projects.count) %>
       </p>
     </div>
-    <%= link_to "+ Novo Projeto", new_project_path, class: "btn-primary", style: "font-size:14px;padding:8px 20px;" %>
+    <%= link_to t("projects.new_button"), new_project_path, class: "btn-primary", style: "font-size:14px;padding:8px 20px;" %>
   </div>
 
   <% if @projects.empty? %>
     <div class="flex flex-col items-center justify-center py-24 text-center">
       <div style="font-size:64px;margin-bottom:16px;">🐢</div>
-      <h2 style="font-size:20px;font-weight:600;color:#000;margin-bottom:8px;">Nenhum projeto ainda</h2>
-      <p style="font-size:15px;color:#929292;margin-bottom:24px;">Crie seu primeiro projeto e comece a programar!</p>
-      <%= link_to "Criar projeto", new_project_path, class: "btn-primary" %>
+      <h2 style="font-size:20px;font-weight:600;color:#000;margin-bottom:8px;"><%= t("projects.empty_heading") %></h2>
+      <p style="font-size:15px;color:#929292;margin-bottom:24px;"><%= t("projects.empty_message") %></p>
+      <%= link_to t("projects.create_button"), new_project_path, class: "btn-primary" %>
     </div>
 
   <% else %>
@@ -45,7 +45,7 @@
                   <%= project.title %>
                 <% end %>
                 <p style="font-size:12px;color:#929292;margin-top:2px;">
-                  Editado <%= time_ago_in_words(project.updated_at) %> atrás
+                  <%= t("projects.edited_ago", time: time_ago_in_words(project.updated_at)) %>
                 </p>
               </div>
               <span class="<%= project.published? ? 'badge-published' : project.unlisted? ? 'badge-unlisted' : 'badge-draft' %>">
@@ -54,13 +54,13 @@
             </div>
 
             <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;">
-              <%= link_to "Editar", edit_project_path(project),
+              <%= link_to t("projects.edit"), edit_project_path(project),
                   style: "font-size:12px;font-weight:700;color:#0081A6;text-decoration:underline;",
                   data: { turbo: false } %>
-              <%= link_to "Ver", project_path(project),
+              <%= link_to t("projects.view_link"), project_path(project),
                   style: "font-size:12px;font-weight:700;color:#929292;text-decoration:underline;" %>
-              <%= button_to "Apagar", project_path(project), method: :delete,
-                  form: { data: { turbo_confirm: "Apagar \"#{project.title}\"? Esta ação não pode ser desfeita." } },
+              <%= button_to t("projects.delete_button"), project_path(project), method: :delete,
+                  form: { data: { turbo_confirm: t("projects.delete_confirm", title: project.title) } },
                   style: "font-size:12px;font-weight:700;color:#D51414;text-decoration:underline;background:transparent;border:none;cursor:pointer;padding:0;" %>
             </div>
           </div>

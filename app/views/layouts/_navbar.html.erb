@@ -17,17 +17,14 @@
       <%= link_to t("nav.explore"), explore_path,
           class: "text-black hover:opacity-70 transition-opacity relative",
           style: "font-size:20px;padding-bottom:2px;#{nav_active.(explore_path)}" %>
-      <%= link_to "Sobre", about_path,
+      <%= link_to t("nav.about"), about_path,
           class: "text-black hover:opacity-70 transition-opacity",
           style: "font-size:20px;padding-bottom:2px;#{request.path.start_with?('/about') ? 'font-weight:600;border-bottom:2px solid #000;' : 'font-weight:400;'}" %>
       <% if user_signed_in? %>
-        <%= link_to "Meus Projetos", projects_path,
+        <%= link_to t("nav.my_projects"), projects_path,
             class: "text-black hover:opacity-70 transition-opacity",
             style: "font-size:20px;padding-bottom:2px;#{nav_active.(projects_path)}" %>
       <% end %>
-      <%= link_to "Sobre", about_path,
-          class: "text-black hover:opacity-70 transition-opacity",
-          style: "font-size:20px;padding-bottom:2px;#{request.path.start_with?('/about') ? 'font-weight:600;border-bottom:2px solid #000;' : 'font-weight:400;'}" %>
     </nav>
 
     <%# Direita %>
@@ -58,7 +55,7 @@
                   class: "block px-5 py-2 text-black hover:bg-gray-50 transition-colors",
                   style: "font-size:16px;" %>
               <% if current_user.admin? || current_user.moderator? %>
-                <%= link_to "Admin", admin_root_path,
+                <%= link_to t("nav.admin"), admin_root_path,
                     class: "block px-5 py-2 hover:bg-gray-50 transition-colors",
                     style: "font-size:16px;font-weight:600;color:#0081A6;" %>
               <% end %>
@@ -76,6 +73,41 @@
         <%= link_to t("nav.sign_up"), new_user_registration_path,
             class: "btn-primary", style: "font-size:14px;padding:8px 20px;" %>
       <% end %>
+
+      <%# Language switcher %>
+      <% locale_labels = { "pt-BR" => "PT", "es" => "ES", "en" => "EN" } %>
+      <div class="relative group" style="flex-shrink:0;">
+        <button type="button" style="display:flex;align-items:center;gap:6px;padding:8px 20px;border:1px solid #e5e5e5;border-radius:6px;background:white;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;color:#333;cursor:pointer;transition:border-color .12s;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#929292;">
+            <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <%= locale_labels[I18n.locale.to_s] || "PT" %>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style="color:#929292;margin-left:1px;">
+            <path d="M1 3l4 4 4-4"/>
+          </svg>
+        </button>
+        <div class="absolute right-0 hidden group-hover:block" style="top:100%;padding-top:6px;min-width:110px;z-index:200;">
+          <div style="background:white;border:1px solid #e5e5e5;border-radius:10px;box-shadow:1px 1px 6px 0 rgba(0,0,0,.15);padding:4px 0;overflow:hidden;">
+            <% [["pt-BR", "Português"], ["es", "Español"], ["en", "English"]].each do |locale_code, locale_name| %>
+              <% active = I18n.locale.to_s == locale_code %>
+              <%= button_to set_locale_path, method: :post, params: { locale: locale_code },
+                  form: { style: "display:contents;" },
+                  style: "display:flex;align-items:center;gap:8px;width:100%;padding:8px 14px;
+                          background:#{active ? 'rgba(0,129,166,0.06)' : 'transparent'};
+                          border:none;font-size:13px;font-weight:#{active ? '600' : '400'};
+                          color:#{active ? '#0081A6' : '#333'};cursor:pointer;text-align:left;
+                          transition:background .1s;" do %>
+                <% if active %>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#0081A6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l3.5 3.5L11 2"/></svg>
+                <% else %>
+                  <span style="width:12px;display:inline-block;"></span>
+                <% end %>
+                <%= locale_name %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>

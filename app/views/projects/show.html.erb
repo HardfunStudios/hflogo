@@ -181,9 +181,9 @@
 
 
       <div id="stageHeader">
-        <button id="runButton" title="Executar (F5)"><span>▶</span></button>
-        <button id="stopButton" title="Parar execução">■</button>
-        <button id="stepButton" title="Passo">→</button>
+        <button id="runButton" title="<%= t("projects.run_title") %>"><span>▶</span></button>
+        <button id="stopButton" title="<%= t("projects.stop_title") %>">■</button>
+        <button id="stepButton" title="<%= t("projects.step_title") %>">→</button>
         <span class="speed-wrap">
           <span style="font-size:13px;opacity:.7;">🐢</span>
           <input type="range" id="speedSlider" min="1" max="6" step="1" value="5" title="Velocidade">
@@ -191,7 +191,7 @@
         </span>
         <label style="margin-left:4px;">
           <input type="checkbox" id="isTimeVisible">
-          Mostra passos
+          <%= t("projects.show_steps") %>
         </label>
       </div>
 
@@ -214,7 +214,7 @@
       <div>
         <div class="project-title"><%= @project.title %></div>
         <div class="project-meta">
-          por <%= link_to @project.user.display, user_profile_path(@project.user.username),
+          <%= t("common.by") %> <%= link_to @project.user.display, user_profile_path(@project.user.username),
                   style: "color:#0081A6;" %>
           <% if @project.published_at %>
             · <%= l(@project.published_at, format: :short) %>
@@ -237,7 +237,7 @@
       <% if @project.parent_project %>
         <hr class="divider">
         <div style="font-size:12px;color:#929292;font-family:'Montserrat',sans-serif;">
-          Remix de <%= link_to @project.parent_project.title, @project.parent_project,
+          <%= t("projects.remix_of") %> <%= link_to @project.parent_project.title, @project.parent_project,
                           style: "color:#0081A6;" %>
         </div>
       <% end %>

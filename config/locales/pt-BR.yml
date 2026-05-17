@@ -2,25 +2,39 @@ pt-BR:
   app:
     name: "Logo"
 
+  common:
+    or: "ou"
+    by: "por"
+    email_label: "E-mail"
+    password_label: "Senha"
+
   home:
     title: "Programação Visual para Crianças"
     subtitle: "Crie, explore e compartilhe projetos de programação com tartaruga."
     new_project: "Criar Projeto"
     get_started: "Começar Agora"
     explore: "Explorar Projetos"
+    about_link: "Sobre a Plataforma"
+    featured: "✦ Projetos em Destaque"
+    recent: "🕐 Publicados Recentemente"
+    view_project: "Ver projeto →"
 
   nav:
     explore: "Explorar"
+    about: "Sobre"
+    my_projects: "Meus Projetos"
     new_project: "Novo Projeto"
     feed: "Feed"
     profile: "Meu Perfil"
     settings: "Configurações"
+    admin: "Admin"
     sign_in: "Entrar"
     sign_up: "Criar Conta"
     sign_out: "Sair"
 
   errors:
     not_authorized: "Você não tem permissão para fazer isso."
+    not_found: "Usuário não encontrado."
 
   activerecord:
     errors:
@@ -46,12 +60,53 @@ pt-BR:
     see_code: "Ver código"
     edit: "Editar"
     remix: "Remixar"
+    my_projects_title: "Meus Projetos"
+    count:
+      one: "1 projeto"
+      other: "%{count} projetos"
+    new_button: "+ Novo Projeto"
+    empty_heading: "Nenhum projeto ainda"
+    empty_message: "Crie seu primeiro projeto e comece a programar!"
+    create_button: "Criar projeto"
+    edited_ago: "Editado %{time} atrás"
+    view_link: "Ver"
+    delete_button: "Apagar"
+    delete_confirm: "Apagar \"%{title}\"? Esta ação não pode ser desfeita."
+    run_title: "Executar (F5)"
+    stop_title: "Parar execução"
+    step_title: "Passo"
+    show_steps: "Mostra passos"
+    remix_of: "Remix de"
+    save_version: "Salvar versão"
+    blocks_tab: "Blocos"
+    logo_tab: "Logo"
+    text_editor_header: "Edição em texto — Logo"
+    code_placeholder: "; código Logo aparecerá aqui"
+    readonly_notice: "Visualizando código (somente leitura)"
     visibility:
       draft: "Privado"
       unlisted: "Não listado"
       published: "Público"
 
+  explore:
+    title: "Explorar projetos"
+    empty: "Nenhum projeto publicado ainda."
+    create_first: "Crie o primeiro!"
+
+  feed:
+    title: "Feed"
+    empty: "Nenhum projeto ainda. Explore e siga outros criadores!"
+
+  users:
+    projects_heading: "Projetos"
+    no_projects: "Nenhum projeto publicado ainda."
+
   versions:
+    page_title: "Histórico de versões"
+    autosave: "Auto-save"
+    version_number: "Versão %{number}"
+    restore_button: "Restaurar"
+    restore_confirm: "Restaurar esta versão? O estado atual será salvo automaticamente."
     restored: "Versão restaurada com sucesso."
 
   date:
@@ -60,14 +115,67 @@ pt-BR:
       long: "%d de %B de %Y às %H:%M"
 
   devise:
+    common:
+      continue_with_google: "Continuar com Google"
     registrations:
       new:
+        title: "Criar conta"
+        subtitle: "Comece a programar e compartilhar projetos"
         sign_up: "Criar conta"
+        username_label: "Usuário"
+        username_help: "3–30 caracteres: letras minúsculas, números e _"
+        date_of_birth_label: "Data de nascimento"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar senha"
+      edit:
+        title: "Configurações da conta"
+        subtitle: "Atualize suas informações pessoais"
+        account_section: "Dados da conta"
+        pending_confirmation: "Confirmação pendente para:"
+        username_label: "Nome de usuário"
+        change_password_section: "Alterar senha"
+        leave_blank_hint: "(deixe em branco para manter a atual)"
+        new_password_label: "Nova senha"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar nova senha"
+        current_password_label: "Senha atual"
+        current_password_hint: "Necessária para confirmar qualquer alteração"
+        save_button: "Salvar alterações"
+        danger_zone_title: "Zona de perigo"
+        danger_zone_message: "Esta ação é irreversível. Todos os seus projetos serão excluídos."
+        delete_button: "Excluir minha conta"
+        delete_confirm: "Tem certeza? Esta ação não pode ser desfeita."
       signed_up: "Bem-vindo(a)! Confirme seu e-mail para publicar projetos."
     sessions:
       new:
+        title: "Bem-vindo(a) de volta"
+        subtitle: "Entre para continuar programando"
         sign_in: "Entrar"
+        forgot_password: "Esqueceu?"
+        remember_me: "Lembrar de mim"
       signed_in: "Bem-vindo(a) de volta!"
+    passwords:
+      new:
+        title: "Recuperar senha"
+        subtitle: "Enviaremos um link de redefinição para o seu e-mail"
+        submit: "Enviar instruções"
+      edit:
+        title: "Nova senha"
+        subtitle: "Escolha uma senha segura para sua conta"
+        new_password_label: "Nova senha"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar nova senha"
+        submit: "Redefinir senha"
+    confirmations:
+      new:
+        title: "Reenviar confirmação"
+        subtitle: "Enviaremos um novo e-mail de confirmação"
+        submit: "Reenviar e-mail"
+    shared:
+      have_account: "Já tem uma conta? Entrar"
+      create_account: "Criar conta"
+      forgot_password: "Esqueceu sua senha?"
+      resend_confirmation: "Não recebeu as instruções de confirmação?"
     omniauth_callbacks:
       success: "Autenticado com %{kind} com sucesso."
       failure: "Não foi possível autenticar com %{kind}: %{reason}"

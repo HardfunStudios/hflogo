@@ -2,25 +2,39 @@ en:
   app:
     name: "Logo"
 
+  common:
+    or: "or"
+    by: "by"
+    email_label: "E-mail"
+    password_label: "Password"
+
   home:
     title: "Visual Programming for Kids"
     subtitle: "Create, explore and share turtle programming projects."
     new_project: "Create Project"
     get_started: "Get Started"
     explore: "Explore Projects"
+    about_link: "About the Platform"
+    featured: "✦ Featured Projects"
+    recent: "🕐 Recently Published"
+    view_project: "View project →"
 
   nav:
     explore: "Explore"
+    about: "About"
+    my_projects: "My Projects"
     new_project: "New Project"
     feed: "Feed"
     profile: "My Profile"
     settings: "Settings"
+    admin: "Admin"
     sign_in: "Sign In"
     sign_up: "Sign Up"
     sign_out: "Sign Out"
 
   errors:
     not_authorized: "You are not authorized to perform this action."
+    not_found: "User not found."
 
   activerecord:
     errors:
@@ -33,3 +47,135 @@ en:
             date_of_birth:
               too_young: "you must be at least 13 years old to create an account"
               blank: "is required"
+
+  projects:
+    default_title: "Untitled"
+    saved: "Project saved."
+    deleted: "Project deleted."
+    remixed: "Remix created! It's yours now, edit away."
+    not_found: "Project not found."
+    publish: "Publish"
+    republish: "Published ✓"
+    auto_saved: "saved"
+    see_code: "See code"
+    edit: "Edit"
+    remix: "Remix"
+    my_projects_title: "My Projects"
+    count:
+      one: "1 project"
+      other: "%{count} projects"
+    new_button: "+ New Project"
+    empty_heading: "No projects yet"
+    empty_message: "Create your first project and start programming!"
+    create_button: "Create project"
+    edited_ago: "Edited %{time} ago"
+    view_link: "View"
+    delete_button: "Delete"
+    delete_confirm: "Delete \"%{title}\"? This action cannot be undone."
+    run_title: "Run (F5)"
+    stop_title: "Stop"
+    step_title: "Step"
+    show_steps: "Show steps"
+    remix_of: "Remix of"
+    save_version: "Save version"
+    blocks_tab: "Blocks"
+    logo_tab: "Logo"
+    text_editor_header: "Text editor — Logo"
+    code_placeholder: "; Logo code will appear here"
+    readonly_notice: "Viewing code (read-only)"
+    visibility:
+      draft: "Private"
+      unlisted: "Unlisted"
+      published: "Public"
+
+  explore:
+    title: "Explore projects"
+    empty: "No published projects yet."
+    create_first: "Create the first one!"
+
+  feed:
+    title: "Feed"
+    empty: "No projects yet. Explore and follow other creators!"
+
+  users:
+    projects_heading: "Projects"
+    no_projects: "No published projects yet."
+
+  versions:
+    page_title: "Version history"
+    autosave: "Auto-save"
+    version_number: "Version %{number}"
+    restore_button: "Restore"
+    restore_confirm: "Restore this version? The current state will be saved automatically."
+    restored: "Version restored successfully."
+
+  date:
+    formats:
+      short: "%m/%d/%Y"
+      long: "%B %d, %Y at %H:%M"
+
+  devise:
+    common:
+      continue_with_google: "Continue with Google"
+    registrations:
+      new:
+        title: "Create account"
+        subtitle: "Start programming and sharing projects"
+        sign_up: "Create account"
+        username_label: "Username"
+        username_help: "3–30 characters: lowercase letters, numbers and _"
+        date_of_birth_label: "Date of birth"
+        password_help: "Minimum %{count} characters"
+        password_confirmation_label: "Confirm password"
+      edit:
+        title: "Account settings"
+        subtitle: "Update your personal information"
+        account_section: "Account details"
+        pending_confirmation: "Pending confirmation for:"
+        username_label: "Username"
+        change_password_section: "Change password"
+        leave_blank_hint: "(leave blank to keep current)"
+        new_password_label: "New password"
+        password_help: "Minimum %{count} characters"
+        password_confirmation_label: "Confirm new password"
+        current_password_label: "Current password"
+        current_password_hint: "Required to confirm any change"
+        save_button: "Save changes"
+        danger_zone_title: "Danger zone"
+        danger_zone_message: "This action is irreversible. All your projects will be deleted."
+        delete_button: "Delete my account"
+        delete_confirm: "Are you sure? This action cannot be undone."
+      signed_up: "Welcome! Confirm your email to publish projects."
+    sessions:
+      new:
+        title: "Welcome back"
+        subtitle: "Sign in to continue programming"
+        sign_in: "Sign In"
+        forgot_password: "Forgot?"
+        remember_me: "Remember me"
+      signed_in: "Welcome back!"
+    passwords:
+      new:
+        title: "Recover password"
+        subtitle: "We'll send a reset link to your email"
+        submit: "Send instructions"
+      edit:
+        title: "New password"
+        subtitle: "Choose a secure password for your account"
+        new_password_label: "New password"
+        password_help: "Minimum %{count} characters"
+        password_confirmation_label: "Confirm new password"
+        submit: "Reset password"
+    confirmations:
+      new:
+        title: "Resend confirmation"
+        subtitle: "We'll send a new confirmation email"
+        submit: "Resend email"
+    shared:
+      have_account: "Already have an account? Sign in"
+      create_account: "Create account"
+      forgot_password: "Forgot your password?"
+      resend_confirmation: "Didn't receive confirmation instructions?"
+    omniauth_callbacks:
+      success: "Successfully authenticated with %{kind}."
+      failure: "Could not authenticate with %{kind}: %{reason}"

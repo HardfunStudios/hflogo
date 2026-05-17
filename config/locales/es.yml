@@ -2,25 +2,39 @@ es:
   app:
     name: "Logo"
 
+  common:
+    or: "o"
+    by: "por"
+    email_label: "Correo electrónico"
+    password_label: "Contraseña"
+
   home:
     title: "Programación Visual para Niños"
     subtitle: "Crea, explora y comparte proyectos de programación con tortuga."
     new_project: "Crear Proyecto"
     get_started: "Comenzar"
     explore: "Explorar Proyectos"
+    about_link: "Sobre la Plataforma"
+    featured: "✦ Proyectos Destacados"
+    recent: "🕐 Publicados Recientemente"
+    view_project: "Ver proyecto →"
 
   nav:
     explore: "Explorar"
+    about: "Acerca de"
+    my_projects: "Mis Proyectos"
     new_project: "Nuevo Proyecto"
     feed: "Feed"
     profile: "Mi Perfil"
     settings: "Configuración"
+    admin: "Admin"
     sign_in: "Iniciar Sesión"
     sign_up: "Crear Cuenta"
     sign_out: "Cerrar Sesión"
 
   errors:
     not_authorized: "No tienes permiso para realizar esta acción."
+    not_found: "Usuario no encontrado."
 
   activerecord:
     errors:
@@ -33,3 +47,135 @@ es:
             date_of_birth:
               too_young: "debes tener al menos 13 años para crear una cuenta"
               blank: "es obligatorio"
+
+  projects:
+    default_title: "Sin título"
+    saved: "Proyecto guardado."
+    deleted: "Proyecto eliminado."
+    remixed: "¡Remix creado! Ahora es tuyo, ¡edítalo!"
+    not_found: "Proyecto no encontrado."
+    publish: "Publicar"
+    republish: "Publicado ✓"
+    auto_saved: "guardado"
+    see_code: "Ver código"
+    edit: "Editar"
+    remix: "Remezclar"
+    my_projects_title: "Mis Proyectos"
+    count:
+      one: "1 proyecto"
+      other: "%{count} proyectos"
+    new_button: "+ Nuevo Proyecto"
+    empty_heading: "Sin proyectos aún"
+    empty_message: "¡Crea tu primer proyecto y empieza a programar!"
+    create_button: "Crear proyecto"
+    edited_ago: "Editado hace %{time}"
+    view_link: "Ver"
+    delete_button: "Eliminar"
+    delete_confirm: "¿Eliminar \"%{title}\"? Esta acción no se puede deshacer."
+    run_title: "Ejecutar (F5)"
+    stop_title: "Detener"
+    step_title: "Paso"
+    show_steps: "Mostrar pasos"
+    remix_of: "Remix de"
+    save_version: "Guardar versión"
+    blocks_tab: "Bloques"
+    logo_tab: "Logo"
+    text_editor_header: "Editor de texto — Logo"
+    code_placeholder: "; el código Logo aparecerá aquí"
+    readonly_notice: "Visualizando código (solo lectura)"
+    visibility:
+      draft: "Privado"
+      unlisted: "No listado"
+      published: "Público"
+
+  explore:
+    title: "Explorar proyectos"
+    empty: "No hay proyectos publicados aún."
+    create_first: "¡Crea el primero!"
+
+  feed:
+    title: "Feed"
+    empty: "Sin proyectos aún. ¡Explora y sigue a otros creadores!"
+
+  users:
+    projects_heading: "Proyectos"
+    no_projects: "No hay proyectos publicados aún."
+
+  versions:
+    page_title: "Historial de versiones"
+    autosave: "Auto-guardado"
+    version_number: "Versión %{number}"
+    restore_button: "Restaurar"
+    restore_confirm: "¿Restaurar esta versión? El estado actual se guardará automáticamente."
+    restored: "Versión restaurada con éxito."
+
+  date:
+    formats:
+      short: "%d/%m/%Y"
+      long: "%d de %B de %Y a las %H:%M"
+
+  devise:
+    common:
+      continue_with_google: "Continuar con Google"
+    registrations:
+      new:
+        title: "Crear cuenta"
+        subtitle: "Empieza a programar y compartir proyectos"
+        sign_up: "Crear cuenta"
+        username_label: "Usuario"
+        username_help: "3–30 caracteres: letras minúsculas, números y _"
+        date_of_birth_label: "Fecha de nacimiento"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar contraseña"
+      edit:
+        title: "Configuración de cuenta"
+        subtitle: "Actualiza tu información personal"
+        account_section: "Datos de la cuenta"
+        pending_confirmation: "Confirmación pendiente para:"
+        username_label: "Nombre de usuario"
+        change_password_section: "Cambiar contraseña"
+        leave_blank_hint: "(deja en blanco para mantener la actual)"
+        new_password_label: "Nueva contraseña"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar nueva contraseña"
+        current_password_label: "Contraseña actual"
+        current_password_hint: "Necesaria para confirmar cualquier cambio"
+        save_button: "Guardar cambios"
+        danger_zone_title: "Zona de peligro"
+        danger_zone_message: "Esta acción es irreversible. Todos tus proyectos serán eliminados."
+        delete_button: "Eliminar mi cuenta"
+        delete_confirm: "¿Estás seguro/a? Esta acción no se puede deshacer."
+      signed_up: "¡Bienvenido/a! Confirma tu correo electrónico para publicar proyectos."
+    sessions:
+      new:
+        title: "Bienvenido/a de vuelta"
+        subtitle: "Inicia sesión para seguir programando"
+        sign_in: "Iniciar sesión"
+        forgot_password: "¿Olvidaste?"
+        remember_me: "Recordarme"
+      signed_in: "¡Bienvenido/a de vuelta!"
+    passwords:
+      new:
+        title: "Recuperar contraseña"
+        subtitle: "Enviaremos un enlace de restablecimiento a tu correo"
+        submit: "Enviar instrucciones"
+      edit:
+        title: "Nueva contraseña"
+        subtitle: "Elige una contraseña segura para tu cuenta"
+        new_password_label: "Nueva contraseña"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar nueva contraseña"
+        submit: "Restablecer contraseña"
+    confirmations:
+      new:
+        title: "Reenviar confirmación"
+        subtitle: "Enviaremos un nuevo correo de confirmación"
+        submit: "Reenviar correo"
+    shared:
+      have_account: "¿Ya tienes una cuenta? Iniciar sesión"
+      create_account: "Crear cuenta"
+      forgot_password: "¿Olvidaste tu contraseña?"
+      resend_confirmation: "¿No recibiste las instrucciones de confirmación?"
+    omniauth_callbacks:
+      success: "Autenticado con %{kind} con éxito."
+      failure: "No se pudo autenticar con %{kind}: %{reason}"
