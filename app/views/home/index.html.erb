@@ -4,7 +4,7 @@
 
   <% if user_signed_in? %>
     <%= link_to t("home.new_project"), new_project_path, class: "btn-primary", style: "font-size:16px;padding:10px 28px;margin-right:12px;" %>
-    <%= link_to "Sobre a Plataforma", about_path, class: "btn-secondary", style: "font-size:16px;padding:10px 28px;" %>
+    <%= link_to t("home.about_link"), about_path, class: "btn-secondary", style: "font-size:16px;padding:10px 28px;" %>
   <% else %>
     <%= link_to t("home.get_started"), new_user_registration_path, class: "btn-primary", style: "font-size:16px;padding:10px 28px;margin-right:12px;" %>
     <%= link_to t("home.explore"), explore_path, class: "btn-secondary", style: "font-size:16px;padding:10px 28px;" %>
@@ -13,7 +13,7 @@
 
 <% if @featured_projects.any? %>
   <section style="max-width:1200px;margin:0 auto;padding:0 32px 80px;">
-    <h2 style="font-size:22px;font-weight:700;color:#000;margin-bottom:24px;">✦ Projetos em Destaque</h2>
+    <h2 style="font-size:22px;font-weight:700;color:#000;margin-bottom:24px;"><%= t("home.featured") %></h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
       <% @featured_projects.each do |project| %>
         <div class="card-light overflow-hidden transition-shadow duration-150 hover:shadow-md" style="padding:0;">
@@ -26,12 +26,12 @@
           <% end %>
           <div style="padding:12px 14px;">
             <p style="font-size:15px;font-weight:600;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= project.title %></p>
-            <p style="font-size:12px;color:#929292;margin-top:2px;">por <%= project.user.display %></p>
+            <p style="font-size:12px;color:#929292;margin-top:2px;"><%= t("common.by") %> <%= project.user.display %></p>
             <% if project.description.present? %>
               <p style="font-size:13px;color:#929292;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"><%= project.description %></p>
             <% end %>
             <div style="margin-top:10px;">
-              <%= link_to "Ver projeto →", project_path(project), style: "font-size:13px;font-weight:700;color:#0081A6;text-decoration:none;" %>
+              <%= link_to t("home.view_project"), project_path(project), style: "font-size:13px;font-weight:700;color:#0081A6;text-decoration:none;" %>
             </div>
           </div>
         </div>
@@ -42,7 +42,7 @@
 
 <% if @recent_projects.any? %>
   <section style="max-width:1200px;margin:0 auto;padding:0 32px 80px;">
-    <h2 style="font-size:22px;font-weight:700;color:#000;margin-bottom:24px;">🕐 Publicados Recentemente</h2>
+    <h2 style="font-size:22px;font-weight:700;color:#000;margin-bottom:24px;"><%= t("home.recent") %></h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
       <% @recent_projects.each do |project| %>
         <div class="card-light overflow-hidden transition-shadow duration-150 hover:shadow-md" style="padding:0;">
@@ -55,12 +55,12 @@
           <% end %>
           <div style="padding:12px 14px;">
             <p style="font-size:15px;font-weight:600;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= project.title %></p>
-            <p style="font-size:12px;color:#929292;margin-top:2px;">por <%= project.user.display %></p>
+            <p style="font-size:12px;color:#929292;margin-top:2px;"><%= t("common.by") %> <%= project.user.display %></p>
             <% if project.description.present? %>
               <p style="font-size:13px;color:#929292;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"><%= project.description %></p>
             <% end %>
             <div style="margin-top:10px;">
-              <%= link_to "Ver projeto →", project_path(project), style: "font-size:13px;font-weight:700;color:#0081A6;text-decoration:none;" %>
+              <%= link_to t("home.view_project"), project_path(project), style: "font-size:13px;font-weight:700;color:#0081A6;text-decoration:none;" %>
             </div>
           </div>
         </div>

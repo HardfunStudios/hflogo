@@ -12,7 +12,15 @@ class ApplicationController < ActionController::Base
   private
 
   def set_locale
-    I18n.locale = current_user&.locale&.to_sym || browser_locale || I18n.default_locale
+    I18n.locale = current_user&.locale&.to_sym ||
+                  session_locale ||
+                  browser_locale ||
+                  I18n.default_locale
+  end
+
+  def session_locale
+    l = session[:locale]&.to_sym
+    I18n.available_locales.include?(l) ? l : nil
   end
 
   def browser_locale

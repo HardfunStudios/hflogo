@@ -2,8 +2,8 @@
   <div style="width:100%;max-width:400px;">
 
     <div class="text-center mb-6">
-      <h1 style="font-size:24px;font-weight:700;color:#000;margin:0 0 4px;">Bem-vindo(a) de volta</h1>
-      <p style="font-size:14px;color:#929292;margin:0;">Entre para continuar programando</p>
+      <h1 style="font-size:24px;font-weight:700;color:#000;margin:0 0 4px;"><%= t("devise.sessions.new.title") %></h1>
+      <p style="font-size:14px;color:#929292;margin:0;"><%= t("devise.sessions.new.subtitle") %></p>
     </div>
 
     <div class="card-light p-6">
@@ -23,7 +23,7 @@
 
       <div class="flex items-center gap-3 my-4">
         <div style="flex:1;border-top:1px solid #e5e5e5;"></div>
-        <span style="font-size:12px;color:#929292;">ou</span>
+        <span style="font-size:12px;color:#929292;"><%= t("common.or") %></span>
         <div style="flex:1;border-top:1px solid #e5e5e5;"></div>
       </div>
 
@@ -31,7 +31,7 @@
         <div class="flex flex-col gap-3">
 
           <div>
-            <%= f.label :email, "E-mail", class: "form-label" %>
+            <%= f.label :email, t("common.email_label"), class: "form-label" %>
             <%= f.email_field :email,
                 autofocus: true,
                 autocomplete: "email",
@@ -41,9 +41,9 @@
 
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <%= f.label :password, "Senha", class: "form-label", style: "margin-bottom:0;" %>
+              <%= f.label :password, t("common.password_label"), class: "form-label", style: "margin-bottom:0;" %>
               <% if devise_mapping.recoverable? %>
-                <%= link_to "Esqueceu?", new_password_path(resource_name), style: "font-size:13px;color:#0081A6;text-decoration:none;" %>
+                <%= link_to t("devise.sessions.new.forgot_password"), new_password_path(resource_name), style: "font-size:13px;color:#0081A6;text-decoration:none;" %>
               <% end %>
             </div>
             <%= f.password_field :password,
@@ -55,14 +55,14 @@
           <% if devise_mapping.rememberable? %>
             <div class="flex items-center gap-2">
               <%= f.check_box :remember_me %>
-              <%= f.label :remember_me, "Lembrar de mim", style: "font-size:13px;color:#929292;" %>
+              <%= f.label :remember_me, t("devise.sessions.new.remember_me"), style: "font-size:13px;color:#929292;" %>
             </div>
           <% end %>
 
         </div>
 
         <div class="mt-4">
-          <%= f.submit "Entrar", class: "btn-primary w-full", style: "justify-content:center;" %>
+          <%= f.submit t("devise.sessions.new.sign_in"), class: "btn-primary w-full", style: "justify-content:center;" %>
         </div>
       <% end %>
 

@@ -271,7 +271,7 @@
 
       <button class="btn-secondary" style="font-size:12px;padding:4px 12px;"
               data-action="editor#saveVersion" data-editor-target="saveVersionBtn">
-        Salvar versão
+        <%= t("projects.save_version") %>
       </button>
 
       <button class="btn-primary" style="font-size:12px;padding:4px 14px;"
@@ -296,13 +296,13 @@
             <rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/>
             <rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/>
           </svg>
-          Blocos
+          <%= t("projects.blocks_tab") %>
         </button>
         <button class="editor-tab" id="tabLogo" aria-selected="false">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 4l4 3-4 3M8 10h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Logo
+          <%= t("projects.logo_tab") %>
         </button>
       </div>
 
@@ -318,7 +318,7 @@
           <%# Painel de texto Logo (oculto por enquanto) %>
           <div id="logoTextPanel">
             <div id="logoTextToolbar">
-              <span>Edição em texto — Logo</span>
+              <span><%= t("projects.text_editor_header") %></span>
               <div id="logoSyntaxError" title=""></div>
             </div>
             <div id="logoEditorWrap">
@@ -327,7 +327,7 @@
               <div id="logoLineHighlight"></div>
               <div id="logoCodeArea">
                 <textarea id="logoCodeEditor" spellcheck="false" autocomplete="off"
-                          placeholder="; código Logo aparecerá aqui"></textarea>
+                          placeholder="<%= t("projects.code_placeholder") %>"></textarea>
               </div>
             </div>
             <div id="logoStatusBar"><span id="logoCursorPos">Ln 1, Col 1</span></div>
@@ -342,9 +342,9 @@
 
       <%# Header gradiente — estilo cabeçalho de tabela %>
       <div id="stageHeader">
-        <button id="runButton" title="Executar (F5)"><span>▶</span></button>
-        <button id="stopButton" title="Parar execução">■</button>
-        <button id="stepButton" title="Passo">→</button>
+        <button id="runButton" title="<%= t("projects.run_title") %>"><span>▶</span></button>
+        <button id="stopButton" title="<%= t("projects.stop_title") %>">■</button>
+        <button id="stepButton" title="<%= t("projects.step_title") %>">→</button>
         <span class="speed-wrap">
           <span style="font-size:13px;opacity:.7;">🐢</span>
           <input type="range" id="speedSlider" min="1" max="6" step="1" value="5" title="Velocidade">
@@ -352,7 +352,7 @@
         </span>
         <label style="margin-left:4px;">
           <input type="checkbox" id="isTimeVisible">
-          Mostra passos
+          <%= t("projects.show_steps") %>
         </label>
       </div>
 
