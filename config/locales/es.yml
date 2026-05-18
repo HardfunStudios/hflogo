@@ -172,6 +172,7 @@ es:
       updated: "Tu cuenta ha sido actualizada correctamente."
       updated_but_not_signed_in: "Cuenta actualizada, pero como tu contraseña fue cambiada, necesitas iniciar sesión de nuevo."
       signed_up: "¡Bienvenido/a! Confirma tu correo electrónico para publicar proyectos."
+      success: "Autenticado con %{kind} correctamente. ¡Bienvenido/a!"
       new:
         title: "Crear cuenta"
         subtitle: "Empieza a programar y compartir proyectos"

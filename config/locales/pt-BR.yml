@@ -164,6 +164,7 @@ pt-BR:
       updated: "Sua conta foi atualizada com sucesso."
       updated_but_not_signed_in: "Conta atualizada, mas como sua senha foi alterada, você precisa entrar novamente."
       signed_up: "Bem-vindo(a)! Confirme seu e-mail para publicar projetos."
+      success: "Autenticado com %{kind} com sucesso. Bem-vindo(a)!"
       new:
         title: "Criar conta"
         subtitle: "Comece a programar e compartilhar projetos"

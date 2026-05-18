@@ -147,6 +147,7 @@ en:
         delete_button: "Delete my account"
         delete_confirm: "Are you sure? This action cannot be undone."
       signed_up: "Welcome! Confirm your email to publish projects."
+      success: "Successfully authenticated with %{kind}. Welcome!"
     sessions:
       new:
         title: "Welcome back"
