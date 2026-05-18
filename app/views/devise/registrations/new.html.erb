@@ -47,6 +47,9 @@
             <div>
               <%= f.label :date_of_birth, t("devise.registrations.new.date_of_birth_label"), class: "form-label" %>
               <%= f.date_field :date_of_birth, class: "form-input" %>
+              <p style="margin:6px 0 0;font-size:11px;color:#929292;line-height:1.5;">
+                <%= t("devise.registrations.new.date_of_birth_hint") %>
+              </p>
             </div>
 
           </div>

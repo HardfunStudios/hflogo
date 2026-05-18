@@ -171,6 +171,7 @@ pt-BR:
         username_label: "Usuário"
         username_help: "3–30 caracteres: letras minúsculas, números e _"
         date_of_birth_label: "Data de nascimento"
+        date_of_birth_hint: "Precisamos da sua data de nascimento para garantir que você tem pelo menos 13 anos, conforme exigido pela nossa política de privacidade."
         password_help: "Mínimo %{count} caracteres"
         password_confirmation_label: "Confirmar senha"
       edit:
