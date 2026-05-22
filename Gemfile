@@ -23,7 +23,7 @@ gem "pundit"
 gem "rack-attack"
 
 # Storage e processamento de imagem
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
 
 # Jobs assíncronos
 gem "solid_cache"
