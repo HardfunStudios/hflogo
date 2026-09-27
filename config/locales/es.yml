@@ -117,7 +117,62 @@ es:
   devise:
     common:
       continue_with_google: "Continuar con Google"
+    confirmations:
+      confirmed: "Tu dirección de correo electrónico ha sido confirmada correctamente."
+      send_instructions: "Recibirás un correo con instrucciones para confirmar tu dirección en unos minutos."
+      send_paranoid_instructions: "Si tu dirección de correo existe en nuestra base, recibirás un correo con instrucciones en unos minutos."
+      new:
+        title: "Reenviar confirmación"
+        subtitle: "Enviaremos un nuevo correo de confirmación"
+        submit: "Reenviar correo"
+    failure:
+      already_authenticated: "Ya has iniciado sesión."
+      inactive: "Tu cuenta aún no ha sido activada."
+      invalid: "%{authentication_keys} o contraseña no válidos."
+      locked: "Tu cuenta está bloqueada."
+      last_attempt: "Tienes un intento más antes de que tu cuenta sea bloqueada."
+      not_found_in_database: "%{authentication_keys} o contraseña no válidos."
+      timeout: "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
+      unauthenticated: "Debes iniciar sesión o registrarte antes de continuar."
+      unconfirmed: "Debes confirmar tu dirección de correo electrónico antes de continuar."
+    mailer:
+      confirmation_instructions:
+        subject: "Instrucciones de confirmación"
+      reset_password_instructions:
+        subject: "Instrucciones para restablecer tu contraseña"
+      unlock_instructions:
+        subject: "Instrucciones para desbloquear tu cuenta"
+      email_changed:
+        subject: "Correo electrónico cambiado"
+      password_change:
+        subject: "Contraseña cambiada"
+    passwords:
+      no_token: "No puedes acceder a esta página sin venir de un correo de restablecimiento de contraseña."
+      send_instructions: "Recibirás un correo con instrucciones para restablecer tu contraseña en unos minutos."
+      send_paranoid_instructions: "Si tu correo existe en nuestra base, recibirás un enlace de recuperación en unos minutos."
+      updated: "Tu contraseña ha sido cambiada correctamente. Ya has iniciado sesión."
+      updated_not_active: "Tu contraseña ha sido cambiada correctamente."
+      new:
+        title: "Recuperar contraseña"
+        subtitle: "Enviaremos un enlace de restablecimiento a tu correo"
+        submit: "Enviar instrucciones"
+      edit:
+        title: "Nueva contraseña"
+        subtitle: "Elige una contraseña segura para tu cuenta"
+        new_password_label: "Nueva contraseña"
+        password_help: "Mínimo %{count} caracteres"
+        password_confirmation_label: "Confirmar nueva contraseña"
+        submit: "Restablecer contraseña"
     registrations:
+      destroyed: "¡Hasta luego! Tu cuenta ha sido cancelada correctamente."
+      signed_up_but_inactive: "Registro completado, pero no pudimos iniciar sesión porque tu cuenta aún no está activa."
+      signed_up_but_locked: "Registro completado, pero no pudimos iniciar sesión porque tu cuenta está bloqueada."
+      signed_up_but_unconfirmed: "Se ha enviado un mensaje con un enlace de confirmación a tu correo. Sigue el enlace para activar tu cuenta."
+      update_needs_confirmation: "Cuenta actualizada, pero necesitamos verificar tu nuevo correo. Revisa tu bandeja de entrada y sigue el enlace de confirmación."
+      updated: "Tu cuenta ha sido actualizada correctamente."
+      updated_but_not_signed_in: "Cuenta actualizada, pero como tu contraseña fue cambiada, necesitas iniciar sesión de nuevo."
+      signed_up: "¡Bienvenido/a! Confirma tu correo electrónico para publicar proyectos."
+      success: "Autenticado con %{kind} correctamente. ¡Bienvenido/a!"
       new:
         title: "Crear cuenta"
         subtitle: "Empieza a programar y compartir proyectos"
@@ -125,6 +180,7 @@ es:
         username_label: "Usuario"
         username_help: "3–30 caracteres: letras minúsculas, números y _"
         date_of_birth_label: "Fecha de nacimiento"
+        date_of_birth_hint: "Necesitamos tu fecha de nacimiento para confirmar que tienes al menos 13 años, según nuestra política de privacidad."
         password_help: "Mínimo %{count} caracteres"
         password_confirmation_label: "Confirmar contraseña"
       edit:
@@ -145,32 +201,16 @@ es:
         danger_zone_message: "Esta acción es irreversible. Todos tus proyectos serán eliminados."
         delete_button: "Eliminar mi cuenta"
         delete_confirm: "¿Estás seguro/a? Esta acción no se puede deshacer."
-      signed_up: "¡Bienvenido/a! Confirma tu correo electrónico para publicar proyectos."
     sessions:
+      signed_in: "¡Bienvenido/a de vuelta!"
+      signed_out: "Sesión cerrada correctamente."
+      already_signed_out: "Sesión cerrada correctamente."
       new:
         title: "Bienvenido/a de vuelta"
         subtitle: "Inicia sesión para seguir programando"
         sign_in: "Iniciar sesión"
         forgot_password: "¿Olvidaste?"
         remember_me: "Recordarme"
-      signed_in: "¡Bienvenido/a de vuelta!"
-    passwords:
-      new:
-        title: "Recuperar contraseña"
-        subtitle: "Enviaremos un enlace de restablecimiento a tu correo"
-        submit: "Enviar instrucciones"
-      edit:
-        title: "Nueva contraseña"
-        subtitle: "Elige una contraseña segura para tu cuenta"
-        new_password_label: "Nueva contraseña"
-        password_help: "Mínimo %{count} caracteres"
-        password_confirmation_label: "Confirmar nueva contraseña"
-        submit: "Restablecer contraseña"
-    confirmations:
-      new:
-        title: "Reenviar confirmación"
-        subtitle: "Enviaremos un nuevo correo de confirmación"
-        submit: "Reenviar correo"
     shared:
       have_account: "¿Ya tienes una cuenta? Iniciar sesión"
       create_account: "Crear cuenta"
